@@ -1,5 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, Music } from 'lucide-react';
+import SpotifyPlayer from '@/components/SpotifyPlayer';
+
+const FEATURED_SONG = {
+  id: 'hero-featured',
+  title: 'La Camisa Negra',
+  artist_name: 'Juanes',
+  artist_slug: 'juanes',
+  slug: 'la-camisa-negra',
+};
 
 export default function HeroSection({ onChatFocus }) {
   return (
@@ -38,38 +47,29 @@ export default function HeroSection({ onChatFocus }) {
         </div>
       </div>
 
-      {/* Right — example card */}
+      {/* Right — example card with Spotify player */}
       <div className="hidden lg:block">
-        <div className="bg-card border border-border rounded-2xl p-5 shadow-lg">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center">
+        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
+          {/* Song header */}
+          <div className="flex items-center gap-3 p-4 border-b border-border">
+            <div className="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center shrink-0">
               <Music className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-foreground font-semibold text-sm">La Camisa Negra</p>
+              <p className="text-foreground font-bold text-sm">La Camisa Negra</p>
               <p className="text-muted-foreground text-xs">Juanes · Tonalidad: Am · Capo: 0</p>
             </div>
           </div>
-          <div className="bg-muted rounded-xl p-3 font-mono text-xs text-muted-foreground leading-relaxed mb-3">
+          {/* Chord preview */}
+          <div className="bg-muted rounded-xl m-4 p-3 font-mono text-xs text-muted-foreground leading-relaxed">
             <p className="text-orange-500 font-semibold">[Intro]</p>
             <p>Am  F  C  G</p>
             <p className="text-orange-500 font-semibold mt-2">[Verso]</p>
-            <p><span className="text-orange-500">Am</span>              <span className="text-orange-500">F</span></p>
+            <p><span className="text-orange-500">Am</span>{'              '}<span className="text-orange-500">F</span></p>
             <p>Tengo la camisa negra...</p>
-            <p><span className="text-orange-500">C</span>              <span className="text-orange-500">G</span></p>
-            <p>porque negra tengo el alma...</p>
           </div>
-          <div className="flex gap-2">
-            {['Am', 'F', 'C', 'G'].map(c => (
-              <div key={c} className="flex-1 bg-background border border-border rounded-lg py-2 text-center">
-                <p className="text-orange-500 font-bold text-xs">{c}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground bg-orange-50 dark:bg-orange-500/10 rounded-lg p-2">
-            <Sparkles className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-            <span>Generado por Tablaturas IA · Dificultad: Fácil</span>
-          </div>
+          {/* Spotify player */}
+          <SpotifyPlayer song={FEATURED_SONG} compact={false} />
         </div>
       </div>
     </div>

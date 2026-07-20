@@ -159,7 +159,7 @@ IMPORTANTE:
 - No muestres IDs, números de versión, ni códigos en los títulos de las canciones.
 - Los matched_songs deben tener SOLO los IDs de canciones realmente encontradas en el catálogo.
 - Si buscas en fuentes externas, sé breve en la explicación y muestra el contenido formateado correctamente.`,
-        add_context_from_internet: !hasLocalResults,
+        add_context_from_internet: false,
         model: 'gemini_3_flash',
         response_json_schema: {
           type: 'object',

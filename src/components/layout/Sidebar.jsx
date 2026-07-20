@@ -1,11 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Search, Users, Music, Settings, X, Sun, Moon, Shield, Heart, Clock, BookOpen } from 'lucide-react';
+import { MessageCircle, Search, Users, Music, Settings, X, Sun, Moon, Heart, Clock, BookOpen } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth } from '@/lib/AuthContext';
 
 const LOGO_URL = 'https://media.base44.com/images/public/user_6a5e0a31e8f4f614e1d6f533/ad91dd453_logo.png';
-const ADMIN_EMAILS = ['danipalacio@gmail.com'];
-const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
 
 const navItems = [
   { icon: MessageCircle, label: 'Chat IA', path: '/' },
@@ -20,7 +17,6 @@ const navItems = [
 
 export default function Sidebar({ open, onClose }) {
   const location = useLocation();
-  const { user } = useAuth();
 
   const isActive = (path) => {
     const base = path.split('?')[0];
@@ -44,8 +40,6 @@ export default function Sidebar({ open, onClose }) {
       setIsDark(true);
     }
   };
-
-  const isAdmin = isAdminUser(user);
 
   return (
     <>
@@ -90,21 +84,6 @@ export default function Sidebar({ open, onClose }) {
               </Link>
             );
           })}
-
-          {isAdmin && (
-            <Link
-              to="/admin"
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-0.5 transition-colors ${
-                isActive('/admin')
-                  ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-500'
-                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-              }`}
-            >
-              <Shield className="w-[18px] h-[18px] shrink-0" />
-              Admin
-            </Link>
-          )}
         </nav>
 
         {/* Theme toggle */}
