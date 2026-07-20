@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown';
 import SongResultCard from './SongResultCard';
 
 export default function ChatMessage({ message }) {
@@ -9,11 +10,34 @@ export default function ChatMessage({ message }) {
         <div
           className={`rounded-2xl px-4 py-3 ${
             isUser
-              ? 'bg-[#ff7a00] text-white rounded-br-md'
-              : 'bg-[#20242a] text-[#f3f4f6] rounded-bl-md border border-[#2b3138]'
+              ? 'bg-primary text-primary-foreground rounded-br-md'
+              : 'bg-card text-card-foreground rounded-bl-md border border-border'
           }`}
         >
-          <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+          {isUser ? (
+            <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+          ) : (
+            <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-pre:bg-muted prose-pre:text-foreground prose-code:text-foreground prose-headings:text-foreground prose-p:text-card-foreground prose-strong:text-foreground">
+              <ReactMarkdown
+                components={{
+                  pre: ({ children }) => (
+                    <pre className="bg-muted rounded-lg p-3 overflow-x-auto font-mono text-xs my-2 whitespace-pre">
+                      {children}
+                    </pre>
+                  ),
+                  code: ({ inline, children }) =>
+                    inline ? (
+                      <code className="bg-muted px-1 rounded text-xs font-mono">{children}</code>
+                    ) : (
+                      <code>{children}</code>
+                    ),
+                  p: ({ children }) => <p className="mb-2 last:mb-0 whitespace-pre-wrap">{children}</p>,
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
+          )}
         </div>
         {message.songs && message.songs.length > 0 && (
           <div className="mt-3 w-full space-y-2">

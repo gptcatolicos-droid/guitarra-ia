@@ -25,7 +25,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] lg:h-screen overflow-hidden">
       <div className="flex flex-col items-center pt-6 pb-2 shrink-0">
-        <img src={LOGO_URL} alt="Tablaturas AI" className="h-28 lg:h-40 w-auto" />
+        <img src={LOGO_URL} alt="Tablaturas AI" style={{ width: '100%', maxWidth: '564px', aspectRatio: '1127/410' }} className="w-auto" />
       </div>
       <ChatInterface embedded />
     </div>

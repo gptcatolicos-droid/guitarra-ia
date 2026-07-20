@@ -12,9 +12,13 @@ export default function SongPage() {
   const [song, setSong] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const cleanSongTitle = song
+    ? song.title.replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '').replace(/\s*\d+$/, '').trim()
+    : '';
+
   useSEO({
     title: song
-      ? `${song.title} - ${song.artist_name} | Acordes y Tablatura | Tablaturas AI`
+      ? `${cleanSongTitle} - ${song.artist_name} | Acordes y Tablatura | Tablaturas AI`
       : 'Cargando canción... | Tablaturas AI',
     description: song
       ? `Acordes y tablatura de ${song.title} de ${song.artist_name}. Tonalidad: ${song.original_key || 'N/A'}. Aprende a tocarla en guitarra.`
@@ -69,12 +73,18 @@ export default function SongPage() {
   if (!song)
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-3.5rem)] lg:h-screen p-8">
-        <p className="text-[#a7afb8]">No se encontró la canción.</p>
-        <Link to="/" className="mt-4 text-[#ff7a00] hover:underline">
+        <p className="text-muted-foreground">No se encontró la canción.</p>
+        <Link to="/" className="mt-4 text-primary hover:underline">
           Volver al inicio
         </Link>
       </div>
     );
+
+  // Clean title: remove trailing numbers and ID suffixes like "- 01 - abc123ef"
+  const displayTitle = song.title
+    .replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '')
+    .replace(/\s*\d+$/, '')
+    .trim();
 
   const isTransposed = view && view.startsWith('tono-');
   const transposeKey = isTransposed ? view.replace('tono-', '') : null;
@@ -108,8 +118,8 @@ export default function SongPage() {
         </Link>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl lg:text-3xl font-bold text-white truncate">
-              {song.title}
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground truncate">
+              {displayTitle}
             </h1>
             <p className="text-[#a7afb8] mt-1">{song.artist_name}</p>
           </div>
