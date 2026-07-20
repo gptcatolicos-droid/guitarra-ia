@@ -11,6 +11,18 @@ import '@/index.css'
   } else {
     document.documentElement.classList.remove('dark');
   }
+  const savedColor = localStorage.getItem('themeColor');
+  const savedFont = localStorage.getItem('themeFont');
+  if (savedColor) {
+    document.documentElement.style.setProperty('--primary', savedColor);
+    document.documentElement.style.setProperty('--accent', savedColor);
+    document.documentElement.style.setProperty('--ring', savedColor);
+  }
+  if (savedFont) {
+    document.documentElement.style.setProperty('--font-heading', savedFont);
+    document.documentElement.style.setProperty('--font-body', savedFont);
+    document.documentElement.style.setProperty('--font-display', savedFont);
+  }
 })();
 
 ReactDOM.createRoot(document.getElementById('root')).render(

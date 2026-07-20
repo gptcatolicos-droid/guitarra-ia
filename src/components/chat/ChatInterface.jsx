@@ -31,7 +31,12 @@ Tienes acceso al catálogo interno de la plataforma. Cuando el usuario busca una
    
    SIEMPRE usa este formato de bloque de código. Nunca pongas los acordes como texto plano corrido.
 
-5. CALIDAD: Prioriza versiones con estructura clara, acordes coherentes y secciones bien definidas.`;
+5. CALIDAD: Prioriza versiones con estructura clara, acordes coherentes y secciones bien definidas.
+
+6. SUGERENCIAS POST-RESPUESTA: Al final de CADA respuesta donde mostraste acordes o tablatura de un artista, incluye una sección corta con 2-3 sugerencias de otras canciones populares del mismo artista que el usuario podría querer ver. Usa este formato exacto al final:
+
+---SUGERENCIAS---
+["Nombre canción 1", "Nombre canción 2", "Nombre canción 3"]`;
 
 const SUGGESTIONS = [
   'Canciones de Juanes',
@@ -172,11 +177,9 @@ IMPORTANTE:
       const matched = (result.matched_songs || [])
         .map((m) => songsCache.find((s) => s.id === m.song_id))
         .filter(Boolean)
-        // Clean the titles on matched songs before displaying
         .map((s) => ({
           ...s,
           title: s.title.replace(/\s*\d+$/, '').trim(),
-          // Remove any ID-like suffix from title (e.g. "Soda Stereo - 01 - abc123")
         }));
 
       // Deduplicate matched songs by normalized title
@@ -188,9 +191,18 @@ IMPORTANTE:
         return true;
       });
 
+      // Parse suggestions from response
+      let cleanResponse = result.response;
+      let suggestions = [];
+      const suggMatch = result.response.match(/---SUGERENCIAS---\s*(\[.*?\])/s);
+      if (suggMatch) {
+        try { suggestions = JSON.parse(suggMatch[1]); } catch {}
+        cleanResponse = result.response.replace(/---SUGERENCIAS---\s*(\[.*?\])/s, '').trim();
+      }
+
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: result.response, songs: dedupedMatched },
+        { role: 'assistant', content: cleanResponse, songs: dedupedMatched, suggestions },
       ]);
     } catch {
       setMessages((prev) => [
@@ -209,7 +221,7 @@ IMPORTANTE:
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
         <div className="max-w-3xl mx-auto space-y-6">
           {messages.map((msg, i) => (
-            <ChatMessage key={i} message={msg} />
+            <ChatMessage key={i} message={msg} onSuggestionClick={handleSend} />
           ))}
           {loading && (
             <div className="flex flex-col gap-2 pl-2">

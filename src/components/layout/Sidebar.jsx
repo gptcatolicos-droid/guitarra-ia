@@ -1,19 +1,21 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Search, Users, Heart, Clock, X, Sparkles, Sun, Moon } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { MessageCircle, Search, Users, Settings, X, Sparkles, Sun, Moon, Shield } from 'lucide-react';
+import { useState } from 'react';
+import { useAuth } from '@/lib/AuthContext';
 
 const LOGO_URL = 'https://media.base44.com/images/public/user_6a5e0a31e8f4f614e1d6f533/ad91dd453_logo.png';
+const ADMIN_EMAIL = 'danipalacio@gmail.com';
 
 const navItems = [
-  { icon: MessageCircle, label: 'Chat', path: '/' },
+  { icon: MessageCircle, label: 'Chat IA', path: '/' },
   { icon: Search, label: 'Buscar canciones', path: '/buscar' },
   { icon: Users, label: 'Artistas', path: '/buscar?tab=artistas' },
-  { icon: Heart, label: 'Favoritos', path: '/favoritos' },
-  { icon: Clock, label: 'Recientes', path: '/recientes' },
+  { icon: Settings, label: 'Ajustes', path: '/ajustes' },
 ];
 
 export default function Sidebar({ open, onClose }) {
   const location = useLocation();
+  const { user } = useAuth();
   const isActive = (path) => location.pathname === path.split('?')[0] && (path === '/' ? location.pathname === '/' : true);
 
   const [isDark, setIsDark] = useState(
@@ -41,11 +43,17 @@ export default function Sidebar({ open, onClose }) {
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="p-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2" onClick={onClose}>
-            <img src={LOGO_URL} alt="Tablaturas AI" className="h-10 w-auto" />
+        {/* Logo — bigger, proper aspect ratio */}
+        <div className="px-4 pt-5 pb-3 flex items-center justify-between">
+          <Link to="/" onClick={onClose} className="flex-1">
+            <img
+              src={LOGO_URL}
+              alt="Tablaturas AI"
+              style={{ aspectRatio: '1127/410' }}
+              className="w-full max-w-[200px] object-contain"
+            />
           </Link>
-          <button onClick={onClose} className="lg:hidden text-muted-foreground hover:text-foreground">
+          <button onClick={onClose} className="lg:hidden text-muted-foreground hover:text-foreground ml-2">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -69,6 +77,21 @@ export default function Sidebar({ open, onClose }) {
               </Link>
             );
           })}
+
+          {user?.email === ADMIN_EMAIL && (
+            <Link
+              to="/admin"
+              onClick={onClose}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium mb-0.5 transition-colors ${
+                isActive('/admin')
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-accent/30 hover:text-foreground'
+              }`}
+            >
+              <Shield className="w-[18px] h-[18px]" />
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="px-3 py-2 border-t border-sidebar-border">

@@ -1,12 +1,29 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { Music, Users, FileText, Trash2, Edit2, X, Sparkles, Save } from 'lucide-react';
+import { Music, Users, FileText, Trash2, Edit2, X, Sparkles, Save, Palette, Type } from 'lucide-react';
 import FileDropZone from '@/components/admin/FileDropZone';
 import { parseFileContent } from '@/lib/fileParser';
 import { useAuth } from '@/lib/AuthContext';
 
 const ADMIN_EMAIL = 'danipalacio@gmail.com';
+
+const THEME_COLORS = [
+  { label: 'Naranja', value: '28 100% 50%' },
+  { label: 'Azul', value: '217 91% 60%' },
+  { label: 'Verde', value: '142 76% 36%' },
+  { label: 'Violeta', value: '262 83% 58%' },
+  { label: 'Rosa', value: '330 81% 60%' },
+  { label: 'Rojo', value: '0 84% 60%' },
+];
+
+const FONT_OPTIONS = [
+  { label: 'Montserrat', value: "'Montserrat', ui-sans-serif, system-ui, sans-serif" },
+  { label: 'Inter', value: "'Inter', ui-sans-serif, system-ui, sans-serif" },
+  { label: 'Poppins', value: "'Poppins', ui-sans-serif, system-ui, sans-serif" },
+  { label: 'Roboto', value: "'Roboto', ui-sans-serif, system-ui, sans-serif" },
+  { label: 'System', value: "ui-sans-serif, system-ui, sans-serif" },
+];
 
 function slugify(text) {
   return (text || '')
@@ -101,21 +118,20 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#1a1d21] border border-[#2b3138] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-[#2b3138]">
+      <div className="bg-card border border-border rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <div>
-            <h2 className="text-white font-bold text-lg">{song.title}</h2>
-            <p className="text-[#a7afb8] text-sm">{song.artist_name}</p>
+            <h2 className="text-foreground font-bold text-lg">{song.title}</h2>
+            <p className="text-muted-foreground text-sm">{song.artist_name}</p>
           </div>
-          <button onClick={onClose} className="text-[#a7afb8] hover:text-white p-1">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* AI assistant */}
-        <div className="p-4 border-b border-[#2b3138] bg-[#20242a]">
-          <p className="text-xs text-[#a7afb8] mb-2 flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5 text-[#ff7a00]" /> Asistente IA
+        <div className="p-4 border-b border-border bg-secondary/30">
+          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-primary" /> Asistente IA
           </p>
           <div className="flex gap-2">
             <input
@@ -123,12 +139,12 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
               onChange={(e) => setAiPrompt(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAI()}
               placeholder='Ej: "Agrega la segunda estrofa que falta" o "Corrige los acordes del coro"'
-              className="flex-1 bg-[#111315] border border-[#2b3138] rounded-lg px-3 py-2 text-sm text-white placeholder-[#a7afb8] outline-none focus:border-[#ff7a00]"
+              className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-primary"
             />
             <button
               onClick={handleAI}
               disabled={aiLoading || !aiPrompt.trim()}
-              className="px-4 py-2 bg-[#ff7a00] text-white rounded-lg text-sm font-medium hover:bg-[#e66e00] disabled:opacity-40 flex items-center gap-2 whitespace-nowrap"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-40 flex items-center gap-2 whitespace-nowrap"
             >
               {aiLoading ? (
                 <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generando...</>
@@ -142,22 +158,110 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="flex-1 bg-[#111315] text-white font-mono text-sm p-4 resize-none outline-none min-h-0"
+          className="flex-1 bg-background text-foreground font-mono text-sm p-4 resize-none outline-none min-h-0"
           spellCheck={false}
         />
 
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-[#2b3138]">
-          <button onClick={onClose} className="px-4 py-2 text-[#a7afb8] hover:text-white text-sm">
+        <div className="flex items-center justify-end gap-3 p-4 border-t border-border">
+          <button onClick={onClose} className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm">
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-5 py-2 bg-[#ff7a00] text-white rounded-lg text-sm font-medium hover:bg-[#e66e00] disabled:opacity-40 flex items-center gap-2"
+            className="px-5 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-40 flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
             {saving ? 'Guardando...' : 'Guardar'}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ThemeSettings() {
+  const [activeColor, setActiveColor] = useState(() => {
+    return localStorage.getItem('themeColor') || '28 100% 50%';
+  });
+  const [activeFont, setActiveFont] = useState(() => {
+    return localStorage.getItem('themeFont') || "'Montserrat', ui-sans-serif, system-ui, sans-serif";
+  });
+
+  const applyColor = (value) => {
+    document.documentElement.style.setProperty('--primary', value);
+    document.documentElement.style.setProperty('--accent', value);
+    document.documentElement.style.setProperty('--ring', value);
+    localStorage.setItem('themeColor', value);
+    setActiveColor(value);
+  };
+
+  const applyFont = (value) => {
+    document.documentElement.style.setProperty('--font-heading', value);
+    document.documentElement.style.setProperty('--font-body', value);
+    document.documentElement.style.setProperty('--font-display', value);
+    localStorage.setItem('themeFont', value);
+    setActiveFont(value);
+  };
+
+  const colorDots = {
+    '28 100% 50%': '#ff7a00',
+    '217 91% 60%': '#4f8ef7',
+    '142 76% 36%': '#1e8a45',
+    '262 83% 58%': '#7c3aed',
+    '330 81% 60%': '#e6458b',
+    '0 84% 60%': '#e63946',
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-card border border-border rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Palette className="w-5 h-5 text-primary" />
+          <h3 className="text-foreground font-semibold">Color del tema</h3>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {THEME_COLORS.map((c) => (
+            <button
+              key={c.value}
+              onClick={() => applyColor(c.value)}
+              title={c.label}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                activeColor === c.value
+                  ? 'border-foreground scale-105'
+                  : 'border-border hover:border-foreground/50'
+              }`}
+            >
+              <span
+                className="w-4 h-4 rounded-full inline-block"
+                style={{ background: colorDots[c.value] }}
+              />
+              {c.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-card border border-border rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Type className="w-5 h-5 text-primary" />
+          <h3 className="text-foreground font-semibold">Fuente</h3>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {FONT_OPTIONS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => applyFont(f.value)}
+              className={`px-4 py-2 rounded-lg border text-sm transition-all ${
+                activeFont === f.value
+                  ? 'border-primary bg-primary/10 text-primary font-semibold'
+                  : 'border-border text-foreground hover:border-primary/50'
+              }`}
+              style={{ fontFamily: f.value }}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
     </div>
@@ -170,6 +274,7 @@ export default function AdminPage() {
   const [allSongsList, setAllSongsList] = useState([]);
   const [editingSong, setEditingSong] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [tab, setTab] = useState('catalog');
   const { user } = useAuth();
 
   useSEO({ title: 'Admin - Importar archivos | Tablaturas AI' });
@@ -190,6 +295,22 @@ export default function AdminPage() {
   };
 
   useEffect(() => { loadStats(); }, []);
+
+  // Apply saved theme settings on mount
+  useEffect(() => {
+    const savedColor = localStorage.getItem('themeColor');
+    const savedFont = localStorage.getItem('themeFont');
+    if (savedColor) {
+      document.documentElement.style.setProperty('--primary', savedColor);
+      document.documentElement.style.setProperty('--accent', savedColor);
+      document.documentElement.style.setProperty('--ring', savedColor);
+    }
+    if (savedFont) {
+      document.documentElement.style.setProperty('--font-heading', savedFont);
+      document.documentElement.style.setProperty('--font-body', savedFont);
+      document.documentElement.style.setProperty('--font-display', savedFont);
+    }
+  }, []);
 
   const processFile = async (content, fileName, contentType) => {
     const parsed = parseFileContent(content, fileName, contentType);
@@ -212,7 +333,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="w-8 h-8 border-4 border-[#2b3138] border-t-[#ff7a00] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-border border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
@@ -220,7 +341,7 @@ export default function AdminPage() {
   if (!user || user.email !== ADMIN_EMAIL) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p className="text-[#a7afb8]">Página no encontrada.</p>
+        <p className="text-muted-foreground">Página no encontrada.</p>
       </div>
     );
   }
@@ -235,82 +356,58 @@ export default function AdminPage() {
         />
       )}
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Panel de Administración</h1>
-        <p className="text-[#a7afb8] text-sm mt-1">
-          Importa, edita y elimina archivos del catálogo.
-        </p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground">Panel de Administración</h1>
+        <p className="text-muted-foreground text-sm mt-1">Importa, edita y personaliza el catálogo.</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-10">
-        <div className="bg-[#20242a] border border-[#2b3138] rounded-xl p-5">
-          <Music className="w-5 h-5 text-[#ff7a00] mb-2" />
-          <p className="text-3xl font-bold text-white">{stats.songs}</p>
-          <p className="text-[#a7afb8] text-sm mt-1">Canciones</p>
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="bg-card border border-border rounded-xl p-5">
+          <Music className="w-5 h-5 text-primary mb-2" />
+          <p className="text-3xl font-bold text-foreground">{stats.songs}</p>
+          <p className="text-muted-foreground text-sm mt-1">Canciones</p>
         </div>
-        <div className="bg-[#20242a] border border-[#2b3138] rounded-xl p-5">
-          <Users className="w-5 h-5 text-[#ff7a00] mb-2" />
-          <p className="text-3xl font-bold text-white">{stats.artists}</p>
-          <p className="text-[#a7afb8] text-sm mt-1">Artistas</p>
+        <div className="bg-card border border-border rounded-xl p-5">
+          <Users className="w-5 h-5 text-primary mb-2" />
+          <p className="text-3xl font-bold text-foreground">{stats.artists}</p>
+          <p className="text-muted-foreground text-sm mt-1">Artistas</p>
         </div>
-        <div className="bg-[#20242a] border border-[#2b3138] rounded-xl p-5">
-          <FileText className="w-5 h-5 text-[#ff7a00] mb-2" />
-          <p className="text-3xl font-bold text-white">{stats.songs}</p>
-          <p className="text-[#a7afb8] text-sm mt-1">Total archivos</p>
-        </div>
-      </div>
-
-      {/* Upload zones */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-        <FileDropZone label="Cifrados" type="cifrado" color="bg-blue-500" onProcess={processFile} />
-        <FileDropZone label="Tablaturas" type="tablatura" color="bg-purple-500" onProcess={processFile} />
-      </div>
-
-      {/* Song list with edit/delete */}
-      <div className="bg-[#1a1d21] border border-[#2b3138] rounded-xl overflow-hidden mb-8">
-        <div className="p-4 border-b border-[#2b3138]">
-          <h2 className="text-white font-semibold">Canciones en el catálogo</h2>
-        </div>
-        <div className="max-h-96 overflow-y-auto divide-y divide-[#2b3138]">
-          {allSongsList.map((song) => (
-            <div key={song.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-white/5">
-              <div className="min-w-0">
-                <p className="text-white text-sm font-medium truncate">{song.title}</p>
-                <p className="text-[#a7afb8] text-xs">{song.artist_name} · {song.has_chords ? 'Acordes' : ''}{song.has_chords && song.has_tablature ? ' + ' : ''}{song.has_tablature ? 'Tab' : ''}</p>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  onClick={() => setEditingSong(song)}
-                  className="p-2 text-[#a7afb8] hover:text-[#ff7a00] transition-colors"
-                  title="Editar cifrado"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(song.id)}
-                  disabled={deletingId === song.id}
-                  className="p-2 text-[#a7afb8] hover:text-red-400 transition-colors disabled:opacity-40"
-                  title="Eliminar canción"
-                >
-                  {deletingId === song.id
-                    ? <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
-                    : <Trash2 className="w-4 h-4" />
-                  }
-                </button>
-              </div>
-            </div>
-          ))}
-          {allSongsList.length === 0 && (
-            <p className="text-[#a7afb8] text-sm text-center py-8">No hay canciones en el catálogo.</p>
-          )}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <FileText className="w-5 h-5 text-primary mb-2" />
+          <p className="text-3xl font-bold text-foreground">{stats.songs}</p>
+          <p className="text-muted-foreground text-sm mt-1">Total archivos</p>
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="bg-[#1a1d21] border border-[#2b3138] rounded-xl p-5">
-        <p className="text-white font-semibold mb-2 text-sm">📋 Formato recomendado para los archivos .txt</p>
-        <pre className="text-[#a7afb8] text-xs leading-relaxed font-mono whitespace-pre">{`Título: La Camisa Negra
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 bg-secondary rounded-xl p-1">
+        {[
+          { id: 'catalog', label: 'Catálogo' },
+          { id: 'import', label: 'Importar' },
+          { id: 'theme', label: 'Tema y Fuentes' },
+        ].map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+              tab === t.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'import' && (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+            <FileDropZone label="Cifrados" type="cifrado" color="bg-blue-500" onProcess={processFile} />
+            <FileDropZone label="Tablaturas" type="tablatura" color="bg-purple-500" onProcess={processFile} />
+          </div>
+          <div className="bg-card border border-border rounded-xl p-5">
+            <p className="text-foreground font-semibold mb-2 text-sm">📋 Formato recomendado para los archivos .txt</p>
+            <pre className="text-muted-foreground text-xs leading-relaxed font-mono whitespace-pre">{`Título: La Camisa Negra
 Artista: Juanes
 Tonalidad: Am
 Capo: 3
@@ -322,10 +419,55 @@ Am  F  C  G
 [Verso]
 Am                F
 Tengo la camisa negra...`}</pre>
-        <p className="text-[#a7afb8] text-xs mt-3">
-          Formato de nombre recomendado: <code className="text-[#ff7a00]">Juanes - La Camisa Negra.txt</code>
-        </p>
-      </div>
+            <p className="text-muted-foreground text-xs mt-3">
+              Formato de nombre recomendado: <code className="text-primary">Juanes - La Camisa Negra.txt</code>
+            </p>
+          </div>
+        </>
+      )}
+
+      {tab === 'catalog' && (
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="p-4 border-b border-border">
+            <h2 className="text-foreground font-semibold">Canciones en el catálogo</h2>
+          </div>
+          <div className="max-h-[500px] overflow-y-auto divide-y divide-border">
+            {allSongsList.map((song) => (
+              <div key={song.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-secondary/30">
+                <div className="min-w-0">
+                  <p className="text-foreground text-sm font-medium truncate">{song.title}</p>
+                  <p className="text-muted-foreground text-xs">{song.artist_name} · {song.has_chords ? 'Acordes' : ''}{song.has_chords && song.has_tablature ? ' + ' : ''}{song.has_tablature ? 'Tab' : ''}</p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => setEditingSong(song)}
+                    className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                    title="Editar cifrado"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(song.id)}
+                    disabled={deletingId === song.id}
+                    className="p-2 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-40"
+                    title="Eliminar canción"
+                  >
+                    {deletingId === song.id
+                      ? <div className="w-4 h-4 border-2 border-destructive/30 border-t-destructive rounded-full animate-spin" />
+                      : <Trash2 className="w-4 h-4" />
+                    }
+                  </button>
+                </div>
+              </div>
+            ))}
+            {allSongsList.length === 0 && (
+              <p className="text-muted-foreground text-sm text-center py-8">No hay canciones en el catálogo.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {tab === 'theme' && <ThemeSettings />}
     </div>
   );
 }

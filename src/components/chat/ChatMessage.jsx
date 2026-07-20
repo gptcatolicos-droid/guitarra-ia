@@ -1,7 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import SongResultCard from './SongResultCard';
 
-export default function ChatMessage({ message }) {
+export default function ChatMessage({ message, onSuggestionClick }) {
   const isUser = message.role === 'user';
 
   return (
@@ -39,11 +39,29 @@ export default function ChatMessage({ message }) {
             </div>
           )}
         </div>
+
         {message.songs && message.songs.length > 0 && (
           <div className="mt-3 w-full space-y-2">
             {message.songs.map((song) => (
               <SongResultCard key={song.id} song={song} />
             ))}
+          </div>
+        )}
+
+        {message.suggestions && message.suggestions.length > 0 && (
+          <div className="mt-3 w-full">
+            <p className="text-xs text-muted-foreground mb-2">¿Quieres ver otra canción?</p>
+            <div className="flex flex-wrap gap-2">
+              {message.suggestions.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => onSuggestionClick && onSuggestionClick(s)}
+                  className="px-3 py-1.5 bg-card border border-border rounded-full text-xs text-foreground hover:border-primary hover:text-primary transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>

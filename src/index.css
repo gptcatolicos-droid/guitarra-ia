@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,30 +6,30 @@
 @layer base {
   :root {
     /* App-specific light tokens */
-    --app-surface-1: 0 0% 97%;
+    --app-surface-1: 220 20% 94%;
     --app-surface-2: 0 0% 100%;
-    --app-surface-3: 220 14% 92%;
-    --app-muted-text: 220 9% 46%;
-    --app-border: 220 14% 87%;
+    --app-surface-3: 220 16% 88%;
+    --app-muted-text: 220 10% 50%;
+    --app-border: 220 16% 85%;
 
-    --background: 220 14% 96%;
-    --foreground: 220 19% 17%;
+    --background: 220 20% 94%;
+    --foreground: 220 25% 15%;
     --card: 0 0% 99%;
-    --card-foreground: 220 19% 17%;
+    --card-foreground: 220 25% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 19% 17%;
+    --popover-foreground: 220 25% 15%;
     --primary: 28 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 90%;
-    --secondary-foreground: 220 19% 17%;
-    --muted: 220 14% 90%;
-    --muted-foreground: 220 9% 46%;
+    --secondary: 220 16% 88%;
+    --secondary-foreground: 220 25% 15%;
+    --muted: 220 16% 88%;
+    --muted-foreground: 220 10% 50%;
     --accent: 28 100% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
+    --border: 220 16% 85%;
+    --input: 220 16% 85%;
     --ring: 28 100% 50%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -36,9 +37,9 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    --font-heading: ui-sans-serif, system-ui, sans-serif;
-    --font-body: ui-sans-serif, system-ui, sans-serif;
-    --font-display: ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220 19% 17%;
