@@ -4,6 +4,9 @@ import { useSEO } from '@/lib/seo';
 import { Music, Users, FileText } from 'lucide-react';
 import FileDropZone from '@/components/admin/FileDropZone';
 import { parseFileContent } from '@/lib/fileParser';
+import { useAuth } from '@/lib/AuthContext';
+
+const ADMIN_EMAIL = 'danipalacio@gmail.com';
 
 function slugify(text) {
   return (text || '')
@@ -62,6 +65,7 @@ async function upsertSong(parsed) {
 export default function AdminPage() {
   const [stats, setStats] = useState({ songs: 0, artists: 0 });
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useSEO({ title: 'Admin - Importar archivos | Tablaturas AI' });
 
@@ -96,6 +100,15 @@ export default function AdminPage() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="w-8 h-8 border-4 border-[#2b3138] border-t-[#ff7a00] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Only admin email can access — checked after all hooks
+  if (!user || user.email !== ADMIN_EMAIL) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-[#a7afb8]">Página no encontrada.</p>
       </div>
     );
   }

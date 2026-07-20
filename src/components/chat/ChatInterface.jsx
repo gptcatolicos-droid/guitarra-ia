@@ -1,39 +1,48 @@
 import { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Send, Paperclip } from 'lucide-react';
+import { Send } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 
-const SYSTEM_PROMPT = `Eres Tablaturas IA, un asistente musical especializado en encontrar canciones, artistas, acordes, cifrados y tablaturas dentro del catálogo autorizado de la plataforma.
+const SYSTEM_PROMPT = `Eres Tablaturas IA, un asistente musical especializado en acordes, cifrados y tablaturas para guitarristas.
 
-Tu fuente de verdad es exclusivamente la información recuperada desde la base de datos y los documentos indexados.
+Tienes acceso al catálogo interno de la plataforma. Cuando el usuario busca una canción:
 
-Reglas obligatorias:
-1. Nunca inventes acordes, letras, tablaturas, riffs, solos, afinaciones o versiones.
-2. Solamente muestra contenido recuperado de la base autorizada.
-3. Si no hay resultados, dilo claramente: "No encontré esa canción en el catálogo disponible."
-4. Si el usuario busca un artista, muestra sus canciones disponibles.
-5. Si busca una canción, muestra la ficha con título, artista, tonalidad, capo, afinación, dificultad y recursos disponibles.
-6. Responde en español, sé directo, claro y útil.
-7. No reveles rutas internas, credenciales ni datos administrativos.
-8. No muestres enlaces de Google Drive al usuario.
+1. CONSOLIDACIÓN DE VERSIONES: Si hay múltiples archivos del mismo título/artista (ej: con números 01, 02, 03), trátelas como versiones alternativas. Compara y entrega UNA versión consolidada y limpia, organizada por secciones (Intro, Verso, Pre-coro, Coro, Puente, Final). No menciones nombres de archivos, versiones ni fuentes.
 
-Cuando encuentres una canción, indica: título, artista, tonalidad, capo, afinación, dificultad y recursos disponibles (acordes/tablatura).
-Si hay varias coincidencias, preséntalas como una lista numerada.
-Detecta errores ortográficos y sugiere la canción correcta.`;
+2. FUENTES EXTERNAS: Si la canción no está en el catálogo interno, puedes buscar en Ultimate Guitar (ultimate-guitar.com) y Songsterr (songsterr.com). Indica que el contenido viene de esas plataformas de manera natural ("Encontré los acordes de esta canción:").
+
+3. REGLAS:
+   - Nunca inventes acordes, letras ni secciones que no tengas.
+   - Si hay desacuerdos entre versiones, usa la más consistente; solo si es necesario, muestra una alternativa breve entre [corchetes].
+   - Responde en español. Puedes mostrar canciones en cualquier idioma.
+   - No muestres rutas, IDs, números de versión ni datos técnicos.
+   - Si no encuentras nada en ningún lado, dilo claramente.
+
+4. FORMATO DE RESPUESTA para cifrados:
+   Muestra el contenido estructurado por secciones con los acordes sobre la letra:
+   
+   [Intro]
+   Am  F  C  G
+   
+   [Verso]
+   Am              F
+   Letra de la canción...
+
+5. CALIDAD: Prioriza versiones con estructura clara, acordes coherentes y secciones bien definidas.`;
 
 const SUGGESTIONS = [
   'Canciones de Juanes',
   'Acordes de La camisa negra',
-  'Tablatura de A Dios le pido',
-  'Canciones fáciles',
+  'Tablatura de Wonderwall',
+  'Canciones fáciles para principiantes',
 ];
 
-export default function ChatInterface() {
+export default function ChatInterface({ embedded }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
       content:
-        '¡Hola! Soy tu asistente de tablaturas. Puedo ayudarte a encontrar tablaturas, acordes, rasgueos y mucho más. ¿Qué canción quieres tocar hoy?',
+        '¡Hola! Soy tu asistente de tablaturas. Puedo ayudarte a encontrar tablaturas, acordes y cifrados. ¿Qué canción quieres tocar hoy?',
     },
   ]);
   const [input, setInput] = useState('');
@@ -42,7 +51,7 @@ export default function ChatInterface() {
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    base44.entities.Song.list('-created_date', 500)
+    base44.entities.Song.list('-created_date', 1000)
       .then(setSongsCache)
       .catch(() => {});
   }, []);
@@ -53,6 +62,18 @@ export default function ChatInterface() {
     }
   }, [messages, loading]);
 
+  // Group songs by normalized title+artist to detect multiple versions
+  const groupVersions = (songs) => {
+    const normalize = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s*\d+$/, '').trim();
+    const groups = {};
+    for (const s of songs) {
+      const key = `${normalize(s.artist_name)}|${normalize(s.title)}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(s);
+    }
+    return groups;
+  };
+
   const handleSend = async (text) => {
     const userMessage = (text || input).trim();
     if (!userMessage || loading) return;
@@ -61,34 +82,46 @@ export default function ChatInterface() {
     setLoading(true);
 
     try {
-      const catalog = songsCache.map((s) => ({
-        id: s.id,
-        title: s.title,
-        artist: s.artist_name,
-        key: s.original_key,
-        capo: s.capo,
-        difficulty: s.difficulty,
-        has_chords: s.has_chords,
-        has_tablature: s.has_tablature,
-      }));
+      const versionGroups = groupVersions(songsCache);
+
+      // Build catalog — include grouped version info
+      const catalog = Object.values(versionGroups).map((versions) => {
+        const primary = versions[0];
+        return {
+          id: primary.id,
+          title: primary.title.replace(/\s*\d+$/, '').trim(),
+          artist: primary.artist_name,
+          key: primary.original_key,
+          capo: primary.capo,
+          difficulty: primary.difficulty,
+          has_chords: versions.some(v => v.has_chords),
+          has_tablature: versions.some(v => v.has_tablature),
+          version_count: versions.length,
+          all_ids: versions.map(v => v.id),
+        };
+      });
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `${SYSTEM_PROMPT}\n\nCatálogo disponible (JSON):\n${JSON.stringify(catalog)}\n\nMensaje del usuario: "${userMessage}"\n\nResponde en español. Si encuentras canciones que coincidan, inclúyelas en matched_songs con su song_id exacto del catálogo. Si no hay coincidencias, deja matched_songs vacío.`,
+        prompt: `${SYSTEM_PROMPT}
+
+Catálogo interno (JSON):
+${JSON.stringify(catalog)}
+
+Mensaje del usuario: "${userMessage}"
+
+Responde en español. 
+- Si el usuario pide una canción específica y está en el catálogo, incluye su contenido completo (acordes/tablatura) en el campo "song_content" para mostrarlo al usuario.
+- Incluye matched_songs con los IDs exactos de canciones encontradas.
+- Si buscas en fuentes externas, explícalo de forma natural en la respuesta.`,
+        add_context_from_internet: true,
+        model: 'gemini_3_flash',
         response_json_schema: {
           type: 'object',
           properties: {
-            response: {
-              type: 'string',
-              description: 'Respuesta natural del asistente en español',
-            },
+            response: { type: 'string', description: 'Respuesta natural del asistente en español' },
             matched_songs: {
               type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  song_id: { type: 'string' },
-                },
-              },
+              items: { type: 'object', properties: { song_id: { type: 'string' } } },
             },
           },
           required: ['response'],
@@ -106,19 +139,15 @@ export default function ChatInterface() {
     } catch {
       setMessages((prev) => [
         ...prev,
-        {
-          role: 'assistant',
-          content:
-            'Lo siento, tuve un problema al procesar tu búsqueda. Inténtalo de nuevo.',
-        },
+        { role: 'assistant', content: 'Lo siento, tuve un problema al procesar tu búsqueda. Inténtalo de nuevo.' },
       ]);
     }
     setLoading(false);
   };
 
-  return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] lg:h-screen">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6">
+  const inner = (
+    <>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
         <div className="max-w-3xl mx-auto space-y-6">
           {messages.map((msg, i) => (
             <ChatMessage key={i} message={msg} />
@@ -131,7 +160,7 @@ export default function ChatInterface() {
             </div>
           )}
           {messages.length === 1 && !loading && (
-            <div className="pt-4">
+            <div className="pt-2">
               <p className="text-[#a7afb8] text-sm mb-3">Sugerencias:</p>
               <div className="flex flex-wrap gap-2">
                 {SUGGESTIONS.map((s) => (
@@ -152,9 +181,6 @@ export default function ChatInterface() {
       <div className="border-t border-[#2b3138] px-4 py-4">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-end gap-2 bg-[#20242a] border border-[#2b3138] rounded-2xl p-2 focus-within:border-[#ff7a00] transition-colors">
-            <button className="p-2 text-[#a7afb8] hover:text-white">
-              <Paperclip className="w-5 h-5" />
-            </button>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -164,7 +190,7 @@ export default function ChatInterface() {
                   handleSend();
                 }
               }}
-              placeholder="Escribe tu mensaje..."
+              placeholder="Escribe el nombre de una canción o artista..."
               rows={1}
               className="flex-1 bg-transparent text-white placeholder-[#a7afb8] resize-none outline-none py-2 text-sm max-h-32"
             />
@@ -181,6 +207,16 @@ export default function ChatInterface() {
           </p>
         </div>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="flex flex-col flex-1 overflow-hidden">{inner}</div>;
+  }
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] lg:h-screen">
+      {inner}
     </div>
   );
 }

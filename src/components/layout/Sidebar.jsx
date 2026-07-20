@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Search, Users, Heart, Clock, Settings, X, Sparkles, Shield } from 'lucide-react';
+import { MessageCircle, Search, Users, Heart, Clock, Settings, X, Sparkles } from 'lucide-react';
 
 const LOGO_URL = 'https://media.base44.com/images/public/user_6a5e0a31e8f4f614e1d6f533/ad91dd453_logo.png';
 
@@ -25,7 +25,7 @@ export default function Sidebar({ open, onClose }) {
       >
         <div className="p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2" onClick={onClose}>
-            <img src={LOGO_URL} alt="Tablaturas AI" className="h-9 w-auto" />
+            <img src={LOGO_URL} alt="Tablaturas AI" className="h-16 w-auto" />
           </Link>
           <button onClick={onClose} className="lg:hidden text-[#a7afb8] hover:text-white">
             <X className="w-5 h-5" />
@@ -64,16 +64,7 @@ export default function Sidebar({ open, onClose }) {
             <Settings className="w-[18px] h-[18px]" />
             Ajustes
           </Link>
-          <Link
-            to="/admin"
-            onClick={onClose}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive('/admin') ? 'bg-[#ff7a00]/10 text-[#ff7a00]' : 'text-[#a7afb8] hover:bg-white/5 hover:text-white'
-            }`}
-          >
-            <Shield className="w-[18px] h-[18px]" />
-            Admin / Drive
-          </Link>
+
         </div>
 
         <div className="p-3">
