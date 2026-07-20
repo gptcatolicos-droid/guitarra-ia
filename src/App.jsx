@@ -6,7 +6,14 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-// Add page imports here
+import AppLayout from '@/components/layout/AppLayout';
+import Home from '@/pages/Home';
+import ArtistPage from '@/pages/ArtistPage';
+import SongPage from '@/pages/SongPage';
+import SearchPage from '@/pages/SearchPage';
+import FavoritesPage from '@/pages/FavoritesPage';
+import RecentPage from '@/pages/RecentPage';
+import SettingsPage from '@/pages/SettingsPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -34,7 +41,16 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/buscar" element={<SearchPage />} />
+        <Route path="/favoritos" element={<FavoritesPage />} />
+        <Route path="/recientes" element={<RecentPage />} />
+        <Route path="/ajustes" element={<SettingsPage />} />
+        <Route path="/:artistSlug" element={<ArtistPage />} />
+        <Route path="/:artistSlug/:songSlug" element={<SongPage />} />
+        <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

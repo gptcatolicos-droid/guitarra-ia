@@ -1,0 +1,86 @@
+{
+  "name": "Song",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "artist_id": {
+      "type": "string"
+    },
+    "artist_name": {
+      "type": "string"
+    },
+    "artist_slug": {
+      "type": "string"
+    },
+    "album": {
+      "type": "string"
+    },
+    "year": {
+      "type": "number"
+    },
+    "original_key": {
+      "type": "string"
+    },
+    "capo": {
+      "type": "number",
+      "default": 0
+    },
+    "tuning": {
+      "type": "string"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "F\u00e1cil",
+        "Intermedia",
+        "Avanzada"
+      ]
+    },
+    "language": {
+      "type": "string"
+    },
+    "has_chords": {
+      "type": "boolean",
+      "default": false
+    },
+    "has_tablature": {
+      "type": "boolean",
+      "default": false
+    },
+    "content_raw": {
+      "type": "string"
+    },
+    "tablature": {
+      "type": "string"
+    },
+    "chords_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "default": "published"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "title",
+    "slug",
+    "artist_name",
+    "artist_slug"
+  ]
+}
