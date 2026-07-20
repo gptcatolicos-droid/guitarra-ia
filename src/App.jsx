@@ -14,6 +14,7 @@ import SearchPage from '@/pages/SearchPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import RecentPage from '@/pages/RecentPage';
 import SettingsPage from '@/pages/SettingsPage';
+import AdminPage from '@/pages/AdminPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -47,6 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/favoritos" element={<FavoritesPage />} />
         <Route path="/recientes" element={<RecentPage />} />
         <Route path="/ajustes" element={<SettingsPage />} />
+        <Route path="/admin" element={<AdminPage />} />
         <Route path="/:artistSlug" element={<ArtistPage />} />
         <Route path="/:artistSlug/:songSlug" element={<SongPage />} />
         <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />
