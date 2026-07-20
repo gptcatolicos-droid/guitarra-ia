@@ -77,35 +77,51 @@ export default function ArtistPage() {
 
       {songs.length > 0 ? (
         <div className="space-y-2">
-          {songs.map((song) => (
-            <Link
-              key={song.id}
-              to={`/${artistSlug}/${song.slug}`}
-              className="block bg-[#20242a] border border-[#2b3138] rounded-xl p-4 hover:border-[#ff7a00] transition-colors"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="text-white font-medium truncate">{song.title}</h3>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-[#a7afb8]">
-                    {song.original_key && <span>Tonalidad: {song.original_key}</span>}
-                    {song.difficulty && <span>· {song.difficulty}</span>}
+          {(() => {
+            // Consolidate duplicate versions (same normalized title) into one entry
+            const normalize = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s*\d+$/, '').trim();
+            const seen = new Map();
+            for (const song of songs) {
+              const key = normalize(song.title);
+              if (!seen.has(key)) {
+                seen.set(key, { ...song, title: song.title.replace(/\s*\d+$/, '').trim() });
+              } else {
+                const existing = seen.get(key);
+                if (song.has_chords) existing.has_chords = true;
+                if (song.has_tablature) existing.has_tablature = true;
+                if (song.original_key && !existing.original_key) existing.original_key = song.original_key;
+              }
+            }
+            return Array.from(seen.values()).map((song) => (
+              <Link
+                key={song.id}
+                to={`/${artistSlug}/${song.slug}`}
+                className="block bg-[#20242a] border border-[#2b3138] rounded-xl p-4 hover:border-[#ff7a00] transition-colors"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-white font-medium truncate">{song.title}</h3>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-[#a7afb8]">
+                      {song.original_key && <span>Tonalidad: {song.original_key}</span>}
+                      {song.difficulty && <span>· {song.difficulty}</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {song.has_chords && (
+                      <span className="px-2 py-0.5 bg-[#ff7a00]/10 text-[#ff7a00] text-xs rounded">
+                        Acordes
+                      </span>
+                    )}
+                    {song.has_tablature && (
+                      <span className="px-2 py-0.5 bg-[#ff7a00]/10 text-[#ff7a00] text-xs rounded">
+                        Tab
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  {song.has_chords && (
-                    <span className="px-2 py-0.5 bg-[#ff7a00]/10 text-[#ff7a00] text-xs rounded">
-                      Acordes
-                    </span>
-                  )}
-                  {song.has_tablature && (
-                    <span className="px-2 py-0.5 bg-[#ff7a00]/10 text-[#ff7a00] text-xs rounded">
-                      Tab
-                    </span>
-                  )}
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ));
+          })()}
         </div>
       ) : (
         <p className="text-[#a7afb8] text-center py-8">

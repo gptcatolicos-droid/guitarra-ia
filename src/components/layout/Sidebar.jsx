@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Search, Users, Heart, Clock, Settings, X, Sparkles } from 'lucide-react';
+import { MessageCircle, Search, Users, Heart, Clock, X, Sparkles, Sun, Moon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const LOGO_URL = 'https://media.base44.com/images/public/user_6a5e0a31e8f4f614e1d6f533/ad91dd453_logo.png';
 
@@ -14,6 +15,22 @@ const navItems = [
 export default function Sidebar({ open, onClose }) {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
+
+  const [isDark, setIsDark] = useState(
+    document.documentElement.classList.contains('dark')
+  );
+  const toggleTheme = () => {
+    const html = document.documentElement;
+    if (isDark) {
+      html.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+      setIsDark(false);
+    } else {
+      html.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      setIsDark(true);
+    }
+  };
 
   return (
     <>
@@ -54,17 +71,13 @@ export default function Sidebar({ open, onClose }) {
         </nav>
 
         <div className="px-3 py-2 border-t border-[#2b3138]">
-          <Link
-            to="/ajustes"
-            onClick={onClose}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive('/ajustes') ? 'bg-[#ff7a00]/10 text-[#ff7a00]' : 'text-[#a7afb8] hover:bg-white/5 hover:text-white'
-            }`}
+          <button
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-[#a7afb8] hover:bg-white/5 hover:text-white"
           >
-            <Settings className="w-[18px] h-[18px]" />
-            Ajustes
-          </Link>
-
+            {isDark ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+            {isDark ? 'Modo claro' : 'Modo oscuro'}
+          </button>
         </div>
 
         <div className="p-3">
