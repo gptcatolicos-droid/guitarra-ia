@@ -1,26 +1,72 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { RefreshCw, CheckCircle, AlertCircle, Music, Users, FileText, Loader2 } from 'lucide-react';
+import { Music, Users, FileText } from 'lucide-react';
+import FileDropZone from '@/components/admin/FileDropZone';
+import { parseFileContent } from '@/lib/fileParser';
+
+function slugify(text) {
+  return (text || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-') || 'unknown';
+}
+
+async function upsertArtist(artistName, artistSlug) {
+  const existing = await base44.entities.Artist.filter({ slug: artistSlug });
+  if (existing && existing.length > 0) return existing[0];
+  return base44.entities.Artist.create({
+    name: artistName,
+    slug: artistSlug,
+    normalized_name: artistName.toLowerCase(),
+    is_demo: false,
+  });
+}
+
+async function upsertSong(parsed) {
+  const existing = await base44.entities.Song.filter({
+    slug: parsed.slug,
+    artist_slug: parsed.artistSlug,
+  });
+  const data = {
+    title: parsed.title,
+    slug: parsed.slug,
+    artist_name: parsed.artistName,
+    artist_slug: parsed.artistSlug,
+    original_key: parsed.originalKey,
+    capo: parsed.capo,
+    tuning: parsed.tuning,
+    difficulty: parsed.difficulty,
+    language: 'Español',
+    has_chords: parsed.hasChords,
+    has_tablature: parsed.hasTablature,
+    content_raw: parsed.contentRaw,
+    tablature: parsed.tablature,
+    chords_used: parsed.chordsUsed,
+    status: 'published',
+    is_demo: false,
+    views: 0,
+  };
+  if (existing && existing.length > 0) {
+    await base44.entities.Song.update(existing[0].id, data);
+    return { ...data, id: existing[0].id, updated: true };
+  }
+  const created = await base44.entities.Song.create(data);
+  return { ...created, updated: false };
+}
 
 export default function AdminPage() {
-  const [syncState, setSyncState] = useState(null);
   const [stats, setStats] = useState({ songs: 0, artists: 0 });
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState(null);
 
-  useSEO({ title: 'Admin - Sincronización | Tablaturas AI' });
+  useSEO({ title: 'Admin - Importar archivos | Tablaturas AI' });
 
-  const loadData = async () => {
+  const loadStats = async () => {
     try {
-      const [syncStates, songs, artists] = await Promise.all([
-        base44.entities.SyncState.list(),
-        base44.entities.Song.list('-created_date', 1),
-        base44.entities.Artist.list('-created_date', 1),
-      ]);
-      setSyncState(syncStates[0] || null);
-      // Get counts via a larger list
       const [allSongs, allArtists] = await Promise.all([
         base44.entities.Song.list('-created_date', 5000),
         base44.entities.Artist.list('-created_date', 5000),
@@ -33,22 +79,17 @@ export default function AdminPage() {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadStats(); }, []);
 
-  const handleSync = async () => {
-    setSyncing(true);
-    setSyncResult(null);
-    try {
-      const response = await base44.functions.invoke('syncDrive', {});
-      setSyncResult(response.data);
-      await loadData();
-    } catch (e) {
-      setSyncResult({ error: e.message });
-    } finally {
-      setSyncing(false);
-    }
+  const processFile = async (content, fileName, contentType) => {
+    const parsed = parseFileContent(content, fileName, contentType);
+    if (!parsed.title || parsed.title.length < 2) throw new Error('No se pudo detectar el título');
+    if (!parsed.artistSlug) throw new Error('No se pudo detectar el artista');
+    await upsertArtist(parsed.artistName, parsed.artistSlug);
+    const song = await upsertSong(parsed);
+    // Refresh stats after each file
+    loadStats();
+    return { title: parsed.title, artist: parsed.artistName, updated: song.updated };
   };
 
   if (loading) {
@@ -60,145 +101,67 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 lg:p-8">
-      <h1 className="text-2xl font-bold text-white mb-6">Panel de Administración</h1>
+    <div className="max-w-5xl mx-auto p-4 lg:p-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-white">Panel de Administración</h1>
+        <p className="text-[#a7afb8] text-sm mt-1">
+          Importa archivos .txt directamente a cada categoría del catálogo.
+        </p>
+      </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-4 mb-10">
         <div className="bg-[#20242a] border border-[#2b3138] rounded-xl p-5">
-          <Music className="w-6 h-6 text-[#ff7a00] mb-2" />
+          <Music className="w-5 h-5 text-[#ff7a00] mb-2" />
           <p className="text-3xl font-bold text-white">{stats.songs}</p>
           <p className="text-[#a7afb8] text-sm mt-1">Canciones</p>
         </div>
         <div className="bg-[#20242a] border border-[#2b3138] rounded-xl p-5">
-          <Users className="w-6 h-6 text-[#ff7a00] mb-2" />
+          <Users className="w-5 h-5 text-[#ff7a00] mb-2" />
           <p className="text-3xl font-bold text-white">{stats.artists}</p>
           <p className="text-[#a7afb8] text-sm mt-1">Artistas</p>
         </div>
-        <div className="bg-[#20242a] border border-[#2b3138] rounded-xl p-5 col-span-2 lg:col-span-1">
-          <FileText className="w-6 h-6 text-[#ff7a00] mb-2" />
-          <p className="text-3xl font-bold text-white">{syncState?.processed_files || 0}</p>
-          <p className="text-[#a7afb8] text-sm mt-1">Archivos procesados</p>
+        <div className="bg-[#20242a] border border-[#2b3138] rounded-xl p-5">
+          <FileText className="w-5 h-5 text-[#ff7a00] mb-2" />
+          <p className="text-3xl font-bold text-white">{stats.songs}</p>
+          <p className="text-[#a7afb8] text-sm mt-1">Total archivos</p>
         </div>
       </div>
 
-      {/* Sync card */}
-      <div className="bg-[#20242a] border border-[#2b3138] rounded-xl p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-white font-semibold">Sincronización con Google Drive</h2>
-            <p className="text-[#a7afb8] text-sm mt-0.5">
-              Carpeta: <span className="font-mono text-xs">1VlFY-cSfhxqcAhDtiBBW8nsZkXcnl9z1</span>
-            </p>
-          </div>
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="flex items-center gap-2 px-4 py-2 bg-[#ff7a00] text-white rounded-xl hover:bg-[#e66e00] disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-          >
-            {syncing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4" />
-            )}
-            {syncing ? 'Sincronizando...' : 'Sincronizar ahora'}
-          </button>
-        </div>
-
-        {syncState && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-            <div>
-              <p className="text-[#a7afb8]">Estado</p>
-              <p className={`font-medium capitalize mt-0.5 ${
-                syncState.status === 'completed' ? 'text-green-400' :
-                syncState.status === 'error' ? 'text-red-400' :
-                syncState.status === 'running' ? 'text-yellow-400' :
-                'text-[#a7afb8]'
-              }`}>
-                {syncState.status === 'completed' ? '✓ Completado' :
-                 syncState.status === 'error' ? '✗ Error' :
-                 syncState.status === 'running' ? '⟳ Ejecutando' : 'Inactivo'}
-              </p>
-            </div>
-            <div>
-              <p className="text-[#a7afb8]">Archivos procesados</p>
-              <p className="text-white font-medium mt-0.5">{syncState.processed_files || 0}</p>
-            </div>
-            <div>
-              <p className="text-[#a7afb8]">Con errores</p>
-              <p className="text-white font-medium mt-0.5">{syncState.error_files || 0}</p>
-            </div>
-            <div>
-              <p className="text-[#a7afb8]">Última sync</p>
-              <p className="text-white font-medium mt-0.5 text-xs">
-                {syncState.last_synced_at
-                  ? new Date(syncState.last_synced_at).toLocaleString('es', { dateStyle: 'short', timeStyle: 'short' })
-                  : 'Nunca'}
-              </p>
-            </div>
-          </div>
-        )}
+      {/* Upload zones */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <FileDropZone
+          label="Cifrados"
+          type="cifrado"
+          color="bg-blue-500"
+          onProcess={processFile}
+        />
+        <FileDropZone
+          label="Tablaturas"
+          type="tablatura"
+          color="bg-purple-500"
+          onProcess={processFile}
+        />
       </div>
 
-      {/* Sync result */}
-      {syncResult && (
-        <div className={`border rounded-xl p-5 ${
-          syncResult.error
-            ? 'bg-red-950/20 border-red-900'
-            : 'bg-green-950/20 border-green-900'
-        }`}>
-          {syncResult.error ? (
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-red-400 font-semibold">Error en la sincronización</p>
-                <p className="text-red-300 text-sm mt-1">{syncResult.error}</p>
-                <p className="text-[#a7afb8] text-xs mt-2">
-                  Si el error menciona "drive", asegúrate de que el conector de Google Drive tenga el scope <code className="text-[#ff7a00]">drive.readonly</code>. Reconecta desde el menú de conectores del dashboard.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-green-400 font-semibold">Sincronización completada</p>
-                <div className="grid grid-cols-3 gap-4 mt-3">
-                  <div>
-                    <p className="text-[#a7afb8] text-xs">Artistas</p>
-                    <p className="text-white font-bold text-lg">{syncResult.artists_found}</p>
-                  </div>
-                  <div>
-                    <p className="text-[#a7afb8] text-xs">Canciones</p>
-                    <p className="text-white font-bold text-lg">{syncResult.songs_created}</p>
-                  </div>
-                  <div>
-                    <p className="text-[#a7afb8] text-xs">Errores</p>
-                    <p className="text-white font-bold text-lg">{syncResult.files_with_errors}</p>
-                  </div>
-                </div>
-                {syncResult.errors && syncResult.errors.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-[#a7afb8] text-xs font-semibold mb-1">Archivos con error:</p>
-                    {syncResult.errors.map((e, i) => (
-                      <p key={i} className="text-red-300 text-xs">{e}</p>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Instructions */}
+      <div className="mt-8 bg-[#1a1d21] border border-[#2b3138] rounded-xl p-5">
+        <p className="text-white font-semibold mb-2 text-sm">📋 Formato recomendado para los archivos .txt</p>
+        <pre className="text-[#a7afb8] text-xs leading-relaxed font-mono whitespace-pre">{`Título: La Camisa Negra
+Artista: Juanes
+Tonalidad: Am
+Capo: 3
+Afinación: Estándar
 
-      {/* Notice about scope */}
-      <div className="mt-6 bg-yellow-950/20 border border-yellow-800 rounded-xl p-4">
-        <p className="text-yellow-400 text-sm font-semibold mb-1">⚠ Nota sobre el conector de Google Drive</p>
-        <p className="text-yellow-200 text-sm leading-relaxed">
-          Para que la sincronización funcione, el conector de Google Drive necesita el scope{' '}
-          <code className="bg-yellow-900/40 px-1 rounded">drive.readonly</code>.
-          Si el último intento de conexión solo otorgó <code className="bg-yellow-900/40 px-1 rounded">email</code>,
-          ve al dashboard → Conectores → Google Drive → Reconectar y asegúrate de marcar el permiso de lectura de Drive.
+[Intro]
+Am  F  C  G
+
+[Verso]
+Am                F
+Tengo la camisa negra...`}</pre>
+        <p className="text-[#a7afb8] text-xs mt-3">
+          Si el archivo no tiene encabezados, el sistema intentará extraer artista y título desde el nombre del archivo.<br />
+          Formato de nombre recomendado: <code className="text-[#ff7a00]">Juanes - La Camisa Negra.txt</code>
         </p>
       </div>
     </div>
