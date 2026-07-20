@@ -6,7 +6,8 @@ import FileDropZone from '@/components/admin/FileDropZone';
 import { parseFileContent } from '@/lib/fileParser';
 import { useAuth } from '@/lib/AuthContext';
 
-const ADMIN_EMAIL = 'danipalacio@gmail.com';
+const ADMIN_EMAILS = ['danipalacio@gmail.com'];
+const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
 
 const THEME_COLORS = [
   { label: 'Naranja', value: '28 100% 50%' },
@@ -338,7 +339,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || !isAdminUser(user)) {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-muted-foreground">Página no encontrada.</p>

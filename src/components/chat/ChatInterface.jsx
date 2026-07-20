@@ -39,10 +39,10 @@ Tienes acceso al catálogo interno de la plataforma. Cuando el usuario busca una
 ["Nombre canción 1", "Nombre canción 2", "Nombre canción 3"]`;
 
 const SUGGESTIONS = [
-  'Canciones de Juanes',
-  'Acordes de La camisa negra',
-  'Tablatura de Wonderwall',
-  'Canciones fáciles para principiantes',
+  'Muéstrame los acordes de La Camisa Negra',
+  '¿Cómo tocar el rasgueo de una balada?',
+  'Canciones fáciles con cuatro acordes',
+  'Tablaturas de rock clásico',
 ];
 
 // Normalize for matching (remove numbers, accents, trim)
@@ -276,13 +276,13 @@ IMPORTANTE:
             <button
               onClick={() => handleSend()}
               disabled={!input.trim() || loading}
-              className="p-2.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
+              className="p-2.5 text-white rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity bg-gradient-brand"
             >
               <Send className="w-5 h-5" />
             </button>
           </div>
           <p className="text-muted-foreground text-xs text-center mt-2">
-            La información puede contener errores. Verifica siempre las notas por tu cuenta.
+            La IA puede equivocarse. Verifica siempre los acordes.
           </p>
         </div>
       </div>

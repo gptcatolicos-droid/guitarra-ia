@@ -4,6 +4,9 @@ module.exports = {
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
+      backgroundImage: {
+        'gradient-brand': 'linear-gradient(135deg, #FF6A00 0%, #FF8A00 34%, #FF2D8D 68%, #D91CFF 100%)',
+      },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',

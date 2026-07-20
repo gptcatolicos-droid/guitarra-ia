@@ -10,7 +10,7 @@ export default function ChatMessage({ message, onSuggestionClick }) {
         <div
           className={`rounded-2xl px-4 py-3 ${
             isUser
-              ? 'bg-primary text-primary-foreground rounded-br-md'
+              ? 'bg-gradient-brand text-white rounded-br-md'
               : 'bg-card text-card-foreground rounded-bl-md border border-border'
           }`}
         >
