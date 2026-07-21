@@ -1,15 +1,80 @@
-import { Sparkles, Music } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sparkles, Music, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SpotifyPlayer from '@/components/SpotifyPlayer';
 
-const FEATURED_SONG = {
-  id: 'hero-featured',
+// Fallback hardcoded song if no hero songs configured
+const DEFAULT_SONG = {
+  id: 'hero-default',
   title: 'La Camisa Negra',
   artist_name: 'Juanes',
   artist_slug: 'juanes',
   slug: 'la-camisa-negra',
+  original_key: 'Am',
+  capo: 0,
+  has_chords: true,
+  content_raw: '[Intro]\nAm  F  C  G\n\n[Verso]\nAm              F\nTengo la camisa negra...',
 };
 
-export default function HeroSection({ onChatOpen }) {
+function SongCard({ song }) {
+  const title = song.title.replace(/\s*-\s*\d+\s*-\s*[a-f0-9]+\s*$/i, '').replace(/\s*\d+$/, '').replace(/[-_]/g, ' ').trim();
+  // Get first few lines of content for preview
+  const previewLines = (song.content_raw || song.tablature || '').split('\n').slice(0, 6);
+
+  return (
+    <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg w-full">
+      <div className="flex items-center gap-3 p-4 border-b border-border">
+        <div className="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center shrink-0">
+          <Music className="w-5 h-5 text-white" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-foreground font-bold text-sm truncate">{title}</p>
+          <p className="text-muted-foreground text-xs">
+            {song.artist_name}
+            {song.original_key ? ` · Tonalidad: ${song.original_key}` : ''}
+            {song.capo ? ` · Capo: ${song.capo}` : ''}
+          </p>
+        </div>
+      </div>
+      <div className="bg-muted rounded-xl m-4 p-3 font-mono text-xs text-muted-foreground leading-relaxed max-h-28 overflow-hidden">
+        {previewLines.map((line, i) => (
+          <p key={i} className={line.startsWith('[') ? 'text-primary font-semibold' : ''}>
+            {line || '\u00a0'}
+          </p>
+        ))}
+      </div>
+      <SpotifyPlayer song={song} compact={false} />
+      {/* View buttons */}
+      <div className="flex gap-2 px-4 pb-4">
+        {song.has_chords && (
+          <Link to={`/${song.artist_slug}/${song.slug}/acordes`} className="flex-1 text-center py-2 rounded-xl text-xs font-semibold text-white bg-gradient-brand hover:opacity-90 transition-opacity">
+            Ver Acordes
+          </Link>
+        )}
+        {song.has_tablature && (
+          <Link to={`/${song.artist_slug}/${song.slug}/tablatura`} className="flex-1 text-center py-2 rounded-xl text-xs font-semibold text-white bg-gradient-brand hover:opacity-90 transition-opacity">
+            Ver Tablatura
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function HeroSection({ onChatOpen, heroSongs = [] }) {
+  const [idx, setIdx] = useState(0);
+  const songs = heroSongs.length > 0 ? heroSongs : [DEFAULT_SONG];
+
+  // Auto-advance carousel
+  useEffect(() => {
+    if (songs.length <= 1) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % songs.length), 5000);
+    return () => clearInterval(t);
+  }, [songs.length]);
+
+  const prev = () => setIdx((i) => (i - 1 + songs.length) % songs.length);
+  const next = () => setIdx((i) => (i + 1) % songs.length);
+
   return (
     <div className="grid lg:grid-cols-2 gap-8 items-center py-12 px-6 lg:px-8">
       {/* Left */}
@@ -37,27 +102,26 @@ export default function HeroSection({ onChatOpen }) {
         </button>
       </div>
 
-      {/* Right — example card with Spotify player */}
-      <div className="hidden lg:block">
-        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
-          <div className="flex items-center gap-3 p-4 border-b border-border">
-            <div className="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center shrink-0">
-              <Music className="w-5 h-5 text-white" />
+      {/* Right — carousel */}
+      <div className="hidden lg:block relative">
+        <SongCard song={songs[idx]} />
+
+        {songs.length > 1 && (
+          <>
+            <button onClick={prev} className="absolute left-[-16px] top-1/2 -translate-y-1/2 w-8 h-8 bg-card border border-border rounded-full flex items-center justify-center shadow-md hover:bg-secondary transition-colors">
+              <ChevronLeft className="w-4 h-4 text-foreground" />
+            </button>
+            <button onClick={next} className="absolute right-[-16px] top-1/2 -translate-y-1/2 w-8 h-8 bg-card border border-border rounded-full flex items-center justify-center shadow-md hover:bg-secondary transition-colors">
+              <ChevronRight className="w-4 h-4 text-foreground" />
+            </button>
+            {/* Dots */}
+            <div className="flex justify-center gap-1.5 mt-3">
+              {songs.map((_, i) => (
+                <button key={i} onClick={() => setIdx(i)} className={`w-2 h-2 rounded-full transition-colors ${i === idx ? 'bg-primary' : 'bg-border'}`} />
+              ))}
             </div>
-            <div>
-              <p className="text-foreground font-bold text-sm">La Camisa Negra</p>
-              <p className="text-muted-foreground text-xs">Juanes · Tonalidad: Am · Capo: 0</p>
-            </div>
-          </div>
-          <div className="bg-muted rounded-xl m-4 p-3 font-mono text-xs text-muted-foreground leading-relaxed">
-            <p className="text-orange-500 font-semibold">[Intro]</p>
-            <p>Am  F  C  G</p>
-            <p className="text-orange-500 font-semibold mt-2">[Verso]</p>
-            <p><span className="text-orange-500">Am</span>{'              '}<span className="text-orange-500">F</span></p>
-            <p>Tengo la camisa negra...</p>
-          </div>
-          <SpotifyPlayer song={FEATURED_SONG} compact={false} />
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

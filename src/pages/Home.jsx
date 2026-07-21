@@ -19,8 +19,13 @@ export default function Home() {
     canonical: '/',
   });
 
+  const [heroSongs, setHeroSongs] = useState([]);
+
   useEffect(() => {
-    // First try manually-curated trending songs, fallback to most viewed
+    // Load hero banner songs
+    base44.entities.Song.filter({ is_hero: true }, '-created_date', 3)
+      .then(setHeroSongs).catch(() => {});
+    // Load trending songs
     base44.entities.Song.filter({ is_trending: true }, '-views', 10)
       .then(songs => {
         if (songs && songs.length > 0) setTopSongs(songs);
@@ -31,7 +36,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <HeroSection onChatOpen={() => navigate('/chat')} />
+      <HeroSection onChatOpen={() => navigate('/chat')} heroSongs={heroSongs} />
       <div className="mx-6 lg:mx-8 border-t border-border mb-6" />
       <TrendingSection songs={topSongs} />
       <div className="mx-6 lg:mx-8 border-t border-border my-6" />

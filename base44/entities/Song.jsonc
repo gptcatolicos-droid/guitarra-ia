@@ -76,6 +76,10 @@
       "type": "boolean",
       "default": false
     },
+    "is_hero": {
+      "type": "boolean",
+      "default": false
+    },
     "views": {
       "type": "number",
       "default": 0
