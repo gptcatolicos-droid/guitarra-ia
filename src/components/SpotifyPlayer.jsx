@@ -40,10 +40,23 @@ export default function SpotifyPlayer({ song, compact = false }) {
     return match ? match[1] : null;
   };
 
-  const manualSrc = song.spotify_embed ? extractSrcFromEmbed(song.spotify_embed) || song.spotify_embed : null;
-  const embedSrc = manualSrc
-    || (data?.track_id ? `https://open.spotify.com/embed/track/${data.track_id}?utm_source=generator&theme=0` : null)
-    || `https://open.spotify.com/embed/search/${encodeURIComponent(`${title} ${artist}`)}?utm_source=generator&theme=0`;
+  // Extract just the track/episode/playlist ID from a full Spotify embed URL
+  const normalizeSpotifyUrl = (url) => {
+    if (!url) return null;
+    // Remove query params that can cause 404
+    try {
+      const u = new URL(url);
+      return u.origin + u.pathname;
+    } catch {
+      return url.split('?')[0];
+    }
+  };
+
+  const rawManualSrc = song.spotify_embed ? extractSrcFromEmbed(song.spotify_embed) || song.spotify_embed : null;
+  const manualSrc = normalizeSpotifyUrl(rawManualSrc);
+  const autoSrc = data?.track_id ? `https://open.spotify.com/embed/track/${data.track_id}` : null;
+  const searchSrc = `https://open.spotify.com/embed/search/${encodeURIComponent(`${title} ${artist}`)}`;
+  const embedSrc = manualSrc || autoSrc || searchSrc;
 
   return (
     <div className={compact ? '' : 'bg-card border border-border rounded-2xl overflow-hidden'}>

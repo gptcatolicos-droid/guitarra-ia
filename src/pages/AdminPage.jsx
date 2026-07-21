@@ -83,6 +83,7 @@ async function upsertSong(parsed) {
 }
 
 function SongEditor({ song, onClose, onSaved }) {
+  const [title, setTitle] = useState(song.title || '');
   const [content, setContent] = useState(song.content_raw || song.tablature || '');
   const [spotifyEmbed, setSpotifyEmbed] = useState(song.spotify_embed || '');
   const [saving, setSaving] = useState(false);
@@ -92,10 +93,27 @@ function SongEditor({ song, onClose, onSaved }) {
   const handleSave = async () => {
     setSaving(true);
     const isTab = song.has_tablature && !song.has_chords;
-    await base44.entities.Song.update(song.id, {
+
+    // Build update payload
+    const updateData = {
+      title,
       ...(isTab ? { tablature: content } : { content_raw: content }),
       spotify_embed: spotifyEmbed || null,
-    });
+    };
+    await base44.entities.Song.update(song.id, updateData);
+
+    // If spotify_embed was set, sync it to other parts of the same song (same base title + artist)
+    if (spotifyEmbed) {
+      const baseName = song.title.replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '').replace(/\s*\d+$/, '').trim();
+      const siblings = await base44.entities.Song.filter({ artist_slug: song.artist_slug });
+      const toSync = siblings.filter((s) => {
+        if (s.id === song.id) return false;
+        const sBase = s.title.replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '').replace(/\s*\d+$/, '').trim();
+        return sBase.toLowerCase() === baseName.toLowerCase();
+      });
+      await Promise.all(toSync.map((s) => base44.entities.Song.update(s.id, { spotify_embed: spotifyEmbed })));
+    }
+
     setSaving(false);
     onSaved();
     onClose();
@@ -127,11 +145,16 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
       <div className="bg-card border border-border rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <div>
-            <h2 className="text-foreground font-bold text-lg">{song.title}</h2>
-            <p className="text-muted-foreground text-sm">{song.artist_name}</p>
+          <div className="flex-1 min-w-0 mr-3">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="text-foreground font-bold text-lg bg-transparent border-b border-transparent hover:border-border focus:border-primary outline-none w-full"
+              placeholder="Título de la canción"
+            />
+            <p className="text-muted-foreground text-sm mt-0.5">{song.artist_name}</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1 shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
