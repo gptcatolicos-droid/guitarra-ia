@@ -24,7 +24,7 @@ export default function AppLayout() {
           <Menu className="w-5 h-5" />
         </button>
         <Link to="/" className="absolute left-1/2 -translate-x-1/2">
-          <img src={LOGO_URL} alt="Tablaturas AI" className="h-9 object-contain" />
+          <img src={LOGO_URL} alt="Tablaturas AI" className="h-12 object-contain" />
         </Link>
         <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground w-8 flex justify-end">
           {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -35,9 +35,9 @@ export default function AppLayout() {
 
       <main className="lg:ml-[260px] pt-16 lg:pt-0 min-h-screen">
         {/* Desktop header — logo centrado grande */}
-        <div className="hidden lg:flex items-center justify-between gap-4 px-8 py-3 border-b border-border bg-card sticky top-0 z-20">
+        <div className="hidden lg:flex items-center justify-between gap-4 px-8 py-4 border-b border-border bg-card sticky top-0 z-20">
           <Link to="/">
-            <img src={LOGO_URL} alt="Tablaturas AI" className="h-14 object-contain" />
+            <img src={LOGO_URL} alt="Tablaturas AI" className="h-20 object-contain" />
           </Link>
           <button onClick={toggleTheme} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

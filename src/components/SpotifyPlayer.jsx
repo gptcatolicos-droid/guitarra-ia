@@ -14,7 +14,7 @@ export default function SpotifyPlayer({ song, compact = false }) {
     setData(null);
     setLoading(true);
     base44.functions.invoke('spotifySearch', { artist, title })
-      .then((res) => { if (res?.data?.track_id) setData(res.data); })
+      .then((res) => { if (res?.data) setData(res.data); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [song?.id]);
