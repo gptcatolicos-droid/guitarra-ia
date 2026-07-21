@@ -89,13 +89,25 @@ export default function ChatInterface({ embedded }) {
     return groups;
   };
 
-  // Quick local search to detect if question is about a specific song/artist in DB
+  // Tokenized local search — splits query into words and checks each against title/artist/slug
   const quickLocalSearch = (query, songs) => {
     const q = normalize(query);
+    // Also tokenize: split by spaces, filter short words
+    const tokens = q.split(/\s+/).filter((t) => t.length >= 3);
     return songs.filter((s) => {
       const title = normalize(s.title);
       const artist = normalize(s.artist_name);
-      return title.includes(q) || artist.includes(q) || q.includes(title) || q.includes(artist);
+      // Normalize slugs (replace - and _ with space)
+      const titleSlug = (s.slug || '').replace(/[-_]/g, ' ');
+      const artistSlug = (s.artist_slug || '').replace(/[-_]/g, ' ');
+      const allText = `${title} ${artist} ${titleSlug} ${artistSlug}`;
+      // Full query match
+      if (allText.includes(q)) return true;
+      // Token match: every token must appear in the combined text
+      if (tokens.length > 0 && tokens.every((t) => allText.includes(t))) return true;
+      // Partial: any significant token (>=4 chars) matches
+      if (tokens.some((t) => t.length >= 4 && allText.includes(t))) return true;
+      return false;
     });
   };
 
@@ -139,13 +151,8 @@ export default function ChatInterface({ embedded }) {
         };
       });
 
-      // Step 1: find local matches FIRST (fast, no LLM)
-      const q = normalize(userMessage);
-      const localMatches2 = songsCache.filter((s) => {
-        const t = normalize(s.title);
-        const a = normalize(s.artist_name);
-        return t.includes(q) || a.includes(q) || q.includes(t) || q.includes(a);
-      });
+      // Step 1: find local matches FIRST using the same tokenized search
+      const localMatches2 = quickLocalSearch(userMessage, songsCache);
 
       // Deduplicate by normalized title+artist, pick one with content
       const seenLocal = new Set();
