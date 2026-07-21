@@ -15,6 +15,9 @@ import SearchPage from '@/pages/SearchPage';
 import AdminPage from '@/pages/AdminPage';
 import ChatPage from '@/pages/ChatPage';
 import TermsPage from '@/pages/TermsPage';
+import AcordesPage from '@/pages/AcordesPage';
+import TopArtistsPage from '@/pages/TopArtistsPage';
+import TopSongsPage from '@/pages/TopSongsPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -49,6 +52,9 @@ const AuthenticatedApp = () => {
 
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/terminos" element={<TermsPage />} />
+        <Route path="/acordes" element={<AcordesPage />} />
+        <Route path="/artistas" element={<TopArtistsPage />} />
+        <Route path="/canciones" element={<TopSongsPage />} />
         <Route path="/:artistSlug" element={<ArtistPage />} />
         <Route path="/:artistSlug/:songSlug" element={<SongPage />} />
         <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />

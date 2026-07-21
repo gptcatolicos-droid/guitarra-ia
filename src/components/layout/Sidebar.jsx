@@ -1,24 +1,19 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { MessageCircle, Search, Users, Music, X, Sun, Moon } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { MessageCircle, Search, Users, Music, X, Sun, Moon, LayoutGrid } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
   { icon: MessageCircle, label: 'Chat IA', path: '/chat' },
   { icon: Search, label: 'Explorar', path: '/buscar' },
-  { icon: Users, label: 'Artistas', path: '/buscar?tab=artistas' },
-  { icon: Music, label: 'Canciones', path: '/buscar?tab=canciones' },
+  { icon: Users, label: 'Artistas', path: '/artistas' },
+  { icon: Music, label: 'Canciones', path: '/canciones' },
+  { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
 ];
 
 export default function Sidebar({ open, onClose }) {
   const location = useLocation();
-  const navigate = useNavigate();
 
-  const isActive = (path) => {
-    const base = path.split('?')[0];
-    if (base === '/chat') return location.pathname === '/chat';
-    if (base === '/buscar') return location.pathname === '/buscar';
-    return false;
-  };
+  const isActive = (path) => location.pathname === path;
 
   const [isDark, setIsDark] = useState(
     () => document.documentElement.classList.contains('dark')
@@ -37,13 +32,6 @@ export default function Sidebar({ open, onClose }) {
     }
   };
 
-  const handleNav = (item) => {
-    onClose();
-    // navigate preserves query strings
-    const [path, search] = item.path.split('?');
-    navigate(search ? `${path}?${search}` : path);
-  };
-
   return (
     <>
       {open && <div className="lg:hidden fixed inset-0 bg-black/60 z-40" onClick={onClose} />}
@@ -52,24 +40,25 @@ export default function Sidebar({ open, onClose }) {
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Mobile close button — no logo (logo está en header) */}
+        {/* Mobile close button */}
         <div className="lg:hidden px-4 pt-4 pb-2 flex justify-end">
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Extra spacer on desktop so nav starts below the header */}
-        <div className="hidden lg:block h-[80px]" />
+        {/* Spacer on desktop so nav starts below the header */}
+        <div className="hidden lg:block" style={{ height: '88px' }} />
 
         {/* Nav */}
         <nav className="px-3 py-1 flex-1 overflow-y-auto">
           {navItems.map((item) => {
             const active = isActive(item.path);
             return (
-              <button
+              <Link
                 key={item.label}
-                onClick={() => handleNav(item)}
+                to={item.path}
+                onClick={onClose}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-0.5 transition-colors text-left ${
                   active
                     ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-500'
@@ -78,7 +67,7 @@ export default function Sidebar({ open, onClose }) {
               >
                 <item.icon className={`w-[18px] h-[18px] shrink-0 ${active ? 'text-orange-500' : ''}`} />
                 {item.label}
-              </button>
+              </Link>
             );
           })}
         </nav>
