@@ -72,6 +72,10 @@
       "type": "boolean",
       "default": false
     },
+    "is_trending": {
+      "type": "boolean",
+      "default": false
+    },
     "views": {
       "type": "number",
       "default": 0

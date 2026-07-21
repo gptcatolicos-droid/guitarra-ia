@@ -5,6 +5,8 @@ import { Music, Users, FileText, Trash2, Edit2, X, Sparkles, Save, Palette, Type
 import FileDropZone from '@/components/admin/FileDropZone';
 import { parseFileContent } from '@/lib/fileParser';
 import { useAuth } from '@/lib/AuthContext';
+import AdminStats from '@/components/admin/AdminStats';
+import TrendingManager from '@/components/admin/TrendingManager';
 
 const ADMIN_EMAILS = ['danipalacio@gmail.com'];
 const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
@@ -386,7 +388,9 @@ export default function AdminPage() {
         {[
           { id: 'catalog', label: 'Catálogo' },
           { id: 'import', label: 'Importar' },
-          { id: 'theme', label: 'Tema y Fuentes' },
+          { id: 'trending', label: 'Tendencias' },
+          { id: 'stats', label: 'Estadísticas' },
+          { id: 'theme', label: 'Tema' },
         ].map((t) => (
           <button
             key={t.id}
@@ -466,6 +470,14 @@ Tengo la camisa negra...`}</pre>
             )}
           </div>
         </div>
+      )}
+
+      {tab === 'trending' && (
+        <TrendingManager allSongs={allSongsList} onRefresh={loadStats} />
+      )}
+
+      {tab === 'stats' && (
+        <AdminStats allSongs={allSongsList} />
       )}
 
       {tab === 'theme' && <ThemeSettings />}

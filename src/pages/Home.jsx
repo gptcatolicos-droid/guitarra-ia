@@ -19,7 +19,13 @@ export default function Home() {
   });
 
   useEffect(() => {
-    base44.entities.Song.list('-views', 10).then(setTopSongs).catch(() => {});
+    // First try manually-curated trending songs, fallback to most viewed
+    base44.entities.Song.filter({ is_trending: true }, '-views', 10)
+      .then(songs => {
+        if (songs && songs.length > 0) setTopSongs(songs);
+        else base44.entities.Song.list('-views', 10).then(setTopSongs).catch(() => {});
+      })
+      .catch(() => base44.entities.Song.list('-views', 10).then(setTopSongs).catch(() => {}));
   }, []);
 
   return (

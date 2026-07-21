@@ -38,7 +38,7 @@ export default function HeroSection({ onChatOpen }) {
       </div>
 
       {/* Right — example card with Spotify player */}
-      <div className="block mt-2 lg:mt-0">
+      <div className="hidden lg:block">
         <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
           <div className="flex items-center gap-3 p-4 border-b border-border">
             <div className="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center shrink-0">
