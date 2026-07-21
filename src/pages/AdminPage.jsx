@@ -84,6 +84,7 @@ async function upsertSong(parsed) {
 
 function SongEditor({ song, onClose, onSaved }) {
   const [content, setContent] = useState(song.content_raw || song.tablature || '');
+  const [spotifyEmbed, setSpotifyEmbed] = useState(song.spotify_embed || '');
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -91,7 +92,10 @@ function SongEditor({ song, onClose, onSaved }) {
   const handleSave = async () => {
     setSaving(true);
     const isTab = song.has_tablature && !song.has_chords;
-    await base44.entities.Song.update(song.id, isTab ? { tablature: content } : { content_raw: content });
+    await base44.entities.Song.update(song.id, {
+      ...(isTab ? { tablature: content } : { content_raw: content }),
+      spotify_embed: spotifyEmbed || null,
+    });
     setSaving(false);
     onSaved();
     onClose();
@@ -156,6 +160,18 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
               )}
             </button>
           </div>
+        </div>
+
+        {/* Spotify embed manual */}
+        <div className="px-4 py-3 border-b border-border bg-secondary/20">
+          <p className="text-xs text-muted-foreground mb-1.5 font-medium">🎵 Código embed de Spotify (opcional)</p>
+          <input
+            value={spotifyEmbed}
+            onChange={(e) => setSpotifyEmbed(e.target.value)}
+            placeholder='Pega aquí el iframe de Spotify: <iframe src="https://open.spotify.com/embed/track/...">'
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary font-mono"
+          />
+          <p className="text-xs text-muted-foreground mt-1">En Spotify → compartir canción → Insertar → copia el código iframe.</p>
         </div>
 
         <textarea

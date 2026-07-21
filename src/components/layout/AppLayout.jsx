@@ -36,13 +36,13 @@ export default function AppLayout() {
 
       <main className="lg:ml-[260px] pt-[80px] lg:pt-0 min-h-screen">
         {/* Desktop header — logo centrado con proporción 1127×410 */}
-        <div className="hidden lg:flex items-center justify-between px-6 border-b border-border bg-card sticky top-0 z-20" style={{ height: '100px' }}>
+        <div className="hidden lg:flex items-center justify-between px-6 border-b border-border bg-card sticky top-0 z-20" style={{ height: '120px' }}>
           <div className="w-10" />
           <Link to="/" className="flex-1 flex justify-center">
             <img
               src={LOGO_URL}
               alt="Tablaturas AI"
-              style={{ height: '76px', width: 'auto', objectFit: 'contain' }}
+              style={{ height: '100px', width: 'auto', objectFit: 'contain' }}
             />
           </Link>
           <button onClick={toggleTheme} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">

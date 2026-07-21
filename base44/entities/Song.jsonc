@@ -79,6 +79,9 @@
     "views": {
       "type": "number",
       "default": 0
+    },
+    "spotify_embed": {
+      "type": "string"
     }
   },
   "required": [

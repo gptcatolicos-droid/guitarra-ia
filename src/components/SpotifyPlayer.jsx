@@ -10,7 +10,8 @@ export default function SpotifyPlayer({ song, compact = false }) {
   const artist = song?.artist_name || '';
 
   useEffect(() => {
-    if (!song) return;
+    // If song has a manual embed code, skip the API call
+    if (!song || song.spotify_embed) return;
     setData(null);
     setLoading(true);
     base44.functions.invoke('spotifySearch', { artist, title })
@@ -33,18 +34,23 @@ export default function SpotifyPlayer({ song, compact = false }) {
     );
   }
 
-  // If we have a track_id, show the embedded player
-  // If not, show the Spotify search embed as fallback (searches automatically)
-  const embedSrc = data?.track_id
-    ? `https://open.spotify.com/embed/track/${data.track_id}?utm_source=generator&theme=0`
-    : `https://open.spotify.com/embed/search/${encodeURIComponent(`${title} ${artist}`)}?utm_source=generator&theme=0`;
+  // Priority: manual embed > auto track_id > search fallback
+  const extractSrcFromEmbed = (embedCode) => {
+    const match = embedCode?.match(/src="([^"]+)"/);
+    return match ? match[1] : null;
+  };
+
+  const manualSrc = song.spotify_embed ? extractSrcFromEmbed(song.spotify_embed) || song.spotify_embed : null;
+  const embedSrc = manualSrc
+    || (data?.track_id ? `https://open.spotify.com/embed/track/${data.track_id}?utm_source=generator&theme=0` : null)
+    || `https://open.spotify.com/embed/search/${encodeURIComponent(`${title} ${artist}`)}?utm_source=generator&theme=0`;
 
   return (
     <div className={compact ? '' : 'bg-card border border-border rounded-2xl overflow-hidden'}>
       {!compact && (
         <div className="px-4 pt-3 pb-2">
           <p className="text-foreground font-semibold text-sm">Escuchar en Spotify</p>
-          <p className="text-muted-foreground text-xs">{data?.track_id ? 'Vista previa (30s)' : 'Busca y reproduce en Spotify'}</p>
+          <p className="text-muted-foreground text-xs">{(manualSrc || data?.track_id) ? 'Vista previa (30s)' : 'Busca y reproduce en Spotify'}</p>
         </div>
       )}
 
