@@ -139,24 +139,65 @@ export default function ChatInterface({ embedded }) {
         };
       });
 
+      // Step 1: find local matches FIRST (fast, no LLM)
+      const q = normalize(userMessage);
+      const localMatches2 = songsCache.filter((s) => {
+        const t = normalize(s.title);
+        const a = normalize(s.artist_name);
+        return t.includes(q) || a.includes(q) || q.includes(t) || q.includes(a);
+      });
+
+      // Deduplicate by normalized title+artist, pick one with content
+      const seenLocal = new Set();
+      const dedupedLocal = localMatches2.filter((s) => {
+        const key = `${normalize(s.artist_name)}|${normalize(s.title)}`;
+        if (seenLocal.has(key)) return false;
+        seenLocal.add(key);
+        return true;
+      });
+
+      // Build content to inject — only for matched songs (not full catalog)
+      const contentForLLM = dedupedLocal.slice(0, 5).map((s) => ({
+        id: s.id,
+        title: s.title.replace(/\s*\d+$/, '').trim(),
+        artist: s.artist_name,
+        key: s.original_key,
+        capo: s.capo,
+        difficulty: s.difficulty,
+        has_chords: s.has_chords,
+        has_tablature: s.has_tablature,
+        content_raw: s.content_raw || '',
+        tablature: s.tablature || '',
+      }));
+
+      // Only send catalog metadata (no content) for index — keep prompt small
+      const catalogIndex = Object.values(versionGroups).map((versions) => {
+        const p = versions[0];
+        return {
+          id: p.id,
+          title: p.title.replace(/\s*\d+$/, '').trim(),
+          artist: p.artist_name,
+          has_chords: versions.some((v) => v.has_chords),
+          has_tablature: versions.some((v) => v.has_tablature),
+        };
+      });
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `${SYSTEM_PROMPT}
 
-Catálogo interno (JSON):
-${JSON.stringify(catalog.map((c) => ({
-  id: c.id, title: c.title, artist: c.artist, key: c.key,
-  capo: c.capo, difficulty: c.difficulty,
-  has_chords: c.has_chords, has_tablature: c.has_tablature,
-})))}
+Catálogo (solo metadatos, para identificar canciones):
+${JSON.stringify(catalogIndex)}
+
+${contentForLLM.length > 0 ? `Contenido completo de canciones que coinciden con la búsqueda:
+${JSON.stringify(contentForLLM)}` : ''}
 
 Mensaje del usuario: "${userMessage}"
 
 IMPORTANTE:
-- Si hay canciones en el catálogo que coincidan, responde usando el contenido del catálogo.
-- SIEMPRE formatea los acordes/tablatura dentro de bloques de código con triple backtick.
-- No muestres IDs, números de versión, ni códigos en los títulos de las canciones.
-- Los matched_songs deben tener SOLO los IDs de canciones realmente encontradas en el catálogo.
-- Si buscas en fuentes externas, sé breve en la explicación y muestra el contenido formateado correctamente.`,
+- Si hay contenido de canciones arriba, ÚSALO para mostrar los acordes/tablatura formateados.
+- SIEMPRE formatea acordes/tablatura dentro de bloques de código con triple backtick.
+- No muestres IDs, números de versión ni códigos en los títulos.
+- matched_songs debe tener SOLO los IDs de canciones realmente encontradas.`,
         add_context_from_internet: false,
         model: 'gemini_3_flash',
         response_json_schema: {
@@ -175,10 +216,7 @@ IMPORTANTE:
       const matched = (result.matched_songs || [])
         .map((m) => songsCache.find((s) => s.id === m.song_id))
         .filter(Boolean)
-        .map((s) => ({
-          ...s,
-          title: s.title.replace(/\s*\d+$/, '').trim(),
-        }));
+        .map((s) => ({ ...s, title: s.title.replace(/\s*\d+$/, '').trim() }));
 
       // Deduplicate matched songs by normalized title
       const seenTitles = new Set();
