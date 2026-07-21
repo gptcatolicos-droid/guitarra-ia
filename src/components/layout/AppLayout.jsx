@@ -20,12 +20,12 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile top bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-card border-b border-border flex items-center justify-between px-3" style={{ height: '72px' }}>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-card border-b border-border flex items-center justify-between px-3" style={{ height: '80px' }}>
         <button onClick={() => setSidebarOpen(true)} className="text-muted-foreground hover:text-foreground w-8 shrink-0">
           <Menu className="w-5 h-5" />
         </button>
         <Link to="/" className="flex-1 flex justify-center">
-          <img src={LOGO_URL} alt="Tablaturas AI" style={{ height: '52px', width: 'auto', maxWidth: '220px', objectFit: 'contain' }} />
+          <img src={LOGO_URL} alt="Tablaturas AI" style={{ height: '60px', width: 'auto', objectFit: 'contain' }} />
         </Link>
         <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground w-8 flex justify-end shrink-0">
           {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -34,15 +34,15 @@ export default function AppLayout() {
 
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <main className="lg:ml-[260px] pt-[72px] lg:pt-0 min-h-screen">
-        {/* Desktop header — logo centrado */}
-        <div className="hidden lg:flex items-center justify-between px-6 border-b border-border bg-card sticky top-0 z-20" style={{ height: '88px' }}>
+      <main className="lg:ml-[260px] pt-[80px] lg:pt-0 min-h-screen">
+        {/* Desktop header — logo centrado con proporción 1127×410 */}
+        <div className="hidden lg:flex items-center justify-between px-6 border-b border-border bg-card sticky top-0 z-20" style={{ height: '100px' }}>
           <div className="w-10" />
           <Link to="/" className="flex-1 flex justify-center">
             <img
               src={LOGO_URL}
               alt="Tablaturas AI"
-              style={{ height: '64px', width: 'auto', maxWidth: '280px', objectFit: 'contain' }}
+              style={{ height: '76px', width: 'auto', objectFit: 'contain' }}
             />
           </Link>
           <button onClick={toggleTheme} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">

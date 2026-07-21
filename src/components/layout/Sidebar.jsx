@@ -48,7 +48,7 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         {/* Spacer on desktop so nav starts below the header */}
-        <div className="hidden lg:block" style={{ height: '88px' }} />
+        <div className="hidden lg:block" style={{ height: '100px' }} />
 
         {/* Nav */}
         <nav className="px-3 py-1 flex-1 overflow-y-auto">

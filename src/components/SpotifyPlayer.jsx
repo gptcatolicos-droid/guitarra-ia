@@ -28,37 +28,35 @@ export default function SpotifyPlayer({ song, compact = false }) {
     return (
       <div className="bg-card border border-border rounded-2xl flex items-center justify-center py-8 gap-2">
         <div className="w-4 h-4 border-2 border-border border-t-orange-500 rounded-full animate-spin" />
-        <span className="text-muted-foreground text-xs">Buscando preview...</span>
+        <span className="text-muted-foreground text-xs">Buscando en Spotify...</span>
       </div>
     );
   }
+
+  // If we have a track_id, show the embedded player
+  // If not, show the Spotify search embed as fallback (searches automatically)
+  const embedSrc = data?.track_id
+    ? `https://open.spotify.com/embed/track/${data.track_id}?utm_source=generator&theme=0`
+    : `https://open.spotify.com/embed/search/${encodeURIComponent(`${title} ${artist}`)}?utm_source=generator&theme=0`;
 
   return (
     <div className={compact ? '' : 'bg-card border border-border rounded-2xl overflow-hidden'}>
       {!compact && (
         <div className="px-4 pt-3 pb-2">
-          <p className="text-foreground font-semibold text-sm">Vista previa (30s)</p>
-          <p className="text-muted-foreground text-xs">Escucha una vista previa en tu plataforma favorita.</p>
+          <p className="text-foreground font-semibold text-sm">Escuchar en Spotify</p>
+          <p className="text-muted-foreground text-xs">{data?.track_id ? 'Vista previa (30s)' : 'Busca y reproduce en Spotify'}</p>
         </div>
       )}
 
-      {data?.track_id && (
-        <iframe
-          src={`https://open.spotify.com/embed/track/${data.track_id}?utm_source=generator&theme=0`}
-          width="100%"
-          height={compact ? 80 : 152}
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-          className="border-0"
-          title="Spotify preview"
-        />
-      )}
-
-      {!data?.track_id && !loading && (
-        <div className="px-4 py-2 text-xs text-muted-foreground">
-          Vista previa no disponible. Escucha en:
-        </div>
-      )}
+      <iframe
+        src={embedSrc}
+        width="100%"
+        height={compact ? 80 : 152}
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"
+        className="border-0"
+        title="Spotify"
+      />
 
       <div className="flex gap-2 px-4 pb-4 pt-1">
         <a
