@@ -1,6 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
-import { Music, Guitar } from 'lucide-react';
+import { Music } from 'lucide-react';
 
 function cleanTitle(title) {
   return (title || '')
@@ -9,73 +9,108 @@ function cleanTitle(title) {
     .trim();
 }
 
+// Strip chord/tablature code blocks from the response text
+function stripMusicBlocks(content) {
+  // Remove triple-backtick code blocks that contain chords/tabs
+  return content.replace(/```[\s\S]*?```/g, '').trim();
+}
+
 function SongCard({ song }) {
   const displayTitle = cleanTitle(song.title);
+  const hasChords = song.has_chords;
+  const hasTab = song.has_tablature;
+
   return (
-    <Link
-      to={`/${song.artist_slug}/${song.slug}`}
-      className="block bg-card border border-border rounded-xl overflow-hidden hover:border-primary transition-colors mt-3"
-    >
+    <div className="bg-card border border-border rounded-xl overflow-hidden mt-3">
+      {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
         <div className="w-9 h-9 rounded-lg bg-gradient-brand flex items-center justify-center shrink-0">
           <Music className="w-4 h-4 text-white" />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-foreground font-bold text-sm truncate">{displayTitle}</p>
           <p className="text-muted-foreground text-xs truncate">{song.artist_name}</p>
         </div>
-        <div className="ml-auto flex gap-1 shrink-0">
-          {song.has_chords && <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded font-medium">Acordes</span>}
-          {song.has_tablature && <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs rounded font-medium">Tab</span>}
-        </div>
       </div>
-      <div className="flex items-center gap-4 px-4 py-2 text-xs text-muted-foreground">
+
+      {/* Metadata */}
+      <div className="flex items-center gap-4 px-4 py-2 text-xs text-muted-foreground border-b border-border">
         {song.original_key && <span>🎵 Tonalidad: <strong className="text-foreground">{song.original_key}</strong></span>}
         {song.capo > 0 && <span>🎸 Capo: <strong className="text-foreground">{song.capo}</strong></span>}
         {song.difficulty && <span>⭐ <strong className="text-foreground">{song.difficulty}</strong></span>}
       </div>
-    </Link>
+
+      {/* Action buttons */}
+      <div className="flex gap-2 p-3">
+        {hasChords && (
+          <Link
+            to={`/${song.artist_slug}/${song.slug}/acordes`}
+            className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors"
+          >
+            Ver Acordes
+          </Link>
+        )}
+        {hasTab && (
+          <Link
+            to={`/${song.artist_slug}/${song.slug}/tablatura`}
+            className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500 hover:text-white transition-colors"
+          >
+            Ver Tablatura
+          </Link>
+        )}
+        {!hasChords && !hasTab && (
+          <Link
+            to={`/${song.artist_slug}/${song.slug}`}
+            className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold bg-secondary text-foreground hover:bg-border transition-colors"
+          >
+            Ver Canción
+          </Link>
+        )}
+      </div>
+    </div>
   );
 }
 
 export default function ChatMessage({ message, onSuggestionClick }) {
   const isUser = message.role === 'user';
 
+  // For assistant messages, strip music code blocks (shown as cards instead)
+  const displayContent = !isUser && message.songs && message.songs.length > 0
+    ? stripMusicBlocks(message.content)
+    : message.content;
+
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
-        <div
-          className={`rounded-2xl px-4 py-3 ${
-            isUser
-              ? 'bg-gradient-brand text-white rounded-br-md'
-              : 'bg-card text-card-foreground rounded-bl-md border border-border'
-          }`}
-        >
-          {isUser ? (
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-          ) : (
-            <div className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-p:text-card-foreground prose-strong:text-foreground prose-headings:text-foreground">
-              <ReactMarkdown
-                components={{
-                  pre: ({ children }) => (
-                    <pre className="bg-muted rounded-xl p-4 overflow-x-auto font-mono text-xs my-3 whitespace-pre border border-border">
-                      {children}
-                    </pre>
-                  ),
-                  code: ({ inline, children }) =>
-                    inline ? (
-                      <code className="bg-muted px-1 rounded text-xs font-mono">{children}</code>
-                    ) : (
-                      <code className="font-mono text-xs">{children}</code>
-                    ),
-                  p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                }}
-              >
-                {message.content}
-              </ReactMarkdown>
-            </div>
-          )}
-        </div>
+        {/* Only show bubble if there's text content */}
+        {displayContent && (
+          <div
+            className={`rounded-2xl px-4 py-3 ${
+              isUser
+                ? 'bg-gradient-brand text-white rounded-br-md'
+                : 'bg-card text-card-foreground rounded-bl-md border border-border'
+            }`}
+          >
+            {isUser ? (
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{displayContent}</p>
+            ) : (
+              <div className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-p:text-card-foreground prose-strong:text-foreground prose-headings:text-foreground">
+                <ReactMarkdown
+                  components={{
+                    pre: () => null, // suppress code blocks — shown as cards
+                    code: ({ inline, children }) =>
+                      inline ? (
+                        <code className="bg-muted px-1 rounded text-xs font-mono">{children}</code>
+                      ) : null,
+                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                  }}
+                >
+                  {displayContent}
+                </ReactMarkdown>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Song cards */}
         {message.songs && message.songs.length > 0 && (

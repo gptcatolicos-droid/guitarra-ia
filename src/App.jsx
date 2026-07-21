@@ -13,6 +13,7 @@ import SongPage from '@/pages/SongPage';
 import SearchPage from '@/pages/SearchPage';
 
 import AdminPage from '@/pages/AdminPage';
+import ChatPage from '@/pages/ChatPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -43,6 +44,7 @@ const AuthenticatedApp = () => {
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/buscar" element={<SearchPage />} />
+        <Route path="/chat" element={<ChatPage />} />
 
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/:artistSlug" element={<ArtistPage />} />
