@@ -11,9 +11,7 @@ import Home from '@/pages/Home';
 import ArtistPage from '@/pages/ArtistPage';
 import SongPage from '@/pages/SongPage';
 import SearchPage from '@/pages/SearchPage';
-import FavoritesPage from '@/pages/FavoritesPage';
-import RecentPage from '@/pages/RecentPage';
-import SettingsPage from '@/pages/SettingsPage';
+
 import AdminPage from '@/pages/AdminPage';
 
 const AuthenticatedApp = () => {
@@ -45,9 +43,7 @@ const AuthenticatedApp = () => {
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/buscar" element={<SearchPage />} />
-        <Route path="/favoritos" element={<FavoritesPage />} />
-        <Route path="/recientes" element={<RecentPage />} />
-        <Route path="/ajustes" element={<SettingsPage />} />
+
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/:artistSlug" element={<ArtistPage />} />
         <Route path="/:artistSlug/:songSlug" element={<SongPage />} />

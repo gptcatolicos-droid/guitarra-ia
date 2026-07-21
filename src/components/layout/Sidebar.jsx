@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Search, Users, Music, Settings, X, Sun, Moon, Heart, Clock, BookOpen } from 'lucide-react';
+import { MessageCircle, Search, Users, Music, X, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
 
 const LOGO_URL = 'https://media.base44.com/images/public/user_6a5e0a31e8f4f614e1d6f533/ad91dd453_logo.png';
@@ -9,10 +9,6 @@ const navItems = [
   { icon: Search, label: 'Explorar', path: '/buscar' },
   { icon: Users, label: 'Artistas', path: '/buscar?tab=artistas' },
   { icon: Music, label: 'Canciones', path: '/buscar?tab=canciones' },
-  { icon: BookOpen, label: 'Acordes', path: '/buscar?tab=acordes' },
-  { icon: Heart, label: 'Favoritos', path: '/favoritos' },
-  { icon: Clock, label: 'Recientes', path: '/recientes' },
-  { icon: Settings, label: 'Ajustes', path: '/ajustes' },
 ];
 
 export default function Sidebar({ open, onClose }) {

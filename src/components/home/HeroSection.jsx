@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { Sparkles, Music } from 'lucide-react';
 import SpotifyPlayer from '@/components/SpotifyPlayer';
 
@@ -35,15 +34,8 @@ export default function HeroSection({ onChatFocus }) {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm bg-gradient-brand hover:opacity-90 transition-opacity shadow-md"
           >
             <Sparkles className="w-4 h-4" />
-            Pregúntale a la IA
+            Busca con la IA
           </button>
-          <Link
-            to="/buscar"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-foreground font-semibold text-sm bg-card border border-border hover:border-orange-300 dark:hover:border-orange-500/50 transition-colors"
-          >
-            <Music className="w-4 h-4" />
-            Explorar canciones
-          </Link>
         </div>
       </div>
 
