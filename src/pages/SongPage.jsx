@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { ArrowLeft, Heart, Share2 } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, Sparkles } from 'lucide-react';
 import ChordViewer from '@/components/ChordViewer';
 import TablatureViewer from '@/components/TablatureViewer';
 import SongMeta from '@/components/SongMeta';
@@ -10,6 +10,7 @@ import SpotifyPlayer from '@/components/SpotifyPlayer';
 
 export default function SongPage() {
   const { artistSlug, songSlug, view } = useParams();
+  const navigate = useNavigate();
   const [song, setSong] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isFav, setIsFav] = useState(false);
@@ -26,16 +27,6 @@ export default function SongPage() {
       ? `Acordes y tablatura de ${displayTitle} de ${song.artist_name}. Tonalidad: ${song.original_key || 'N/A'}. Aprende a tocarla en guitarra.`
       : '',
     canonical: `/${artistSlug}/${songSlug}`,
-    jsonLd: song
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'MusicComposition',
-          name: song.title,
-          composer: { '@type': 'Person', name: song.artist_name },
-          inLanguage: 'es',
-          url: `/${artistSlug}/${songSlug}`,
-        }
-      : null,
   });
 
   useEffect(() => {
@@ -51,7 +42,6 @@ export default function SongPage() {
           const entry = { id: songs[0].id, title: songs[0].title, artist_name: songs[0].artist_name, artist_slug: artistSlug, slug: songSlug };
           const filtered = recents.filter((r) => r.id !== entry.id);
           localStorage.setItem('recents', JSON.stringify([entry, ...filtered].slice(0, 20)));
-          // check fav
           const favs = JSON.parse(localStorage.getItem('favorites') || '[]');
           setIsFav(favs.some(f => f.id === songs[0].id));
         }
@@ -74,14 +64,14 @@ export default function SongPage() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-57px)]">
+      <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-4 border-border border-t-orange-500 rounded-full animate-spin" />
       </div>
     );
 
   if (!song)
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-57px)] p-8">
+      <div className="flex flex-col items-center justify-center h-64 p-8">
         <p className="text-muted-foreground">No se encontró la canción.</p>
         <Link to="/" className="mt-4 text-orange-500 hover:underline">Volver al inicio</Link>
       </div>
@@ -89,12 +79,12 @@ export default function SongPage() {
 
   const isTransposed = view && view.startsWith('tono-');
   const transposeKey = isTransposed ? view.replace('tono-', '') : null;
-  const activeView = view || (song.has_tablature ? 'tablatura' : 'acordes');
+  const activeView = view || (song.has_chords ? 'acordes' : 'tablatura');
 
   return (
     <div className="max-w-6xl mx-auto p-4 lg:p-8">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <Link
           to={`/${artistSlug}`}
           className="inline-flex items-center text-muted-foreground hover:text-foreground text-sm mb-4 transition-colors"
@@ -110,7 +100,6 @@ export default function SongPage() {
             <button
               onClick={toggleFavorite}
               className={`p-2 rounded-xl transition-colors ${isFav ? 'text-orange-500' : 'text-muted-foreground hover:text-orange-500'}`}
-              title="Guardar en favoritos"
             >
               <Heart className={`w-5 h-5 ${isFav ? 'fill-current' : ''}`} />
             </button>
@@ -119,6 +108,11 @@ export default function SongPage() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Mobile: Spotify player arriba del contenido */}
+      <div className="lg:hidden mb-6">
+        <SpotifyPlayer song={song} />
       </div>
 
       <div className="grid lg:grid-cols-[1fr_300px] gap-8">
@@ -161,10 +155,21 @@ export default function SongPage() {
           )}
           {activeView === 'tablatura' && song.has_tablature && <TablatureViewer song={song} />}
           {activeView === 'acordes' && !song.has_chords && song.has_tablature && <TablatureViewer song={song} />}
+
+          {/* Botón Chat IA para seguir buscando */}
+          <div className="mt-8 pt-6 border-t border-border">
+            <button
+              onClick={() => navigate('/chat')}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm bg-gradient-brand hover:opacity-90 transition-opacity shadow-md"
+            >
+              <Sparkles className="w-4 h-4" />
+              Buscar Tablaturas con IA
+            </button>
+          </div>
         </div>
 
-        {/* Right panel — Spotify */}
-        <div className="lg:sticky lg:top-24 h-fit">
+        {/* Right panel — Spotify (solo desktop) */}
+        <div className="hidden lg:block lg:sticky lg:top-24 h-fit">
           <SpotifyPlayer song={song} />
         </div>
       </div>

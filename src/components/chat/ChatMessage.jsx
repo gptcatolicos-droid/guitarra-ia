@@ -1,6 +1,8 @@
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
-import { Music } from 'lucide-react';
+import { Music, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 
 function cleanTitle(title) {
   return (title || '')
@@ -9,23 +11,64 @@ function cleanTitle(title) {
     .trim();
 }
 
-// Strip chord/tablature code blocks from the response text
 function stripMusicBlocks(content) {
-  // Remove triple-backtick code blocks that contain chords/tabs
   return content.replace(/```[\s\S]*?```/g, '').trim();
 }
+
+// Tab icon SVG
+const TabIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 6h18M3 12h18M3 18h18" />
+    <rect x="1" y="3" width="22" height="18" rx="2" fill="none" />
+    <text x="12" y="15" textAnchor="middle" fontSize="8" fontWeight="bold" fill="currentColor" stroke="none">TAB</text>
+  </svg>
+);
+
+// Chord icon SVG
+const ChordIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="6" y1="3" x2="6" y2="21" />
+    <line x1="10" y1="3" x2="10" y2="21" />
+    <line x1="14" y1="3" x2="14" y2="21" />
+    <line x1="18" y1="3" x2="18" y2="21" />
+    <line x1="4" y1="7" x2="20" y2="7" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="17" x2="20" y2="17" />
+    <circle cx="6" cy="7" r="1.5" fill="currentColor" />
+    <circle cx="14" cy="12" r="1.5" fill="currentColor" />
+    <circle cx="10" cy="17" r="1.5" fill="currentColor" />
+    <circle cx="18" cy="7" r="1.5" fill="currentColor" />
+  </svg>
+);
 
 function SongCard({ song }) {
   const displayTitle = cleanTitle(song.title);
   const hasChords = song.has_chords;
   const hasTab = song.has_tablature;
+  const [artistImg, setArtistImg] = useState(null);
+
+  useEffect(() => {
+    if (!song?.artist_name) return;
+    base44.functions.invoke('spotifySearch', { artist: song.artist_name, title: song.title?.replace(/\s*\d+$/, '').trim() || '' })
+      .then((res) => {
+        if (res?.data?.artist_image) setArtistImg(res.data.artist_image);
+        else if (res?.data?.album_image) setArtistImg(res.data.album_image);
+      })
+      .catch(() => {});
+  }, [song?.id]);
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden mt-3">
-      {/* Header */}
+      {/* Header with artist photo */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-        <div className="w-9 h-9 rounded-lg bg-gradient-brand flex items-center justify-center shrink-0">
-          <Music className="w-4 h-4 text-white" />
+        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+          {artistImg ? (
+            <img src={artistImg} alt={song.artist_name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-brand flex items-center justify-center">
+              <Music className="w-4 h-4 text-white" />
+            </div>
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-foreground font-bold text-sm truncate">{displayTitle}</p>
@@ -34,34 +77,38 @@ function SongCard({ song }) {
       </div>
 
       {/* Metadata */}
-      <div className="flex items-center gap-4 px-4 py-2 text-xs text-muted-foreground border-b border-border">
-        {song.original_key && <span>🎵 Tonalidad: <strong className="text-foreground">{song.original_key}</strong></span>}
-        {song.capo > 0 && <span>🎸 Capo: <strong className="text-foreground">{song.capo}</strong></span>}
-        {song.difficulty && <span>⭐ <strong className="text-foreground">{song.difficulty}</strong></span>}
-      </div>
+      {(song.original_key || song.capo > 0 || song.difficulty) && (
+        <div className="flex items-center gap-4 px-4 py-2 text-xs text-muted-foreground border-b border-border">
+          {song.original_key && <span>🎵 Tonalidad: <strong className="text-foreground">{song.original_key}</strong></span>}
+          {song.capo > 0 && <span>🎸 Capo: <strong className="text-foreground">{song.capo}</strong></span>}
+          {song.difficulty && <span>⭐ <strong className="text-foreground">{song.difficulty}</strong></span>}
+        </div>
+      )}
 
-      {/* Action buttons */}
+      {/* Action buttons — same gradient as home CTA */}
       <div className="flex gap-2 p-3">
         {hasChords && (
           <Link
             to={`/${song.artist_slug}/${song.slug}/acordes`}
-            className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-brand hover:opacity-90 transition-opacity"
           >
+            <ChordIcon />
             Ver Acordes
           </Link>
         )}
         {hasTab && (
           <Link
             to={`/${song.artist_slug}/${song.slug}/tablatura`}
-            className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold bg-purple-100 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500 hover:text-white transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-brand hover:opacity-90 transition-opacity"
           >
+            <TabIcon />
             Ver Tablatura
           </Link>
         )}
         {!hasChords && !hasTab && (
           <Link
             to={`/${song.artist_slug}/${song.slug}`}
-            className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold bg-secondary text-foreground hover:bg-border transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-brand hover:opacity-90 transition-opacity"
           >
             Ver Canción
           </Link>
@@ -74,7 +121,6 @@ function SongCard({ song }) {
 export default function ChatMessage({ message, onSuggestionClick }) {
   const isUser = message.role === 'user';
 
-  // For assistant messages, strip music code blocks (shown as cards instead)
   const displayContent = !isUser && message.songs && message.songs.length > 0
     ? stripMusicBlocks(message.content)
     : message.content;
@@ -82,7 +128,6 @@ export default function ChatMessage({ message, onSuggestionClick }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
-        {/* Only show bubble if there's text content */}
         {displayContent && (
           <div
             className={`rounded-2xl px-4 py-3 ${
@@ -97,7 +142,7 @@ export default function ChatMessage({ message, onSuggestionClick }) {
               <div className="text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-p:text-card-foreground prose-strong:text-foreground prose-headings:text-foreground">
                 <ReactMarkdown
                   components={{
-                    pre: () => null, // suppress code blocks — shown as cards
+                    pre: () => null,
                     code: ({ inline, children }) =>
                       inline ? (
                         <code className="bg-muted px-1 rounded text-xs font-mono">{children}</code>

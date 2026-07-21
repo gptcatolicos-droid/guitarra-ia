@@ -22,20 +22,35 @@ export default function SpotifyPlayer({ song, compact = false }) {
   const spotifySearchUrl = `https://open.spotify.com/search/${encodeURIComponent(`${title} ${artist}`)}`;
   const youtubeMusicUrl = `https://music.youtube.com/search?q=${encodeURIComponent(`${title} ${artist}`)}`;
 
+  if (!song) return null;
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-6 gap-2">
+      <div className="bg-card border border-border rounded-2xl flex items-center justify-center py-8 gap-2">
         <div className="w-4 h-4 border-2 border-border border-t-orange-500 rounded-full animate-spin" />
         <span className="text-muted-foreground text-xs">Buscando preview...</span>
       </div>
     );
   }
 
-  if (!song) return null;
-
   return (
     <div className={compact ? '' : 'bg-card border border-border rounded-2xl overflow-hidden'}>
-      {!compact && (
+      {/* Album art */}
+      {!compact && data?.album_image && (
+        <div className="relative">
+          <img
+            src={data.album_image}
+            alt={data.album || title}
+            className="w-full aspect-square object-cover"
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
+            <p className="text-white font-bold text-sm truncate">{data.name || title}</p>
+            <p className="text-white/80 text-xs truncate">{data.artist || artist} · {data.album}</p>
+          </div>
+        </div>
+      )}
+
+      {!compact && !data?.album_image && (
         <div className="px-4 pt-3 pb-2">
           <p className="text-foreground font-semibold text-sm">Vista previa (30s)</p>
           <p className="text-muted-foreground text-xs">Escucha una vista previa en tu plataforma favorita.</p>

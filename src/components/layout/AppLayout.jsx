@@ -20,13 +20,13 @@ export default function AppLayout() {
     <div className="min-h-screen bg-background">
       {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-30 h-16 bg-card border-b border-border flex items-center justify-between px-4">
-        <button onClick={() => setSidebarOpen(true)} className="text-muted-foreground hover:text-foreground">
+        <button onClick={() => setSidebarOpen(true)} className="text-muted-foreground hover:text-foreground w-8">
           <Menu className="w-5 h-5" />
         </button>
-        <Link to="/">
-          <img src={LOGO_URL} alt="Tablaturas AI" className="h-8 object-contain" />
+        <Link to="/" className="absolute left-1/2 -translate-x-1/2">
+          <img src={LOGO_URL} alt="Tablaturas AI" className="h-9 object-contain" />
         </Link>
-        <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground">
+        <button onClick={toggleTheme} className="text-muted-foreground hover:text-foreground w-8 flex justify-end">
           {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
       </div>
@@ -34,10 +34,10 @@ export default function AppLayout() {
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main className="lg:ml-[260px] pt-16 lg:pt-0 min-h-screen">
-        {/* Desktop header — logo grande centrado a la izquierda + theme toggle */}
-        <div className="hidden lg:flex items-center justify-between gap-4 px-8 py-4 border-b border-border bg-card sticky top-0 z-20">
+        {/* Desktop header — logo centrado grande */}
+        <div className="hidden lg:flex items-center justify-between gap-4 px-8 py-3 border-b border-border bg-card sticky top-0 z-20">
           <Link to="/">
-            <img src={LOGO_URL} alt="Tablaturas AI" className="h-12 object-contain" />
+            <img src={LOGO_URL} alt="Tablaturas AI" className="h-14 object-contain" />
           </Link>
           <button onClick={toggleTheme} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

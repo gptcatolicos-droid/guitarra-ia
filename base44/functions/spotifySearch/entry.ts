@@ -25,22 +25,33 @@ Deno.serve(async (req) => {
     const accessToken = tokenData.access_token;
     if (!accessToken) return Response.json({ track_id: null });
 
+    const headers = { 'Authorization': `Bearer ${accessToken}` };
+
     // Search for track
     const q = encodeURIComponent(`track:${title} artist:${artist}`);
-    const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=1&market=ES`, {
-      headers: { 'Authorization': `Bearer ${accessToken}` },
-    });
+    const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=1&market=ES`, { headers });
     const searchData = await searchRes.json();
     const track = searchData?.tracks?.items?.[0];
 
     if (!track) return Response.json({ track_id: null });
+
+    const artistId = track.artists?.[0]?.id;
+    let artist_image = null;
+
+    // Fetch artist image
+    if (artistId) {
+      const artistRes = await fetch(`https://api.spotify.com/v1/artists/${artistId}`, { headers });
+      const artistData = await artistRes.json();
+      artist_image = artistData?.images?.[0]?.url || null;
+    }
 
     return Response.json({
       track_id: track.id,
       name: track.name,
       artist: track.artists?.[0]?.name,
       album: track.album?.name,
-      image: track.album?.images?.[0]?.url,
+      album_image: track.album?.images?.[0]?.url || null,
+      artist_image,
       preview_url: track.preview_url,
     });
   } catch (error) {
