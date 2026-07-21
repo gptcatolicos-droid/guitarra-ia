@@ -6,17 +6,17 @@ import HeroSection from '@/components/home/HeroSection';
 import TrendingSection from '@/components/home/TrendingSection';
 import FeaturedSpotifySection from '@/components/home/FeaturedSpotifySection';
 
-const LOGO_URL = 'https://media.base44.com/images/public/user_6a5e0a31e8f4f614e1d6f533/ad91dd453_logo.png';
+const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/e18c18520_logo.png';
 
 export default function Home() {
   const navigate = useNavigate();
   const [topSongs, setTopSongs] = useState([]);
 
   useSEO({
-    title: 'Tablaturas AI - Acordes y tablaturas con inteligencia artificial',
-    description: 'Busca acordes, tablaturas y cifrados de tus canciones favoritas con inteligencia artificial.',
+    title: 'Guitarra IA - Acordes y tablaturas con inteligencia artificial | guitarraia.com',
+    description: 'Busca acordes, tablaturas y cifrados de guitarra con inteligencia artificial. El mejor asistente musical para guitarristas en guitarraia.com.',
     image: LOGO_URL,
-    canonical: '/',
+    canonical: 'https://www.guitarraia.com/',
   });
 
   const [heroSongs, setHeroSongs] = useState([]);

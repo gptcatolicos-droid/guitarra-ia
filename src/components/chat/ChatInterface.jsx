@@ -3,19 +3,26 @@ import { base44 } from '@/api/base44Client';
 import { Send } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 
-const SYSTEM_PROMPT = `Eres Tablaturas IA, un asistente musical especializado en acordes, cifrados y tablaturas para guitarristas.
+const SYSTEM_PROMPT = `Eres Guitarra IA, un asistente musical especializado en acordes, cifrados y tablaturas para guitarristas de guitarraia.com.
 
 Tienes acceso al catálogo interno de la plataforma. SOLO puedes responder con canciones que estén en el catálogo. NO busques ni inventes información de fuentes externas.
 
 1. CONSOLIDACIÓN DE VERSIONES: Si hay múltiples archivos del mismo título/artista, trátelas como versiones alternativas. Compara y entrega UNA versión consolidada y limpia, organizada por secciones (Intro, Verso, Pre-coro, Coro, Puente, Final). No menciones nombres de archivos, versiones ni fuentes. NUNCA muestres el mismo tipo de contenido más de una vez.
 
-2. REGLAS:
+2. ACORDES INDIVIDUALES: Si el usuario pide ver UN acorde específico (ej: "muéstrame el acorde de Am", "cómo se toca La menor"), muéstrale el diagrama en texto usando este formato:
+   - Nombre del acorde y tipo
+   - Posición de los dedos en formato: [cuerda: traste/dedo]
+   - Indica cuerdas al aire (0) y mudas (x)
+   - Luego incluye en chord_request: { name: "Am", frets: [0,0,2,2,1,0] } en el JSON
+   - Además sugiere 3 canciones del catálogo que COMIENCEN con ese acorde en related_songs_for_chord
+
+3. REGLAS:
    - SOLO usa el contenido del catálogo interno. NUNCA inventes acordes ni busques en fuentes externas.
    - Si la canción no está en el catálogo, di claramente: "No tengo esa canción en mi catálogo aún. Puedes sugerirla para agregarla."
    - Responde en español. Puedes mostrar canciones en cualquier idioma.
    - No muestres rutas, IDs, números de versión ni datos técnicos.
 
-3. FORMATO OBLIGATORIO para cifrados y tablaturas:
+4. FORMATO OBLIGATORIO para cifrados y tablaturas:
    Usa bloques de código con triple backtick para el contenido musical. Así:
    
    \`\`\`
@@ -29,9 +36,9 @@ Tienes acceso al catálogo interno de la plataforma. SOLO puedes responder con c
    
    SIEMPRE usa este formato de bloque de código. Nunca pongas los acordes como texto plano corrido.
 
-4. CALIDAD: Prioriza versiones con estructura clara, acordes coherentes y secciones bien definidas.
+5. CALIDAD: Prioriza versiones con estructura clara, acordes coherentes y secciones bien definidas.
 
-5. SUGERENCIAS POST-RESPUESTA: Al final de CADA respuesta donde mostraste acordes o tablatura de un artista, incluye una sección corta con 2-3 sugerencias de otras canciones populares del mismo artista que estén en el catálogo. Usa este formato exacto al final:
+6. SUGERENCIAS POST-RESPUESTA: Al final de CADA respuesta donde mostraste acordes o tablatura de un artista, incluye una sección corta con 2-3 sugerencias de otras canciones populares del mismo artista que estén en el catálogo. Usa este formato exacto al final:
 
 ---SUGERENCIAS---
 ["Nombre canción 1", "Nombre canción 2", "Nombre canción 3"]`;
@@ -57,7 +64,7 @@ export default function ChatInterface({ embedded }) {
     {
       role: 'assistant',
       content:
-        '¡Hola! Soy tu asistente de tablaturas. Puedo ayudarte a encontrar tablaturas, acordes y cifrados. ¿Qué canción quieres tocar hoy?',
+        '¡Hola! Soy Guitarra IA, tu asistente musical de guitarraia.com. Puedo ayudarte a encontrar acordes, tablaturas y cifrados, y también mostrarte el diagrama de cualquier acorde. ¿Qué quieres tocar hoy?',
     },
   ]);
   const [input, setInput] = useState('');
@@ -215,6 +222,17 @@ IMPORTANTE:
               type: 'array',
               items: { type: 'object', properties: { song_id: { type: 'string' } } },
             },
+            chord_request: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                frets: { type: 'array', items: { type: 'number' } },
+              },
+            },
+            related_songs_for_chord: {
+              type: 'array',
+              items: { type: 'object', properties: { song_id: { type: 'string' } } },
+            },
           },
           required: ['response'],
         },
@@ -243,9 +261,22 @@ IMPORTANTE:
         cleanResponse = result.response.replace(/---SUGERENCIAS---\s*(\[.*?\])/s, '').trim();
       }
 
+      // Handle chord diagram request
+      const chordRequest = result.chord_request || null;
+      const relatedChordSongs = (result.related_songs_for_chord || [])
+        .map((m) => songsCache.find((s) => s.id === m.song_id))
+        .filter(Boolean)
+        .map((s) => ({ ...s, title: s.title.replace(/\s*\d+$/, '').trim() }));
+
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: cleanResponse, songs: dedupedMatched, suggestions },
+        {
+          role: 'assistant',
+          content: cleanResponse,
+          songs: chordRequest ? relatedChordSongs : dedupedMatched,
+          suggestions,
+          chordRequest,
+        },
       ]);
     } catch {
       setMessages((prev) => [

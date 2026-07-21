@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Search, Users, Music, X, Sun, Moon, LayoutGrid } from 'lucide-react';
+import { MessageCircle, Search, Users, Music, X, Sun, Moon, LayoutGrid, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { icon: Users, label: 'Artistas', path: '/artistas' },
   { icon: Music, label: 'Canciones', path: '/canciones' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
+  { icon: ShoppingBag, label: 'Guitar Store', path: '/tienda' },
 ];
 
 export default function Sidebar({ open, onClose }) {

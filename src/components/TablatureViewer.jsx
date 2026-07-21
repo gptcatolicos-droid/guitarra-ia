@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Maximize2, Minimize2, Download } from 'lucide-react';
 
-const SITE_URL = 'www.tablaturasai.com';
+const SITE_URL = 'www.guitarraia.com';
 
 function printContent(title, artist, text) {
   const win = window.open('', '_blank');

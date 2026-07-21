@@ -11,7 +11,7 @@ import ChordDiagram from '@/components/ChordDiagram';
 import TransposeControls from '@/components/TransposeControls';
 import { Download } from 'lucide-react';
 
-const SITE_URL = 'www.tablaturasai.com';
+const SITE_URL = 'www.guitarraia.com';
 
 function printChords(title, artist, text) {
   const win = window.open('', '_blank');

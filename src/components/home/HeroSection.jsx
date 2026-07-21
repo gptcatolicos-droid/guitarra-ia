@@ -98,7 +98,7 @@ export default function HeroSection({ onChatOpen, heroSongs = [] }) {
           className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl text-white font-bold text-lg bg-gradient-brand hover:opacity-90 transition-opacity shadow-xl shadow-orange-500/20"
         >
           <Sparkles className="w-5 h-5" />
-          Buscar Tablaturas con IA
+          Buscar Acordes IA
         </button>
       </div>
 

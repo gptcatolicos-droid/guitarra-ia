@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/AuthContext';
 import AdminStats from '@/components/admin/AdminStats';
 import TrendingManager from '@/components/admin/TrendingManager';
 import HeroBannerManager from '@/components/admin/HeroBannerManager';
+import AmazonProductsManager from '@/components/admin/AmazonProductsManager';
 import CatalogTab from '@/components/admin/CatalogTab';
 
 const ADMIN_EMAILS = ['danipalacio@gmail.com'];
@@ -431,6 +432,7 @@ export default function AdminPage() {
           { id: 'import', label: 'Importar' },
           { id: 'hero', label: 'Hero Banner' },
           { id: 'trending', label: 'Tendencias' },
+          { id: 'store', label: 'Guitar Store' },
           { id: 'stats', label: 'Estadísticas' },
           { id: 'theme', label: 'Tema' },
         ].map((t) => (
@@ -488,6 +490,10 @@ Tengo la camisa negra...`}</pre>
 
       {tab === 'trending' && (
         <TrendingManager allSongs={allSongsList} onRefresh={loadStats} />
+      )}
+
+      {tab === 'store' && (
+        <AmazonProductsManager />
       )}
 
       {tab === 'stats' && (

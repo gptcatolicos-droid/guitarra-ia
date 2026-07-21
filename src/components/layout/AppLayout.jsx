@@ -4,7 +4,7 @@ import { Menu, Sun, Moon } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 
-const LOGO_URL = 'https://media.base44.com/images/public/user_6a5e0a31e8f4f614e1d6f533/ad91dd453_logo.png';
+const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/e18c18520_logo.png';
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

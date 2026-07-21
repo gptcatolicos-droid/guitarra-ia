@@ -1,8 +1,45 @@
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
-import { Music, Sparkles } from 'lucide-react';
+import { Music } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+
+// Chord diagram SVG inline for chat
+function ChatChordDiagram({ name, frets }) {
+  if (!frets || frets.length !== 6) return null;
+  const L = 34, T = 42, SG = 22, FG = 28;
+  const p = frets.filter(x => x > 0);
+  const nut = !p.length || Math.max(...p) <= 5;
+  const start = nut ? 1 : Math.min(...p);
+  const fingers = (() => {
+    const u = [...new Set(frets.filter(x => x > 0))].sort((a, b) => a - b);
+    const m = new Map(u.slice(0, 4).map((f, i) => [f, i + 1]));
+    return frets.map(f => f > 0 ? (m.get(f) || 4) : '');
+  })();
+  return (
+    <div className="bg-card border border-border rounded-xl p-3 inline-block mt-2">
+      <p className="text-foreground font-bold text-center text-sm mb-1">{name}</p>
+      <svg viewBox="0 0 180 220" className="w-32 mx-auto block text-foreground">
+        <defs>
+          <linearGradient id="cg2" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop stopColor="#FF6A00" /><stop offset="0.55" stopColor="#FF2D8D" /><stop offset="1" stopColor="#C026FF" />
+          </linearGradient>
+        </defs>
+        {Array.from({length:6},(_,i)=>{const x=L+i*SG;return<line key={i} x1={x} y1={T} x2={x} y2={T+5*FG} stroke="currentColor" strokeWidth="1.5" opacity="0.7"/>;})}
+        {Array.from({length:6},(_,i)=>{const y=T+i*FG;return<line key={i} x1={L} y1={y} x2={L+5*SG} y2={y} stroke="currentColor" strokeWidth={i===0&&nut?5:1.5} opacity="0.7"/>;})}
+        {!nut&&<text x="3" y={T+20} fill="currentColor" fontSize="11" fontWeight="700" opacity="0.6">{start}fr</text>}
+        {frets.map((fret,i)=>{
+          const x=L+i*SG;
+          if(fret===-1)return<text key={i} x={x} y="24" textAnchor="middle" fill="currentColor" fontSize="15" fontWeight="800">×</text>;
+          if(fret===0)return<text key={i} x={x} y="24" textAnchor="middle" fill="currentColor" fontSize="15" fontWeight="800">○</text>;
+          const rel=fret-start+1;const cy=T+(rel-0.5)*FG;
+          return<g key={i}><circle cx={x} cy={cy} r="9" fill="url(#cg2)" stroke="white" strokeWidth="2"/><text x={x} y={cy} textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="10" fontWeight="900">{fingers[i]}</text></g>;
+        })}
+      </svg>
+      <p className="text-xs text-muted-foreground text-center font-mono mt-1">{frets.map(x=>x<0?'x':x).join(' · ')}</p>
+    </div>
+  );
+}
 
 function cleanTitle(title) {
   return (title || '')
@@ -180,9 +217,17 @@ export default function ChatMessage({ message, onSuggestionClick }) {
           </div>
         )}
 
+        {/* Chord diagram */}
+        {message.chordRequest && (
+          <ChatChordDiagram name={message.chordRequest.name} frets={message.chordRequest.frets} />
+        )}
+
         {/* Song cards */}
         {message.songs && message.songs.length > 0 && (
           <div className="mt-1 w-full">
+            {message.chordRequest && message.songs.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-3 mb-1">Canciones que empiezan con este acorde:</p>
+            )}
             {message.songs.map((song) => (
               <SongCard key={song.id} song={song} />
             ))}

@@ -117,8 +117,8 @@ function ChordCard({ chord }) {
 
 export default function AcordesPage() {
   useSEO({
-    title: 'Acordes de Guitarra | Tablaturas AI',
-    description: '180 acordes de guitarra con diagramas interactivos. Busca por nota y tipo de acorde.',
+    title: 'Acordes de Guitarra | Guitarra IA',
+    description: '180 acordes de guitarra con diagramas interactivos. Busca por nota y tipo de acorde en guitarraia.com.',
     canonical: '/acordes',
   });
 
