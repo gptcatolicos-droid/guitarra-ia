@@ -7,6 +7,7 @@ import { parseFileContent } from '@/lib/fileParser';
 import { useAuth } from '@/lib/AuthContext';
 import AdminStats from '@/components/admin/AdminStats';
 import TrendingManager from '@/components/admin/TrendingManager';
+import CatalogTab from '@/components/admin/CatalogTab';
 
 const ADMIN_EMAILS = ['danipalacio@gmail.com'];
 const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
@@ -471,44 +472,12 @@ Tengo la camisa negra...`}</pre>
       )}
 
       {tab === 'catalog' && (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="p-4 border-b border-border">
-            <h2 className="text-foreground font-semibold">Canciones en el catálogo</h2>
-          </div>
-          <div className="max-h-[500px] overflow-y-auto divide-y divide-border">
-            {allSongsList.map((song) => (
-              <div key={song.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-secondary/30">
-                <div className="min-w-0">
-                  <p className="text-foreground text-sm font-medium truncate">{song.title}</p>
-                  <p className="text-muted-foreground text-xs">{song.artist_name} · {song.has_chords ? 'Acordes' : ''}{song.has_chords && song.has_tablature ? ' + ' : ''}{song.has_tablature ? 'Tab' : ''}</p>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => setEditingSong(song)}
-                    className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                    title="Editar cifrado"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(song.id)}
-                    disabled={deletingId === song.id}
-                    className="p-2 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-40"
-                    title="Eliminar canción"
-                  >
-                    {deletingId === song.id
-                      ? <div className="w-4 h-4 border-2 border-destructive/30 border-t-destructive rounded-full animate-spin" />
-                      : <Trash2 className="w-4 h-4" />
-                    }
-                  </button>
-                </div>
-              </div>
-            ))}
-            {allSongsList.length === 0 && (
-              <p className="text-muted-foreground text-sm text-center py-8">No hay canciones en el catálogo.</p>
-            )}
-          </div>
-        </div>
+        <CatalogTab
+          allSongsList={allSongsList}
+          onEdit={setEditingSong}
+          onDelete={handleDelete}
+          deletingId={deletingId}
+        />
       )}
 
       {tab === 'trending' && (

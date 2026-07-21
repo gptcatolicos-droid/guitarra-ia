@@ -42,7 +42,7 @@ export default function AppLayout() {
             <img
               src={LOGO_URL}
               alt="Tablaturas AI"
-              style={{ height: '100px', width: 'auto', objectFit: 'contain' }}
+              style={{ height: '300px', width: 'auto', objectFit: 'contain' }}
             />
           </Link>
           <button onClick={toggleTheme} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">

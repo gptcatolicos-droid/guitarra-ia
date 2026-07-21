@@ -41,14 +41,24 @@ const ChordIcon = () => (
   </svg>
 );
 
+// Extract iframe src from spotify_embed string
+function extractSpotifySrc(embed) {
+  if (!embed) return null;
+  const match = embed.match(/src="([^"]+)"/);
+  const url = match ? match[1] : embed;
+  try { const u = new URL(url); return u.origin + u.pathname; } catch { return url.split('?')[0]; }
+}
+
 function SongCard({ song }) {
   const displayTitle = cleanTitle(song.title);
   const hasChords = song.has_chords;
   const hasTab = song.has_tablature;
+  const spotifySrc = extractSpotifySrc(song.spotify_embed);
+
   const [artistImg, setArtistImg] = useState(null);
 
   useEffect(() => {
-    if (!song?.artist_name) return;
+    if (!song?.artist_name || spotifySrc) return; // skip API if we have embed
     base44.functions.invoke('spotifySearch', { artist: song.artist_name, title: song.title?.replace(/\s*\d+$/, '').trim() || '' })
       .then((res) => {
         if (res?.data?.artist_image) setArtistImg(res.data.artist_image);
@@ -76,6 +86,19 @@ function SongCard({ song }) {
         </div>
       </div>
 
+      {/* Spotify player embed — only when available */}
+      {spotifySrc && (
+        <iframe
+          src={spotifySrc}
+          width="100%"
+          height={80}
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          className="border-0 border-b border-border"
+          title="Spotify"
+        />
+      )}
+
       {/* Metadata */}
       {(song.original_key || song.capo > 0 || song.difficulty) && (
         <div className="flex items-center gap-4 px-4 py-2 text-xs text-muted-foreground border-b border-border">
@@ -85,7 +108,7 @@ function SongCard({ song }) {
         </div>
       )}
 
-      {/* Action buttons — same gradient as home CTA */}
+      {/* Action buttons */}
       <div className="flex gap-2 p-3">
         {hasChords && (
           <Link
