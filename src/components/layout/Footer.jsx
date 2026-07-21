@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-card mt-auto">
+    <footer className="border-t border-border mt-auto" style={{ background: 'hsl(var(--card))' }}>
       <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Tablaturas AI · Solo para uso educativo</p>
+        <p>© {new Date().getFullYear()} Guitarra IA · guitarraia.com · Solo para uso educativo</p>
         <div className="flex items-center gap-4">
           <Link to="/terminos" className="hover:text-foreground transition-colors">
             Términos y Condiciones

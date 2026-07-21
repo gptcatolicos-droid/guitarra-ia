@@ -5,7 +5,8 @@ module.exports = {
   theme: {
   	extend: {
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(135deg, #FF6A00 0%, #FF8A00 34%, #FF2D8D 68%, #D91CFF 100%)',
+        'gradient-brand': 'linear-gradient(135deg, #B89245 0%, #D4AF37 45%, #F59A23 100%)',
+        'gradient-brand-hover': 'linear-gradient(135deg, #8C7340 0%, #B89245 42%, #D97706 100%)',
       },
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -46,6 +47,13 @@ module.exports = {
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
+        gold: '#D4AF37',
+        'gold-dark': '#B89245',
+        'gold-deep': '#8C7340',
+        'gold-soft': '#F6EBC8',
+        'orange-brand': '#F59A23',
+        'orange-dark': '#D97706',
+        bronze: '#A86F3A',
   			chart: {
   				'1': 'hsl(var(--chart-1))',
   				'2': 'hsl(var(--chart-2))',
@@ -72,20 +80,12 @@ module.exports = {
   		},
   		keyframes: {
   			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
+  				from: { height: '0' },
+  				to: { height: 'var(--radix-accordion-content-height)' }
   			},
   			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
+  				from: { height: 'var(--radix-accordion-content-height)' },
+  				to: { height: '0' }
   			}
   		},
   		animation: {
