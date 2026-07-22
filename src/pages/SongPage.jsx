@@ -7,6 +7,7 @@ import ChordViewer from '@/components/ChordViewer';
 import TablatureViewer from '@/components/TablatureViewer';
 import SongMeta from '@/components/SongMeta';
 import SpotifyPlayer from '@/components/SpotifyPlayer';
+import SongSeoContent from '@/components/SongSeoContent';
 
 export default function SongPage() {
   const { artistSlug, songSlug, view } = useParams();
@@ -19,14 +20,35 @@ export default function SongPage() {
     ? song.title.replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '').replace(/\s*\d+$/, '').trim()
     : '';
 
+  const seoTitle = song?.seo_title || (song ? `${displayTitle} - ${song.artist_name} | Acordes y Tablatura | GuitarraIA` : 'Cargando canción...');
+  const seoDescription = song?.seo_meta_description || (song ? `Acordes y tablatura de ${displayTitle} de ${song.artist_name}. Tonalidad: ${song.original_key || 'N/A'}. Aprende a tocarla en guitarra.` : '');
+
+  const jsonLd = song ? {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'MusicRecording',
+        name: displayTitle,
+        byArtist: { '@type': 'MusicGroup', name: song.artist_name },
+        ...(song.original_key ? { musicalKey: song.original_key } : {}),
+        ...(song.spotify_url ? { url: song.spotify_url } : {}),
+      },
+      ...(song.seo_faq?.length > 0 ? [{
+        '@type': 'FAQPage',
+        mainEntity: song.seo_faq.map(f => ({
+          '@type': 'Question',
+          name: f.question,
+          acceptedAnswer: { '@type': 'Answer', text: f.answer },
+        })),
+      }] : []),
+    ],
+  } : null;
+
   useSEO({
-    title: song
-      ? `${displayTitle} - ${song.artist_name} | Acordes y Tablatura | Tablaturas AI`
-      : 'Cargando canción... | Tablaturas AI',
-    description: song
-      ? `Acordes y tablatura de ${displayTitle} de ${song.artist_name}. Tonalidad: ${song.original_key || 'N/A'}. Aprende a tocarla en guitarra.`
-      : '',
+    title: seoTitle,
+    description: seoDescription,
     canonical: `/${artistSlug}/${songSlug}`,
+    jsonLd,
   });
 
   useEffect(() => {
@@ -153,6 +175,8 @@ export default function SongPage() {
           )}
           {activeView === 'tablatura' && song.has_tablature && <TablatureViewer song={song} />}
           {activeView === 'acordes' && !song.has_chords && song.has_tablature && <TablatureViewer song={song} />}
+
+          <SongSeoContent song={song} />
 
           {/* IA CTA */}
           <div className="mt-8 pt-6" style={{ borderTop: '1px solid #272C2F' }}>
