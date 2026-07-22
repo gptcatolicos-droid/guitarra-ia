@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Library, MessageCircle } from 'lucide-react';
+import { Home, Search, Sparkles, ShoppingBag } from 'lucide-react';
 
 const items = [
   { icon: Home, label: 'Inicio', path: '/' },
   { icon: Search, label: 'Buscar', path: '/buscar' },
-  { icon: Library, label: 'Biblioteca', path: '/favoritos' },
-  { icon: MessageCircle, label: 'IA', path: '/chat' },
+  { icon: Sparkles, label: 'IA', path: '/chat' },
+  { icon: ShoppingBag, label: 'Tienda', path: '/tienda' },
 ];
 
 export default function MobileBottomNav() {

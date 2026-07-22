@@ -1,23 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
 import {
   Home, Search, Users, Music, LayoutGrid,
-  BookOpen, ShoppingBag, MessageCircle, X, Library
+  BookOpen, ShoppingBag, MessageCircle, X, Sparkles
 } from 'lucide-react';
 
 const navItems = [
   { icon: Home, label: 'Inicio', path: '/' },
-  { icon: Search, label: 'Buscar', path: '/buscar' },
-  { icon: Music, label: 'Canciones', path: '/canciones' },
+  { icon: Sparkles, label: 'Asistente IA', path: '/chat', badge: 'IA' },
+  { icon: Music, label: 'Canciones', path: '/chat' },
   { icon: Users, label: 'Artistas', path: '/artistas' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
   { icon: BookOpen, label: 'Blog', path: '/blog' },
-  { icon: Library, label: 'Biblioteca', path: '/favoritos' },
-  { icon: MessageCircle, label: 'Asistente IA', path: '/chat' },
   { icon: ShoppingBag, label: 'Guitar Store', path: '/tienda' },
+  { icon: Search, label: 'Buscar', path: '/buscar' },
 ];
-
-const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/e18c18520_logo.png';
 
 export default function Sidebar({ open, onClose }) {
   const location = useLocation();
@@ -45,23 +41,22 @@ export default function Sidebar({ open, onClose }) {
           borderRight: '1px solid #272C2F',
         }}
       >
-        {/* Logo area */}
+        {/* Top close button (mobile only, no logo) */}
         <div
-          className="flex items-center justify-between px-5"
-          style={{ height: '64px', borderBottom: '1px solid #272C2F', flexShrink: 0 }}
+          className="flex items-center justify-end px-4 lg:hidden"
+          style={{ height: '56px', borderBottom: '1px solid #272C2F', flexShrink: 0 }}
         >
-          <Link to="/" onClick={onClose}>
-            <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '30px', width: 'auto', objectFit: 'contain' }} />
-          </Link>
           <button
             onClick={onClose}
-            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg"
+            className="w-8 h-8 flex items-center justify-center rounded-lg"
             style={{ color: '#747B7F' }}
             aria-label="Cerrar menú"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
+        {/* Desktop: empty top spacer matching header height */}
+        <div className="hidden lg:block" style={{ height: '64px', borderBottom: '1px solid #272C2F', flexShrink: 0 }} />
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
@@ -89,7 +84,12 @@ export default function Sidebar({ open, onClose }) {
                   />
                 )}
                 <item.icon className="w-[18px] h-[18px] shrink-0" />
-                <span>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
+                {item.badge && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#FF7200', color: '#fff' }}>
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}

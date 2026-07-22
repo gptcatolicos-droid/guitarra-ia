@@ -10,41 +10,53 @@ const QUICK_CHIPS = [
   'Canciones fáciles', 'Cuatro acordes', 'Rock en español', 'Baladas', 'Guitarra acústica', 'Para principiantes',
 ];
 
-const GENRES = [
-  { label: 'Rock', emoji: '🎸' },
-  { label: 'Pop', emoji: '🎤' },
-  { label: 'Baladas', emoji: '🕯️' },
-  { label: 'Reggae', emoji: '🌿' },
-  { label: 'Blues', emoji: '🎵' },
-  { label: 'Latin', emoji: '💃' },
-  { label: 'Folk', emoji: '🪕' },
-  { label: 'Alternativo', emoji: '⚡' },
-];
-
 const DIFF_COLORS = {
   'Fácil': { bg: 'rgba(128,185,64,0.15)', color: '#80B940' },
   'Intermedia': { bg: 'rgba(216,166,42,0.15)', color: '#D8A62A' },
   'Avanzada': { bg: 'rgba(217,90,50,0.15)', color: '#D95A32' },
 };
 
-function SongCard({ song }) {
+// Extract Spotify track ID from embed URL
+function getSpotifyEmbedUrl(raw) {
+  if (!raw) return null;
+  const match = raw.match(/track\/([A-Za-z0-9]+)/);
+  if (match) return `https://open.spotify.com/embed/track/${match[1]}?utm_source=generator&theme=0`;
+  return null;
+}
+
+function SpotifySongCard({ song }) {
   const diff = DIFF_COLORS[song.difficulty] || DIFF_COLORS['Fácil'];
+  const embedUrl = getSpotifyEmbedUrl(song.spotify_embed);
+
   return (
     <Link
       to={`/${song.artist_slug}/${song.slug}`}
-      className="flex flex-col rounded-xl overflow-hidden transition-all duration-150 group"
+      className="flex flex-col rounded-xl overflow-hidden transition-all duration-150"
       style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = '#444A4E'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,114,0,0.45)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; e.currentTarget.style.transform = 'translateY(0)'; }}
     >
-      <div className="aspect-square bg-g-surface flex items-center justify-center relative overflow-hidden"
-        style={{ backgroundColor: '#121516' }}>
-        <Music className="w-8 h-8" style={{ color: '#303538' }} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-      </div>
+      {embedUrl ? (
+        <div className="w-full" style={{ height: '80px', overflow: 'hidden', borderRadius: '8px 8px 0 0' }}>
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="80"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            style={{ display: 'block' }}
+            onClick={e => e.preventDefault()}
+          />
+        </div>
+      ) : (
+        <div className="flex items-center justify-center" style={{ height: '80px', backgroundColor: '#121516' }}>
+          <Music className="w-8 h-8" style={{ color: '#303538' }} />
+        </div>
+      )}
       <div className="p-3">
         <p className="text-sm font-semibold leading-snug line-clamp-1 mb-0.5" style={{ color: '#F4F4F2' }}>
-          {song.title}
+          {song.title.replace(/\s*\d+$/, '').trim()}
         </p>
         <p className="text-xs mb-2" style={{ color: '#747B7F' }}>{song.artist_name}</p>
         {song.difficulty && (
@@ -63,6 +75,7 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [topSongs, setTopSongs] = useState([]);
   const [easySongs, setEasySongs] = useState([]);
+  const [blogPosts, setBlogPosts] = useState([]);
 
   useSEO({
     title: 'Guitarra IA — Acordes, tablaturas y asistente IA | guitarraia.com',
@@ -84,11 +97,17 @@ export default function Home() {
   });
 
   useEffect(() => {
-    base44.entities.Song.filter({ is_trending: true }, '-views', 10)
-      .then(s => { if (s?.length) setTopSongs(s); else base44.entities.Song.list('-views', 10).then(setTopSongs); })
-      .catch(() => base44.entities.Song.list('-views', 10).then(setTopSongs).catch(() => {}));
+    // Load songs with spotify embed for trending (max 5)
+    base44.entities.Song.list('-views', 100)
+      .then(songs => {
+        const withSpotify = (songs || []).filter(s => s.spotify_embed);
+        setTopSongs(withSpotify.slice(0, 5));
+      })
+      .catch(() => {});
     base44.entities.Song.filter({ difficulty: 'Fácil' }, '-views', 6)
       .then(setEasySongs).catch(() => {});
+    base44.entities.BlogPost.filter({ published: true }, '-created_date', 3)
+      .then(setBlogPosts).catch(() => {});
   }, []);
 
   const handleSearch = (e) => {
@@ -171,14 +190,14 @@ export default function Home() {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5" style={{ color: '#FF7200' }} />
-                <h2 className="text-xl font-bold" style={{ color: '#F4F4F2' }}>En tendencia</h2>
+                <h2 className="text-xl font-bold" style={{ color: '#F4F4F2' }}>Canciones en tendencia</h2>
               </div>
-              <Link to="/canciones" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#FF7200' }}>
+              <Link to="/chat" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#FF7200' }}>
                 Ver todas <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {topSongs.slice(0, 10).map(song => <SongCard key={song.id} song={song} />)}
+              {topSongs.map(song => <SpotifySongCard key={song.id} song={song} />)}
             </div>
           </div>
         </section>
@@ -227,28 +246,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* ===== GENRES ===== */}
-      <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #272C2F' }}>
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-xl font-bold mb-5" style={{ color: '#F4F4F2' }}>Explorar por género</h2>
-          <div className="grid grid-cols-4 lg:grid-cols-8 gap-2">
-            {GENRES.map(g => (
-              <Link
-                key={g.label}
-                to={`/buscar?q=${encodeURIComponent(g.label)}`}
-                className="flex flex-col items-center gap-2 p-3 rounded-xl text-center transition-all"
-                style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,114,0,0.45)'; e.currentTarget.style.backgroundColor = 'rgba(255,114,0,0.08)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; e.currentTarget.style.backgroundColor = '#181B1D'; }}
-              >
-                <span className="text-2xl">{g.emoji}</span>
-                <span className="text-xs font-medium" style={{ color: '#A7ACAE' }}>{g.label}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ===== IA BLOCK ===== */}
       <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #272C2F' }}>
         <div className="max-w-6xl mx-auto">
@@ -290,13 +287,9 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[
-              { title: 'Cómo tocar guitarra para principiantes', cat: 'Técnica', slug: 'como-tocar-guitarra-para-principiantes' },
-              { title: '20 canciones fáciles para principiantes', cat: 'Canciones', slug: 'canciones-faciles-guitarra-principiantes' },
-              { title: 'Tipos de guitarras eléctricas', cat: 'Guitarras', slug: 'tipos-guitarras-electricas-guia' },
-            ].map(art => (
+            {blogPosts.map(art => (
               <Link
-                key={art.slug}
+                key={art.id}
                 to={`/blog/${art.slug}`}
                 className="flex items-start gap-3 p-4 rounded-xl transition-all"
                 style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
@@ -305,7 +298,7 @@ export default function Home() {
               >
                 <BookOpen className="w-5 h-5 mt-0.5 shrink-0" style={{ color: '#FF7200' }} />
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#747B7F' }}>{art.cat}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#747B7F' }}>{art.category}</span>
                   <p className="text-sm font-semibold mt-0.5" style={{ color: '#F4F4F2' }}>{art.title}</p>
                 </div>
               </Link>

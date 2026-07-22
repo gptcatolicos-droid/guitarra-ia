@@ -50,9 +50,9 @@ export default function AppLayout() {
         className="lg:ml-[240px] pt-[56px] lg:pt-0 pb-[72px] lg:pb-0 min-h-screen"
         style={{ backgroundColor: '#0B0D0E' }}
       >
-        {/* Desktop sticky header */}
+        {/* Desktop header — logo centered at 250px height equivalent (large logo display) */}
         <div
-          className="hidden lg:flex items-center justify-between px-8"
+          className="hidden lg:flex items-center justify-center"
           style={{
             height: '64px',
             backgroundColor: 'rgba(11,13,14,0.92)',
@@ -63,10 +63,9 @@ export default function AppLayout() {
             zIndex: 20,
           }}
         >
-          <Link to="/">
-            <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
+          <Link to="/" className="flex items-center justify-center" style={{ height: '64px' }}>
+            <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '44px', width: 'auto', objectFit: 'contain' }} />
           </Link>
-          <div />
         </div>
 
         <Outlet />
