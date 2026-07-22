@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSEO } from '@/lib/seo';
 
 // ─── Chord data (from ChatGPT design) ────────────────────────────────────────
@@ -97,9 +98,10 @@ function ChordDiagramSVG({ frets, name }) {
 }
 
 function ChordCard({ chord }) {
+  const navigate = useNavigate();
   return (
     <div
-      className="relative overflow-hidden rounded-xl p-3 transition-all"
+      className="relative overflow-hidden rounded-xl p-3 transition-all flex flex-col"
       style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,114,0,0.45)'; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; }}
@@ -117,6 +119,13 @@ function ChordCard({ chord }) {
       <div className="text-center text-[10px] mt-1 font-mono" style={{ color: '#747B7F' }}>
         {chord.frets.map(x => x < 0 ? 'x' : x).join(' · ')}
       </div>
+      <button
+        onClick={() => navigate(`/chat?q=canciones con acorde ${chord.name}`)}
+        className="mt-2 w-full text-[11px] font-bold py-1.5 rounded-lg transition-opacity hover:opacity-80"
+        style={{ backgroundColor: '#FF7200', color: '#fff' }}
+      >
+        Ver canciones
+      </button>
     </div>
   );
 }

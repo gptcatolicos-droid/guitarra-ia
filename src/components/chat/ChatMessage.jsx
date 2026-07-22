@@ -1,6 +1,8 @@
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
 import { Music } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 
 // Chord diagram SVG inline for chat
 function ChatChordDiagram({ name, frets }) {
@@ -70,13 +72,35 @@ function SongCard({ song }) {
   const hasTab = song.has_tablature;
   const spotifySrc = extractSpotifySrc(song.spotify_embed);
   const diff = DIFF_COLORS[song.difficulty];
+  const [fetchedSpotifySrc, setFetchedSpotifySrc] = useState(null);
+  const [spotifyLoading, setSpotifyLoading] = useState(false);
+
+  // If no embed stored, fetch from Spotify API
+  useEffect(() => {
+    if (spotifySrc || fetchedSpotifySrc || spotifyLoading) return;
+    setSpotifyLoading(true);
+    base44.functions.invoke('spotifySearch', {
+      artist: song.artist_name,
+      title: displayTitle,
+    })
+      .then(res => {
+        const trackId = res?.data?.track_id;
+        if (trackId) {
+          setFetchedSpotifySrc(`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setSpotifyLoading(false));
+  }, [song.id]);
+
+  const activeSrc = spotifySrc || fetchedSpotifySrc;
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
       {/* Spotify embed — full height like trending cards */}
-      {spotifySrc ? (
+      {activeSrc ? (
         <iframe
-          src={spotifySrc}
+          src={activeSrc}
           width="100%"
           height="152"
           frameBorder="0"
