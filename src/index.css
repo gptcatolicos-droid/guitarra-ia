@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Faculty+Glyphic&family=IBM+Plex+Mono:wght@400;500;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -69,9 +69,9 @@
     --radius: 0.625rem;
 
     /* Fonts */
-    --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-heading: 'Faculty Glyphic', Georgia, serif;
+    --font-body: 'Faculty Glyphic', Georgia, serif;
+    --font-display: 'Faculty Glyphic', Georgia, serif;
     --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
 
     /* Sidebar tokens */
@@ -104,7 +104,7 @@
   body {
     background-color: var(--bg-page);
     color: var(--text-primary);
-    font-family: var(--font-body);
+    font-family: 'Faculty Glyphic', Georgia, serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

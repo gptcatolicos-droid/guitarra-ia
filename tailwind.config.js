@@ -81,9 +81,9 @@ module.exports = {
         }
       },
       fontFamily: {
-        heading: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        body: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        display: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        heading: ['"Faculty Glyphic"', 'Georgia', 'serif'],
+        body: ['"Faculty Glyphic"', 'Georgia', 'serif'],
+        display: ['"Faculty Glyphic"', 'Georgia', 'serif'],
         mono: ['"IBM Plex Mono"', 'SFMono-Regular', 'Consolas', 'monospace'],
       },
       fontSize: {

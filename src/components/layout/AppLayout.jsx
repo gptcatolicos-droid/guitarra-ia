@@ -45,7 +45,7 @@ export default function AppLayout() {
           <Menu className="w-5 h-5" />
         </button>
         <Link to="/" className="flex items-center">
-          <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
+          <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '44px', width: 'auto', objectFit: 'contain' }} />
         </Link>
         <div className="w-11" />
       </div>

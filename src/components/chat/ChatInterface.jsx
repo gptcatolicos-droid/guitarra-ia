@@ -65,8 +65,7 @@ export default function ChatInterface({ embedded }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content:
-        '¡Hola! Soy Guitarra IA, tu asistente musical de guitarraia.com. Puedo ayudarte a encontrar acordes, tablaturas y cifrados, y también mostrarte el diagrama de cualquier acorde. ¿Qué quieres tocar hoy?',
+      content: '¡Hola! Soy Guitarra IA. ¿Qué quieres tocar hoy?',
     },
   ]);
   const [input, setInput] = useState('');
@@ -313,22 +312,7 @@ IMPORTANTE:
               )}
             </div>
           )}
-          {messages.length === 1 && !loading && (
-            <div className="pt-2">
-              <p className="text-muted-foreground text-sm mb-3">Sugerencias:</p>
-              <div className="flex flex-wrap gap-2">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => handleSend(s)}
-                    className="px-4 py-2 bg-card border border-border rounded-full text-sm text-foreground hover:border-primary hover:text-primary transition-colors"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
 
