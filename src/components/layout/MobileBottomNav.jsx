@@ -19,9 +19,9 @@ export default function MobileBottomNav() {
 
   return (
     <div
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-30 flex items-center"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center"
       style={{
-        height: '64px',
+        minHeight: '64px',
         paddingBottom: 'env(safe-area-inset-bottom)',
         backgroundColor: '#0E1112',
         borderTop: '1px solid #272C2F',

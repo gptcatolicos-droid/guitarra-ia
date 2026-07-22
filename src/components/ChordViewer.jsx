@@ -126,39 +126,39 @@ export default function ChordViewer({ song, transposeKey }) {
         </div>
       )}
 
-      <div
-        ref={scrollRef}
-        className="bg-[#1a1d21] border border-[#2b3138] rounded-xl overflow-hidden"
-        style={{ maxHeight: '70vh' }}
-      >
-        <div className="overflow-x-auto overflow-y-auto p-4" style={{ maxHeight: '70vh' }}>
-        {sections.map((section, i) => (
-          <div key={i} className="mb-5">
-            <div className="text-[#ff7a00] font-bold text-sm mb-1">
-              [{section.name}]
+      <div className="chord-viewer-wrap bg-[#1a1d21] border border-[#2b3138] rounded-xl overflow-hidden">
+        <div
+          ref={scrollRef}
+          className="chord-viewer-scroll p-4"
+          style={{ maxHeight: '70vh', overflowX: 'auto', overflowY: 'auto' }}
+        >
+          {sections.map((section, i) => (
+            <div key={i} className="mb-5">
+              <div className="text-[#ff7a00] font-bold text-sm mb-1">
+                [{section.name}]
+              </div>
+              <pre
+                className="chord-pre font-mono"
+                style={{ fontSize: `${fontSize}px`, lineHeight: 1.7, margin: 0, whiteSpace: 'pre' }}
+              >
+                {section.lines.map((line, j) => (
+                  <div
+                    key={j}
+                    className={
+                      isChordLine(line)
+                        ? 'text-[#ff7a00]'
+                        : line.trim()
+                        ? 'text-[#f3f4f6]'
+                        : 'text-[#2b3138]'
+                    }
+                  >
+                    {line || '\u00A0'}
+                  </div>
+                ))}
+              </pre>
             </div>
-            <pre
-              className="font-mono"
-              style={{ fontSize: `${fontSize}px`, lineHeight: 1.7, margin: 0, whiteSpace: 'pre', overflowX: 'visible' }}
-            >
-              {section.lines.map((line, j) => (
-                <div
-                  key={j}
-                  className={
-                    isChordLine(line)
-                      ? 'text-[#ff7a00]'
-                      : line.trim()
-                      ? 'text-[#f3f4f6]'
-                      : 'text-[#2b3138]'
-                  }
-                >
-                  {line || '\u00A0'}
-                </div>
-              ))}
-            </pre>
-          </div>
-        ))}
-        <div className="mt-4 text-[#555] text-xs font-mono border-t border-[#2b3138] pt-3">{SITE_URL}</div>
+          ))}
+          <div className="mt-4 text-[#555] text-xs font-mono border-t border-[#2b3138] pt-3">{SITE_URL}</div>
         </div>
       </div>
     </div>

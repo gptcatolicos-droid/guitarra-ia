@@ -82,8 +82,8 @@ export default function SongPage() {
   const activeView = view || (song.has_chords ? 'acordes' : 'tablatura');
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
-    <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6">
+    <div className="song-page min-h-[100dvh] w-full max-w-full overflow-x-hidden lg:pb-0" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8 py-6 min-w-0 w-full" style={{ boxSizing: 'border-box' }}>
       {/* Header */}
       <div className="mb-5">
         <Link to={`/${artistSlug}`}
@@ -156,14 +156,16 @@ export default function SongPage() {
 
           {/* IA CTA */}
           <div className="mt-8 pt-6" style={{ borderTop: '1px solid #272C2F' }}>
-            <button
-              onClick={() => navigate('/chat')}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#FF7200' }}
-            >
-              <Sparkles className="w-4 h-4" />
-              Preguntar a GuitarraIA
-            </button>
+            <div className="flex w-full justify-start md:justify-start">
+              <button
+                onClick={() => navigate('/chat')}
+                className="inline-flex items-center justify-center gap-2 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90 w-full md:w-auto"
+                style={{ backgroundColor: '#FF7200', minHeight: '46px', maxWidth: '280px', padding: '12px 24px' }}
+              >
+                <Sparkles className="w-4 h-4" />
+                Preguntar a GuitarraIA
+              </button>
+            </div>
           </div>
         </div>
 
