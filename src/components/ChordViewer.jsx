@@ -112,31 +112,34 @@ export default function ChordViewer({ song, transposeKey }) {
       {showDiagrams && usedChords.length > 0 && (
         <div className="mb-6 bg-[#1a1d21] border border-[#2b3138] rounded-xl p-4">
           <h3 className="text-white font-semibold mb-3 text-sm">Acordes principales</h3>
-          <div className="flex flex-wrap gap-3">
-            {usedChords.map((chord) => (
-              <ChordDiagram
-                key={chord}
-                chordName={chord}
-                diagram={getChordDiagram(chord)}
-              />
-            ))}
+          <div className="overflow-x-auto pb-1">
+            <div className="flex gap-3" style={{ minWidth: 'max-content' }}>
+              {usedChords.map((chord) => (
+                <ChordDiagram
+                  key={chord}
+                  chordName={chord}
+                  diagram={getChordDiagram(chord)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       )}
 
       <div
         ref={scrollRef}
-        className="bg-[#1a1d21] border border-[#2b3138] rounded-xl p-4 overflow-y-auto"
+        className="bg-[#1a1d21] border border-[#2b3138] rounded-xl overflow-hidden"
         style={{ maxHeight: '70vh' }}
       >
+        <div className="overflow-x-auto overflow-y-auto p-4" style={{ maxHeight: '70vh' }}>
         {sections.map((section, i) => (
           <div key={i} className="mb-5">
             <div className="text-[#ff7a00] font-bold text-sm mb-1">
               [{section.name}]
             </div>
             <pre
-              className="font-mono whitespace-pre-wrap"
-              style={{ fontSize: `${fontSize}px`, lineHeight: 1.7, margin: 0 }}
+              className="font-mono"
+              style={{ fontSize: `${fontSize}px`, lineHeight: 1.7, margin: 0, whiteSpace: 'pre', overflowX: 'visible' }}
             >
               {section.lines.map((line, j) => (
                 <div
@@ -156,6 +159,7 @@ export default function ChordViewer({ song, transposeKey }) {
           </div>
         ))}
         <div className="mt-4 text-[#555] text-xs font-mono border-t border-[#2b3138] pt-3">{SITE_URL}</div>
+        </div>
       </div>
     </div>
   );

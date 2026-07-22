@@ -12,6 +12,7 @@ import AmazonProductsManager from '@/components/admin/AmazonProductsManager';
 import CatalogTab from '@/components/admin/CatalogTab';
 import ArtistsManager from '@/components/admin/ArtistsManager';
 import SpotifySyncAdmin from '@/components/admin/SpotifySyncAdmin';
+import SongCreatorForm from '@/components/admin/SongCreatorForm';
 
 const ADMIN_EMAILS = ['danipalacio@gmail.com'];
 const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
@@ -443,6 +444,7 @@ export default function AdminPage() {
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-secondary rounded-xl p-1">
         {[
+          { id: 'new-song', label: '+ Canción' },
           { id: 'catalog', label: 'Catálogo' },
           { id: 'artists', label: 'Artistas' },
           { id: 'import', label: 'Importar' },
@@ -464,6 +466,16 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+
+      {tab === 'new-song' && (
+        <div className="bg-card border border-border rounded-xl p-6">
+          <h2 className="text-foreground font-semibold text-lg mb-1">Nueva canción</h2>
+          <p className="text-muted-foreground text-sm mb-6">
+            Crea una canción manualmente. El artista se reutilizará si ya existe, o se creará automáticamente. El Spotify sync se ejecutará en segundo plano.
+          </p>
+          <SongCreatorForm onCreated={loadStats} />
+        </div>
+      )}
 
       {tab === 'import' && (
         <>
