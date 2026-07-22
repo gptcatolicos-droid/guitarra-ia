@@ -17,6 +17,13 @@ export default function AppLayout() {
     document.documentElement.style.backgroundColor = '#0B0D0E';
   }, []);
 
+  // Push AdSense ads
+  useEffect(() => {
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch {}
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E', color: '#F4F4F2' }}>
 
@@ -66,6 +73,15 @@ export default function AppLayout() {
         </div>
 
         <Outlet />
+        {/* AdSense before footer */}
+        <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
+          <ins className="adsbygoogle"
+            style={{ display: 'block' }}
+            data-ad-client="ca-pub-3924083038235099"
+            data-ad-slot="auto"
+            data-ad-format="auto"
+            data-full-width-responsive="true" />
+        </div>
         <Footer />
       </main>
 

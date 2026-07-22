@@ -137,31 +137,10 @@ export default function ChatInterface({ embedded }) {
     }
 
     try {
-      const versionGroups = groupVersions(songsCache);
-
-      // Build catalog — include grouped version info, clean titles
-      const catalog = Object.values(versionGroups).map((versions) => {
-        const primary = versions[0];
-        return {
-          id: primary.id,
-          title: primary.title.replace(/\s*\d+$/, '').trim(),
-          artist: primary.artist_name,
-          key: primary.original_key,
-          capo: primary.capo,
-          difficulty: primary.difficulty,
-          has_chords: versions.some((v) => v.has_chords),
-          has_tablature: versions.some((v) => v.has_tablature),
-          content_raw: primary.content_raw || '',
-          tablature: primary.tablature || '',
-          version_count: versions.length,
-          all_ids: versions.map((v) => v.id),
-        };
-      });
-
-      // Step 1: find local matches FIRST using the same tokenized search
+      // Find local matches FIRST
       const localMatches2 = quickLocalSearch(userMessage, songsCache);
 
-      // Deduplicate by normalized title+artist, pick one with content
+      // Deduplicate by normalized title+artist
       const seenLocal = new Set();
       const dedupedLocal = localMatches2.filter((s) => {
         const key = `${normalize(s.artist_name)}|${normalize(s.title)}`;
@@ -170,8 +149,11 @@ export default function ChatInterface({ embedded }) {
         return true;
       });
 
-      // Build content to inject — only for matched songs (not full catalog)
-      const contentForLLM = dedupedLocal.slice(0, 5).map((s) => ({
+      // Sort: with spotify_embed first
+      dedupedLocal.sort((a, b) => (b.spotify_embed ? 1 : 0) - (a.spotify_embed ? 1 : 0));
+
+      // Build content for LLM — ONLY matched songs, max 6
+      const contentForLLM = dedupedLocal.slice(0, 6).map((s) => ({
         id: s.id,
         title: s.title.replace(/\s*\d+$/, '').trim(),
         artist: s.artist_name,
@@ -184,34 +166,39 @@ export default function ChatInterface({ embedded }) {
         tablature: s.tablature || '',
       }));
 
-      // Only send catalog metadata (no content) for index — keep prompt small
-      const catalogIndex = Object.values(versionGroups).map((versions) => {
-        const p = versions[0];
-        return {
-          id: p.id,
-          title: p.title.replace(/\s*\d+$/, '').trim(),
-          artist: p.artist_name,
-          has_chords: versions.some((v) => v.has_chords),
-          has_tablature: versions.some((v) => v.has_tablature),
-        };
-      });
+      // If we have local matches, return them directly without LLM for catalog queries
+      const isChordQuery = /acorde|chord|diagrama|como\s+se\s+toca|rasgueo|ritmo|técnica|teoria|escala/i.test(userMessage);
+      
+      if (dedupedLocal.length > 0 && !isChordQuery) {
+        // Direct response: show cards without LLM call
+        const cleanSongs = dedupedLocal.map(s => ({ ...s, title: s.title.replace(/\s*\d+$/, '').trim() }));
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: '',
+            songs: cleanSongs,
+            suggestions: [],
+          },
+        ]);
+        if (scanTimer) clearTimeout(scanTimer);
+        setScanningExternal(false);
+        setLoading(false);
+        return;
+      }
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `${SYSTEM_PROMPT}
 
-Catálogo (solo metadatos, para identificar canciones):
-${JSON.stringify(catalogIndex)}
-
-${contentForLLM.length > 0 ? `Contenido completo de canciones que coinciden con la búsqueda:
-${JSON.stringify(contentForLLM)}` : ''}
+${contentForLLM.length > 0 ? `Canciones encontradas en catálogo:
+${JSON.stringify(contentForLLM)}` : 'No se encontraron canciones en el catálogo para esta consulta.'}
 
 Mensaje del usuario: "${userMessage}"
 
 IMPORTANTE:
-- Si hay contenido de canciones arriba, ÚSALO para mostrar los acordes/tablatura formateados.
-- SIEMPRE formatea acordes/tablatura dentro de bloques de código con triple backtick.
-- No muestres IDs, números de versión ni códigos en los títulos.
-- matched_songs debe tener SOLO los IDs de canciones realmente encontradas.`,
+- Si hay canciones arriba, ÚSALAS directamente.
+- SIEMPRE formatea acordes/tablatura en bloques de código triple backtick.
+- matched_songs: incluye los IDs de las canciones que encontraste.`,
         add_context_from_internet: false,
         model: 'gemini_3_flash',
         response_json_schema: {

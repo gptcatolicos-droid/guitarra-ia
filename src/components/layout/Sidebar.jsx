@@ -9,7 +9,7 @@ const navItems = [
   { icon: Users, label: 'Artistas', path: '/artistas' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
   { icon: BookOpen, label: 'Blog', path: '/blog' },
-  { icon: ShoppingBag, label: 'Guitar Store', path: '/tienda' },
+  { icon: ShoppingBag, label: 'Guitar Store', path: '/tienda', newTab: true },
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -78,6 +78,8 @@ export default function Sidebar({ open, onClose }) {
                 key={item.path}
                 to={item.path}
                 onClick={onClose}
+                target={item.newTab ? '_blank' : undefined}
+                rel={item.newTab ? 'noopener noreferrer' : undefined}
                 className="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
                 style={active ? {
                   backgroundColor: 'rgba(255,114,0,0.12)',

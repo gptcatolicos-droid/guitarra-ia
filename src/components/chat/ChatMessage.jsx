@@ -181,9 +181,12 @@ function SongCard({ song }) {
 export default function ChatMessage({ message, onSuggestionClick }) {
   const isUser = message.role === 'user';
 
-  const displayContent = !isUser && message.songs && message.songs.length > 0
-    ? stripMusicBlocks(message.content)
-    : message.content;
+  // If it's a direct catalog match (no text content), don't show any text bubble
+  const displayContent = !isUser && message.songs && message.songs.length > 0 && !message.content
+    ? ''
+    : (!isUser && message.songs && message.songs.length > 0
+      ? stripMusicBlocks(message.content)
+      : message.content);
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
