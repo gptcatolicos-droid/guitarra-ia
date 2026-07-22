@@ -1,18 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home, Search, Users, Music, LayoutGrid,
-  BookOpen, ShoppingBag, MessageCircle, X, Sparkles
+  Home, Users, LayoutGrid,
+  BookOpen, ShoppingBag, X, MessageCircleMore
 } from 'lucide-react';
 
 const navItems = [
   { icon: Home, label: 'Inicio', path: '/' },
-  { icon: Sparkles, label: 'Asistente IA', path: '/chat', badge: 'IA' },
-  { icon: Music, label: 'Canciones', path: '/chat' },
   { icon: Users, label: 'Artistas', path: '/artistas' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
   { icon: BookOpen, label: 'Blog', path: '/blog' },
   { icon: ShoppingBag, label: 'Guitar Store', path: '/tienda' },
-  { icon: Search, label: 'Buscar', path: '/buscar' },
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -58,8 +55,22 @@ export default function Sidebar({ open, onClose }) {
         {/* Desktop: empty top spacer matching header height */}
         <div className="hidden lg:block" style={{ height: '64px', borderBottom: '1px solid #272C2F', flexShrink: 0 }} />
 
+        {/* Chat IA — top prominent button */}
+        <div className="px-3 pt-4 pb-2">
+          <Link
+            to="/chat"
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90 w-full"
+            style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)', color: '#fff' }}
+          >
+            <MessageCircleMore className="w-5 h-5 shrink-0" />
+            <span>Chat IA</span>
+            <span className="ml-auto text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">IA</span>
+          </Link>
+        </div>
+
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
           {navItems.map((item) => {
             const active = isActive(item.path);
             return (
@@ -95,28 +106,18 @@ export default function Sidebar({ open, onClose }) {
           })}
         </nav>
 
-        {/* Bottom promo */}
+        {/* Chat IA CTA — main action */}
         <div className="p-3 pb-5" style={{ borderTop: '1px solid #272C2F' }}>
-          <div
-            className="rounded-xl p-4"
-            style={{
-              backgroundColor: 'rgba(255,114,0,0.08)',
-              border: '1px solid rgba(255,114,0,0.25)',
-            }}
+          <Link
+            to="/chat"
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)', color: '#fff' }}
           >
-            <p className="text-sm font-semibold mb-1" style={{ color: '#F4F4F2' }}>Asistente IA</p>
-            <p className="text-xs leading-relaxed mb-3" style={{ color: '#747B7F' }}>
-              Pregunta sobre acordes, tonos, canciones y técnica.
-            </p>
-            <Link
-              to="/chat"
-              onClick={onClose}
-              className="block text-center text-xs font-bold py-2 rounded-lg transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#FF7200', color: '#fff' }}
-            >
-              Preguntar ahora
-            </Link>
-          </div>
+            <MessageCircleMore className="w-5 h-5 shrink-0" />
+            <span>Chat IA</span>
+            <span className="ml-auto text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">GRATIS</span>
+          </Link>
         </div>
       </aside>
     </>
