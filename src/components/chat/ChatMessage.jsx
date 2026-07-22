@@ -1,8 +1,6 @@
 import ReactMarkdown from 'react-markdown';
-import { Link } from 'react-router-dom';
 import { Music } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import SongCard from './SongCard';
 
 // Chord diagram SVG inline for chat
 function ChatChordDiagram({ name, frets }) {
@@ -41,130 +39,13 @@ function ChatChordDiagram({ name, frets }) {
   );
 }
 
-function cleanTitle(title) {
-  return (title || '')
-    .replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '')
-    .replace(/\s*\d+$/, '')
-    .trim();
-}
-
 function stripMusicBlocks(content) {
   return content.replace(/```[\s\S]*?```/g, '').trim();
-}
-
-// Extract iframe src from spotify_embed string
-function extractSpotifySrc(embed) {
-  if (!embed) return null;
-  const match = embed.match(/src="([^"]+)"/);
-  const url = match ? match[1] : embed;
-  try { const u = new URL(url); return u.origin + u.pathname; } catch { return url.split('?')[0]; }
-}
-
-const DIFF_COLORS = {
-  'Fácil': { bg: 'rgba(128,185,64,0.15)', color: '#80B940' },
-  'Intermedia': { bg: 'rgba(216,166,42,0.15)', color: '#D8A62A' },
-  'Avanzada': { bg: 'rgba(217,90,50,0.15)', color: '#D95A32' },
-};
-
-function SongCard({ song }) {
-  const displayTitle = cleanTitle(song.title);
-  const hasChords = song.has_chords;
-  const hasTab = song.has_tablature;
-  const spotifySrc = extractSpotifySrc(song.spotify_embed);
-  const diff = DIFF_COLORS[song.difficulty];
-  const [fetchedSpotifySrc, setFetchedSpotifySrc] = useState(null);
-  const [spotifyLoading, setSpotifyLoading] = useState(false);
-
-  // If no embed stored, fetch from Spotify API
-  useEffect(() => {
-    if (spotifySrc || fetchedSpotifySrc || spotifyLoading) return;
-    setSpotifyLoading(true);
-    base44.functions.invoke('spotifySearch', {
-      artist: song.artist_name,
-      title: displayTitle,
-    })
-      .then(res => {
-        const trackId = res?.data?.track_id;
-        if (trackId) {
-          setFetchedSpotifySrc(`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setSpotifyLoading(false));
-  }, [song.id]);
-
-  const activeSrc = spotifySrc || fetchedSpotifySrc;
-
-  return (
-    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
-      {/* Spotify embed — full height like trending cards */}
-      {activeSrc ? (
-        <iframe
-          src={activeSrc}
-          width="100%"
-          height="152"
-          frameBorder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-          style={{ display: 'block' }}
-        />
-      ) : (
-        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: '1px solid #272C2F' }}>
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)' }}>
-            <Music className="w-4 h-4 text-white" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold truncate" style={{ color: '#F4F4F2' }}>{displayTitle}</p>
-            <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom row: title + diff badge + buttons */}
-      <div className="flex items-center gap-3 px-3 py-2.5">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{displayTitle}</p>
-          <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {diff && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full hidden sm:inline"
-              style={{ backgroundColor: diff.bg, color: diff.color }}>
-              {song.difficulty}
-            </span>
-          )}
-          {hasChords && (
-            <Link to={`/${song.artist_slug}/${song.slug}/acordes`}
-              className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#FF7200' }}>
-              Ver acordes
-            </Link>
-          )}
-          {hasTab && !hasChords && (
-            <Link to={`/${song.artist_slug}/${song.slug}/tablatura`}
-              className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#FF7200' }}>
-              Ver tablatura
-            </Link>
-          )}
-          {!hasChords && !hasTab && (
-            <Link to={`/${song.artist_slug}/${song.slug}`}
-              className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#FF7200' }}>
-              Ver canción
-            </Link>
-          )}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default function ChatMessage({ message, onSuggestionClick }) {
   const isUser = message.role === 'user';
 
-  // If it's a direct catalog match (no text content), don't show any text bubble
   const displayContent = !isUser && message.songs && message.songs.length > 0 && !message.content
     ? ''
     : (!isUser && message.songs && message.songs.length > 0
@@ -173,7 +54,7 @@ export default function ChatMessage({ message, onSuggestionClick }) {
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[85%] ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
+      <div className={`${isUser ? 'max-w-[80%] items-end' : 'w-full items-start'} flex flex-col gap-2`}>
         {displayContent && (
           <div
             className={`rounded-2xl px-4 py-3 ${
@@ -208,11 +89,11 @@ export default function ChatMessage({ message, onSuggestionClick }) {
           <ChatChordDiagram name={message.chordRequest.name} frets={message.chordRequest.frets} />
         )}
 
-        {/* Song cards — single column, full width, like trending section */}
+        {/* Song cards — full width, one per row */}
         {message.songs && message.songs.length > 0 && (
-          <div className="mt-1 w-full space-y-3" style={{ minWidth: '280px', maxWidth: '600px' }}>
+          <div className="w-full space-y-3">
             {message.chordRequest && (
-              <p className="text-xs text-muted-foreground mb-1">Canciones que empiezan con este acorde:</p>
+              <p className="text-xs text-muted-foreground">Canciones con este acorde:</p>
             )}
             {message.songs.map((song) => (
               <SongCard key={song.id} song={song} />
@@ -222,7 +103,7 @@ export default function ChatMessage({ message, onSuggestionClick }) {
 
         {/* Suggestions */}
         {message.suggestions && message.suggestions.length > 0 && (
-          <div className="mt-3 w-full">
+          <div className="w-full">
             <p className="text-xs text-muted-foreground mb-2">¿Quieres ver otra canción?</p>
             <div className="flex flex-wrap gap-2">
               {message.suggestions.map((s) => (

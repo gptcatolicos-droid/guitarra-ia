@@ -1,0 +1,111 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Music } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+
+const DIFF_COLORS = {
+  'Fácil': { bg: 'rgba(128,185,64,0.15)', color: '#80B940' },
+  'Intermedia': { bg: 'rgba(216,166,42,0.15)', color: '#D8A62A' },
+  'Avanzada': { bg: 'rgba(217,90,50,0.15)', color: '#D95A32' },
+};
+
+function cleanTitle(title) {
+  return (title || '')
+    .replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '')
+    .replace(/\s*\d+$/, '')
+    .trim();
+}
+
+function getSpotifyEmbedUrl(raw) {
+  if (!raw) return null;
+  const match = raw.match(/track\/([A-Za-z0-9]+)/);
+  if (match) return `https://open.spotify.com/embed/track/${match[1]}?utm_source=generator&theme=0`;
+  return null;
+}
+
+export default function SongCard({ song }) {
+  const displayTitle = cleanTitle(song.title);
+  const diff = DIFF_COLORS[song.difficulty];
+  const hasChords = song.has_chords;
+  const hasTab = song.has_tablature;
+
+  // Start with stored embed if exists
+  const storedEmbed = getSpotifyEmbedUrl(song.spotify_embed);
+  const [embedUrl, setEmbedUrl] = useState(storedEmbed);
+  const [fetched, setFetched] = useState(!!storedEmbed);
+
+  useEffect(() => {
+    if (fetched) return;
+    setFetched(true);
+    base44.functions.invoke('spotifySearch', {
+      artist: song.artist_name,
+      title: displayTitle,
+    })
+      .then(res => {
+        const trackId = res?.data?.track_id;
+        if (trackId) {
+          setEmbedUrl(`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`);
+        }
+      })
+      .catch(() => {});
+  }, [song.id]);
+
+  const actionLink = hasChords
+    ? `/${song.artist_slug}/${song.slug}/acordes`
+    : hasTab
+    ? `/${song.artist_slug}/${song.slug}/tablatura`
+    : `/${song.artist_slug}/${song.slug}`;
+
+  const actionLabel = hasChords ? 'Ver acordes' : hasTab ? 'Ver tablatura' : 'Ver canción';
+
+  return (
+    <div className="rounded-xl overflow-hidden w-full" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+      {/* Spotify player — full width, 152px like home */}
+      {embedUrl ? (
+        <iframe
+          src={embedUrl}
+          width="100%"
+          height="152"
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          style={{ display: 'block', borderRadius: '10px 10px 0 0' }}
+        />
+      ) : (
+        <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: '1px solid #272C2F', minHeight: '72px' }}>
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)' }}>
+            <Music className="w-4 h-4 text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold truncate" style={{ color: '#F4F4F2' }}>{displayTitle}</p>
+            <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom bar: info + button */}
+      <div className="flex items-center gap-3 px-3 py-2.5">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{displayTitle}</p>
+          <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {diff && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full hidden sm:inline"
+              style={{ backgroundColor: diff.bg, color: diff.color }}>
+              {song.difficulty}
+            </span>
+          )}
+          <Link
+            to={actionLink}
+            className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-opacity hover:opacity-80"
+            style={{ backgroundColor: '#FF7200' }}
+          >
+            {actionLabel}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
