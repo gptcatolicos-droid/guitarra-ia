@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { Music } from 'lucide-react';
+import { Music, ChevronLeft } from 'lucide-react';
 
 export default function ArtistPage() {
   const { artistSlug } = useParams();
@@ -11,21 +11,14 @@ export default function ArtistPage() {
   const [loading, setLoading] = useState(true);
 
   useSEO({
-    title: artist
-      ? `${artist.name} - Canciones, Acordes y Tablaturas | Tablaturas AI`
-      : 'Cargando... | Tablaturas AI',
-    description: artist
-      ? `Canciones de ${artist.name} con acordes y tablaturas de guitarra.`
-      : '',
-    canonical: `/${artistSlug}`,
-    jsonLd: artist
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'MusicGroup',
-          name: artist.name,
-          genre: 'Música',
-        }
-      : null,
+    title: artist ? `${artist.name} — Acordes y Tablaturas | Guitarra IA` : 'Artista | Guitarra IA',
+    description: artist ? `Canciones de ${artist.name} con acordes y tablaturas de guitarra en guitarraia.com.` : '',
+    canonical: `https://www.guitarraia.com/${artistSlug}`,
+    jsonLd: artist ? {
+      '@context': 'https://schema.org',
+      '@type': 'MusicGroup',
+      name: artist.name,
+    } : null,
   });
 
   useEffect(() => {
@@ -36,98 +29,112 @@ export default function ArtistPage() {
       base44.entities.Song.filter({ artist_slug: artistSlug }, 'title', 500),
     ])
       .then(([artists, songsData]) => {
-        setArtist((artists && artists[0]) || null);
+        setArtist(artists?.[0] || null);
         setSongs(songsData || []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [artistSlug]);
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-3.5rem)] lg:h-screen">
-        <div className="w-8 h-8 border-4 border-[#2b3138] border-t-[#ff7a00] rounded-full animate-spin" />
+      <div className="flex items-center justify-center py-24" style={{ backgroundColor: '#0B0D0E' }}>
+        <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#303538', borderTopColor: '#FF7200' }} />
       </div>
     );
+  }
 
-  if (!artist)
+  if (!artist) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-3.5rem)] lg:h-screen p-8">
-        <p className="text-[#a7afb8]">Artista no encontrado.</p>
-        <Link to="/" className="mt-4 text-[#ff7a00] hover:underline">
-          Volver al inicio
-        </Link>
+      <div className="flex flex-col items-center justify-center py-24 px-4" style={{ backgroundColor: '#0B0D0E' }}>
+        <p style={{ color: '#747B7F' }}>Artista no encontrado.</p>
+        <Link to="/" className="mt-4" style={{ color: '#FF7200' }}>Volver al inicio</Link>
       </div>
     );
+  }
+
+  // Consolidate duplicate versions
+  const normalize = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s*\d+$/, '').trim();
+  const seen = new Map();
+  for (const song of songs) {
+    const key = normalize(song.title);
+    if (!seen.has(key)) {
+      seen.set(key, { ...song, title: song.title.replace(/\s*\d+$/, '').trim() });
+    } else {
+      const ex = seen.get(key);
+      if (song.has_chords) ex.has_chords = true;
+      if (song.has_tablature) ex.has_tablature = true;
+    }
+  }
+  const uniqueSongs = Array.from(seen.values());
 
   return (
-    <div className="max-w-4xl mx-auto p-4 lg:p-8">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#ff7a00] to-[#c54e00] flex items-center justify-center shrink-0">
-          <Music className="w-10 h-10 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">{artist.name}</h1>
-          <p className="text-[#a7afb8] mt-1">
-            {songs.length} {songs.length === 1 ? 'canción' : 'canciones'} disponible
-            {songs.length === 1 ? '' : 's'}
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+      <div className="max-w-4xl mx-auto px-4 lg:px-8 py-8">
+        <Link to="/artistas" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#747B7F' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#FF7200'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#747B7F'; }}>
+          <ChevronLeft className="w-4 h-4" /> Artistas
+        </Link>
 
-      {songs.length > 0 ? (
-        <div className="space-y-2">
-          {(() => {
-            // Consolidate duplicate versions (same normalized title) into one entry
-            const normalize = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s*\d+$/, '').trim();
-            const seen = new Map();
-            for (const song of songs) {
-              const key = normalize(song.title);
-              if (!seen.has(key)) {
-                seen.set(key, { ...song, title: song.title.replace(/\s*\d+$/, '').trim() });
-              } else {
-                const existing = seen.get(key);
-                if (song.has_chords) existing.has_chords = true;
-                if (song.has_tablature) existing.has_tablature = true;
-                if (song.original_key && !existing.original_key) existing.original_key = song.original_key;
-              }
-            }
-            return Array.from(seen.values()).map((song) => (
-              <Link
-                key={song.id}
-                to={`/${artistSlug}/${song.slug}`}
-                className="block bg-[#20242a] border border-[#2b3138] rounded-xl p-4 hover:border-[#ff7a00] transition-colors"
+        {/* Artist header */}
+        <div className="flex items-center gap-5 mb-8 pb-6" style={{ borderBottom: '1px solid #272C2F' }}>
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #FF7200, #D95D00)' }}
+          >
+            <span className="text-white text-2xl font-bold">{artist.name[0]}</span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: '#F4F4F2' }}>{artist.name}</h1>
+            <p className="text-sm mt-0.5" style={{ color: '#747B7F' }}>
+              {uniqueSongs.length} {uniqueSongs.length === 1 ? 'canción disponible' : 'canciones disponibles'}
+            </p>
+          </div>
+        </div>
+
+        {/* Songs list */}
+        {uniqueSongs.length > 0 ? (
+          <div className="space-y-1.5">
+            {uniqueSongs.map(song => (
+              <Link key={song.id} to={`/${artistSlug}/${song.slug}`}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF7200'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; }}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="text-white font-medium truncate">{song.title}</h3>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-[#a7afb8]">
-                      {song.original_key && <span>Tonalidad: {song.original_key}</span>}
-                      {song.difficulty && <span>· {song.difficulty}</span>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {song.has_chords && (
-                      <span className="px-2 py-0.5 bg-[#ff7a00]/10 text-[#ff7a00] text-xs rounded">
-                        Acordes
-                      </span>
-                    )}
-                    {song.has_tablature && (
-                      <span className="px-2 py-0.5 bg-[#ff7a00]/10 text-[#ff7a00] text-xs rounded">
-                        Tab
-                      </span>
-                    )}
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: '#121516', border: '1px solid #272C2F' }}>
+                  <Music className="w-4 h-4" style={{ color: '#444A4E' }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{song.title}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {song.original_key && <span className="text-xs" style={{ color: '#747B7F' }}>Tonalidad: {song.original_key}</span>}
+                    {song.difficulty && <span className="text-xs" style={{ color: '#747B7F' }}>· {song.difficulty}</span>}
                   </div>
                 </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {song.has_chords && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,114,0,0.12)', color: '#FF7200' }}>
+                      Acordes
+                    </span>
+                  )}
+                  {song.has_tablature && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(79,158,216,0.12)', color: '#4F9ED8' }}>
+                      Tab
+                    </span>
+                  )}
+                </div>
               </Link>
-            ));
-          })()}
-        </div>
-      ) : (
-        <p className="text-[#a7afb8] text-center py-8">
-          No hay canciones disponibles para este artista.
-        </p>
-      )}
+            ))}
+          </div>
+        ) : (
+          <p className="text-center py-12" style={{ color: '#747B7F' }}>
+            No hay canciones disponibles para este artista.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

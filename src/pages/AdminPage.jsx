@@ -392,6 +392,7 @@ export default function AdminPage() {
   }
 
   return (
+    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
     <div className="max-w-5xl mx-auto p-4 lg:p-8">
       {editingSong && (
         <SongEditor
@@ -501,6 +502,7 @@ Tengo la camisa negra...`}</pre>
       )}
 
       {tab === 'theme' && <ThemeSettings />}
+    </div>
     </div>
   );
 }

@@ -1,90 +1,78 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { Users, Music } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useSEO } from '@/lib/seo';
 
 export default function TopArtistsPage() {
-  useSEO({ title: 'Artistas destacados | Tablaturas AI', canonical: '/artistas' });
+  useSEO({ title: 'Artistas | Guitarra IA', canonical: 'https://www.guitarraia.com/artistas' });
   const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get artists from songs marked is_trending, deduplicated by artist
-    base44.entities.Song.filter({ is_trending: true }, '-views', 100)
-      .then(songs => {
-        const seen = new Set();
-        const unique = [];
-        for (const s of (songs || [])) {
-          if (!seen.has(s.artist_slug)) {
-            seen.add(s.artist_slug);
-            unique.push({ name: s.artist_name, slug: s.artist_slug });
-          }
-          if (unique.length >= 10) break;
-        }
-        // If less than 10, fill from most-viewed songs
-        if (unique.length < 10) {
-          base44.entities.Song.list('-views', 200).then(allSongs => {
-            for (const s of (allSongs || [])) {
-              if (!seen.has(s.artist_slug)) {
-                seen.add(s.artist_slug);
-                unique.push({ name: s.artist_name, slug: s.artist_slug });
-              }
-              if (unique.length >= 10) break;
+    base44.entities.Artist.list('-created_date', 100)
+      .then(a => {
+        if (a?.length) { setArtists(a); setLoading(false); return; }
+        base44.entities.Song.list('-views', 500).then(songs => {
+          const seen = new Set();
+          const unique = [];
+          for (const s of (songs || [])) {
+            if (!seen.has(s.artist_slug)) {
+              seen.add(s.artist_slug);
+              unique.push({ name: s.artist_name, slug: s.artist_slug });
             }
-            setArtists(unique);
-            setLoading(false);
-          });
-        } else {
+          }
           setArtists(unique);
           setLoading(false);
-        }
+        });
       })
       .catch(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <div className="w-8 h-8 border-4 border-border border-t-orange-500 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground mb-1">
-          Artistas <span className="text-gradient-brand">Destacados</span>
-        </h1>
-        <p className="text-muted-foreground text-sm">Los artistas más populares del catálogo.</p>
-      </div>
+    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+      <div className="max-w-4xl mx-auto px-4 lg:px-8 py-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold mb-1" style={{ color: '#F4F4F2' }}>
+            Todos los <span style={{ color: '#FF7200' }}>artistas</span>
+          </h1>
+          <p className="text-sm" style={{ color: '#747B7F' }}>Explora el catálogo de artistas.</p>
+        </div>
 
-      {artists.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-border rounded-2xl">
-          <p className="text-muted-foreground">No hay artistas destacados aún. Márcalos desde el Admin → Tendencias.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {artists.map((artist, i) => (
-            <Link
-              key={artist.slug}
-              to={`/${artist.slug}`}
-              className="flex items-center gap-4 bg-card border border-border rounded-2xl p-4 hover:border-orange-400 transition-colors group"
-            >
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-brand shrink-0">
-                <span className="text-white font-bold text-lg">{i + 1}</span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-foreground font-semibold truncate group-hover:text-orange-500 transition-colors">{artist.name}</p>
-                <p className="text-muted-foreground text-xs flex items-center gap-1 mt-0.5">
-                  <Users className="w-3 h-3" /> Ver canciones
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#303538', borderTopColor: '#FF7200' }} />
+          </div>
+        ) : artists.length === 0 ? (
+          <div className="text-center py-16 rounded-2xl" style={{ border: '1px dashed #303538' }}>
+            <p style={{ color: '#747B7F' }}>No hay artistas aún.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {artists.map((artist, i) => (
+              <Link key={artist.slug || artist.id} to={`/${artist.slug}`}
+                className="flex items-center gap-3 p-4 rounded-xl transition-all"
+                style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF7200'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; }}
+              >
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: 'rgba(255,114,0,0.12)', border: '1px solid rgba(255,114,0,0.2)' }}>
+                  <span className="text-sm font-bold" style={{ color: '#FF7200' }}>
+                    {(artist.name || artist.slug || '?')[0].toUpperCase()}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{artist.name || artist.slug}</p>
+                  <p className="text-xs flex items-center gap-1" style={{ color: '#747B7F' }}>
+                    <Users className="w-3 h-3" /> Ver canciones
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

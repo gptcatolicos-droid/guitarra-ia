@@ -98,17 +98,23 @@ function ChordDiagramSVG({ frets, name }) {
 
 function ChordCard({ chord }) {
   return (
-    <div className="bg-card border border-border rounded-2xl p-4 relative overflow-hidden hover:border-orange-400/60 transition-colors">
-      {/* Top gradient bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-brand" />
-      <div className="flex items-start justify-between gap-2 mb-1">
-        <h2 className="text-foreground font-bold text-2xl leading-none">{chord.name}</h2>
-        <span className="text-xs font-bold px-2 py-1 rounded-full shrink-0" style={{ color: '#FF2D8D', background: 'rgba(255,45,141,0.1)' }}>
+    <div
+      className="relative overflow-hidden rounded-xl p-3 transition-all"
+      style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,114,0,0.45)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; }}
+    >
+      <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: '#FF7200' }} />
+      <div className="flex items-start justify-between gap-1 mb-1">
+        <h2 className="font-bold text-xl leading-none" style={{ color: '#F4F4F2' }}>{chord.name}</h2>
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ color: '#FF7200', backgroundColor: 'rgba(255,114,0,0.12)' }}>
           {QL[chord.quality]}
         </span>
       </div>
-      <ChordDiagramSVG frets={chord.frets} name={chord.name} />
-      <div className="text-center text-xs text-muted-foreground font-mono mt-1">
+      <div style={{ color: '#A7ACAE' }}>
+        <ChordDiagramSVG frets={chord.frets} name={chord.name} />
+      </div>
+      <div className="text-center text-[10px] mt-1 font-mono" style={{ color: '#747B7F' }}>
         {chord.frets.map(x => x < 0 ? 'x' : x).join(' · ')}
       </div>
     </div>
@@ -136,43 +142,42 @@ export default function AcordesPage() {
   }, [search, rootFilter, qualityFilter]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header */}
+    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground mb-1">
-          Biblioteca de <span className="text-gradient-brand">Acordes</span>
+        <h1 className="text-2xl font-bold mb-1" style={{ color: '#F4F4F2' }}>
+          Biblioteca de <span style={{ color: '#FF7200' }}>Acordes</span>
         </h1>
-        <p className="text-muted-foreground text-sm">180 acordes comunes con diagramas para guitarra. Filtra por nota o tipo.</p>
+        <p className="text-sm" style={{ color: '#747B7F' }}>180 acordes comunes con diagramas. Filtra por nota o tipo.</p>
       </div>
 
-      {/* Filters */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur pb-4 pt-1 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+      <div className="sticky top-0 z-10 pb-4 pt-1 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6"
+        style={{ backgroundColor: '#0B0D0E' }}>
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar: C, F#m7, Bbmaj7..."
-          className="px-4 py-2.5 bg-card border border-border rounded-xl text-sm text-foreground placeholder-muted-foreground outline-none focus:border-orange-500 transition-colors"
+          className="px-4 py-2.5 rounded-xl text-sm outline-none transition-colors"
+          style={{ backgroundColor: '#171A1C', border: '1px solid #303538', color: '#F4F4F2' }}
+          onFocus={e => { e.target.style.borderColor = '#FF7200'; }}
+          onBlur={e => { e.target.style.borderColor = '#303538'; }}
         />
-        <select
-          value={rootFilter}
-          onChange={e => setRootFilter(e.target.value)}
-          className="px-4 py-2.5 bg-card border border-border rounded-xl text-sm text-foreground outline-none focus:border-orange-500 transition-colors"
-        >
+        <select value={rootFilter} onChange={e => setRootFilter(e.target.value)}
+          className="px-4 py-2.5 rounded-xl text-sm outline-none"
+          style={{ backgroundColor: '#171A1C', border: '1px solid #303538', color: '#F4F4F2' }}>
           <option value="">Todas las notas</option>
           {ROOTS.map(r => <option key={r} value={r}>{RL[r]}</option>)}
         </select>
-        <select
-          value={qualityFilter}
-          onChange={e => setQualityFilter(e.target.value)}
-          className="px-4 py-2.5 bg-card border border-border rounded-xl text-sm text-foreground outline-none focus:border-orange-500 transition-colors"
-        >
+        <select value={qualityFilter} onChange={e => setQualityFilter(e.target.value)}
+          className="px-4 py-2.5 rounded-xl text-sm outline-none"
+          style={{ backgroundColor: '#171A1C', border: '1px solid #303538', color: '#F4F4F2' }}>
           <option value="">Todos los tipos</option>
           {ORDER.map(q => <option key={q} value={q}>{QL[q]}</option>)}
         </select>
       </div>
 
-      <div className="flex justify-between items-center mb-4 text-sm text-muted-foreground">
-        <span><strong className="text-foreground">{filtered.length}</strong> acordes</span>
+      <div className="flex justify-between items-center mb-4 text-sm" style={{ color: '#747B7F' }}>
+        <span><strong style={{ color: '#F4F4F2' }}>{filtered.length}</strong> acordes</span>
         <span>Diagramas SVG interactivos</span>
       </div>
 
@@ -181,10 +186,11 @@ export default function AcordesPage() {
           {filtered.map((chord, i) => <ChordCard key={i} chord={chord} />)}
         </div>
       ) : (
-        <div className="text-center py-16 border border-dashed border-border rounded-2xl">
-          <p className="text-muted-foreground">No se encontraron acordes para tu búsqueda.</p>
+        <div className="text-center py-16 rounded-2xl" style={{ border: '1px dashed #303538' }}>
+          <p style={{ color: '#747B7F' }}>No se encontraron acordes para tu búsqueda.</p>
         </div>
       )}
+    </div>
     </div>
   );
 }

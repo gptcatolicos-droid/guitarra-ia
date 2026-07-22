@@ -1,13 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MessageCircle, Search, Users, Music, X, Sun, Moon, LayoutGrid, ShoppingBag, Sparkles } from 'lucide-react';
 import { useState } from 'react';
+import {
+  Home, Search, Users, Music, LayoutGrid,
+  BookOpen, ShoppingBag, MessageCircle, X, Library
+} from 'lucide-react';
 
 const navItems = [
-  { icon: MessageCircle, label: 'Chat IA', path: '/chat' },
-  { icon: Search, label: 'Explorar', path: '/buscar' },
-  { icon: Users, label: 'Artistas', path: '/artistas' },
+  { icon: Home, label: 'Inicio', path: '/' },
+  { icon: Search, label: 'Buscar', path: '/buscar' },
   { icon: Music, label: 'Canciones', path: '/canciones' },
+  { icon: Users, label: 'Artistas', path: '/artistas' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
+  { icon: BookOpen, label: 'Blog', path: '/blog' },
+  { icon: Library, label: 'Biblioteca', path: '/favoritos' },
+  { icon: MessageCircle, label: 'Asistente IA', path: '/chat' },
   { icon: ShoppingBag, label: 'Guitar Store', path: '/tienda' },
 ];
 
@@ -15,120 +21,100 @@ const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc9
 
 export default function Sidebar({ open, onClose }) {
   const location = useLocation();
-  const isActive = (path) => location.pathname === path;
 
-  const [isDark, setIsDark] = useState(
-    () => document.documentElement.classList.contains('dark')
-  );
-
-  const toggleTheme = () => {
-    const html = document.documentElement;
-    if (isDark) {
-      html.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      setIsDark(false);
-    } else {
-      html.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      setIsDark(true);
-    }
+  const isActive = (path) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
   return (
     <>
-      {open && <div className="lg:hidden fixed inset-0 bg-black/60 z-40" onClick={onClose} />}
+      {open && (
+        <div
+          className="lg:hidden fixed inset-0 z-40"
+          style={{ backgroundColor: 'rgba(0,0,0,0.72)' }}
+          onClick={onClose}
+        />
+      )}
+
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-[236px] z-50 flex flex-col transform transition-transform duration-300 lg:translate-x-0 ${
-          open ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed top-0 left-0 bottom-0 z-50 flex flex-col transform transition-transform duration-250 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
-          background: 'linear-gradient(180deg, rgba(255,255,255,.015), transparent 28%), #1F2126',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
+          width: '240px',
+          backgroundColor: '#0E1112',
+          borderRight: '1px solid #272C2F',
         }}
       >
-        {/* Mobile close */}
-        <div className="lg:hidden px-4 pt-4 pb-2 flex justify-end">
-          <button onClick={onClose} className="text-white/60 hover:text-white p-1">
-            <X className="w-5 h-5" />
+        {/* Logo area */}
+        <div
+          className="flex items-center justify-between px-5"
+          style={{ height: '64px', borderBottom: '1px solid #272C2F', flexShrink: 0 }}
+        >
+          <Link to="/" onClick={onClose}>
+            <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '30px', width: 'auto', objectFit: 'contain' }} />
+          </Link>
+          <button
+            onClick={onClose}
+            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg"
+            style={{ color: '#747B7F' }}
+            aria-label="Cerrar menú"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Logo */}
-        <div className="flex items-center justify-center px-4 py-5 border-b border-white/[0.06]">
-          <Link to="/" onClick={onClose}>
-            <img
-              src={LOGO_URL}
-              alt="Guitarra IA"
-              style={{ height: '52px', width: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 4px 10px rgba(212,175,55,0.2))' }}
-            />
-          </Link>
-        </div>
-
         {/* Nav */}
-        <nav className="px-3 py-4 flex-1 overflow-y-auto space-y-1">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
           {navItems.map((item) => {
             const active = isActive(item.path);
             return (
               <Link
-                key={item.label}
+                key={item.path}
                 to={item.path}
                 onClick={onClose}
-                className="relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-[13px] text-sm font-semibold transition-all duration-150 group"
+                className="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
                 style={active ? {
-                  color: '#FFFFFF',
-                  background: 'linear-gradient(90deg, rgba(212,175,55,0.20), rgba(245,154,35,0.08)), #31343A',
+                  backgroundColor: 'rgba(255,114,0,0.12)',
+                  color: '#FF7200',
                 } : {
-                  color: 'rgba(248,247,244,0.75)',
+                  color: '#A7ACAE',
                 }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = '#181B1D'; e.currentTarget.style.color = '#F4F4F2'; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#A7ACAE'; } }}
               >
                 {active && (
                   <span
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full"
-                    style={{ background: 'linear-gradient(135deg, #B89245, #F59A23)', boxShadow: '0 0 14px rgba(212,175,55,0.4)' }}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
+                    style={{ backgroundColor: '#FF7200' }}
                   />
                 )}
-                <item.icon className={`w-[18px] h-[18px] shrink-0 transition-colors ${active ? 'text-gold' : 'text-white/50 group-hover:text-white/80'}`}
-                  style={active ? { color: '#D4AF37' } : {}} />
-                <span className={`transition-colors ${active ? '' : 'group-hover:text-white'}`}>{item.label}</span>
+                <item.icon className="w-[18px] h-[18px] shrink-0" />
+                <span>{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Theme toggle */}
-        <div className="px-3 pb-2 border-t border-white/[0.06] pt-2">
-          <button
-            onClick={toggleTheme}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-[13px] text-sm font-medium transition-all text-white/60 hover:text-white hover:bg-white/[0.06]"
-          >
-            {isDark ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
-            {isDark ? 'Modo claro' : 'Modo oscuro'}
-          </button>
-        </div>
-
-        {/* Bottom card */}
-        <div className="p-3 pb-4">
+        {/* Bottom promo */}
+        <div className="p-3 pb-5" style={{ borderTop: '1px solid #272C2F' }}>
           <div
-            className="rounded-[18px] p-4"
+            className="rounded-xl p-4"
             style={{
-              background: 'linear-gradient(180deg, rgba(212,175,55,0.10), rgba(255,255,255,0.02))',
-              border: '1px solid rgba(212,175,55,0.22)',
+              backgroundColor: 'rgba(255,114,0,0.08)',
+              border: '1px solid rgba(255,114,0,0.25)',
             }}
           >
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-4 h-4" style={{ color: '#D4AF37' }} />
-              <p className="text-white text-sm font-bold">Asistente Musical con IA</p>
-            </div>
-            <p className="text-white/65 text-xs leading-relaxed mb-3">
-              Tu compañero inteligente para aprender cualquier canción en guitarra.
+            <p className="text-sm font-semibold mb-1" style={{ color: '#F4F4F2' }}>Asistente IA</p>
+            <p className="text-xs leading-relaxed mb-3" style={{ color: '#747B7F' }}>
+              Pregunta sobre acordes, tonos, canciones y técnica.
             </p>
             <Link
               to="/chat"
               onClick={onClose}
-              className="block text-center text-xs font-bold py-2 rounded-xl transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #B89245, #D4AF37, #F59A23)', color: '#fff' }}
+              className="block text-center text-xs font-bold py-2 rounded-lg transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#FF7200', color: '#fff' }}
             >
-              Probar ahora
+              Preguntar ahora
             </Link>
           </div>
         </div>

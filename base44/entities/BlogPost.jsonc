@@ -1,0 +1,52 @@
+{
+  "name": "BlogPost",
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "excerpt": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Acordes",
+        "Ritmos",
+        "T\u00e9cnica",
+        "Guitarras",
+        "Cuerdas",
+        "Canciones",
+        "Teor\u00eda",
+        "Ejercicios",
+        "Compra y Equipamiento"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reading_time_min": {
+      "type": "number",
+      "default": 5
+    },
+    "published": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "slug",
+    "title",
+    "content",
+    "category"
+  ]
+}

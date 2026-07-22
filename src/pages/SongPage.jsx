@@ -64,16 +64,16 @@ export default function SongPage() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-border border-t-orange-500 rounded-full animate-spin" />
+      <div className="flex items-center justify-center py-24" style={{ backgroundColor: '#0B0D0E' }}>
+        <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#303538', borderTopColor: '#FF7200' }} />
       </div>
     );
 
   if (!song)
     return (
-      <div className="flex flex-col items-center justify-center h-64 p-8">
-        <p className="text-muted-foreground">No se encontró la canción.</p>
-        <Link to="/" className="mt-4 text-orange-500 hover:underline">Volver al inicio</Link>
+      <div className="flex flex-col items-center justify-center py-24 px-4" style={{ backgroundColor: '#0B0D0E' }}>
+        <p style={{ color: '#747B7F' }}>No se encontró la canción.</p>
+        <Link to="/" className="mt-4" style={{ color: '#FF7200' }}>Volver al inicio</Link>
       </div>
     );
 
@@ -82,28 +82,30 @@ export default function SongPage() {
   const activeView = view || (song.has_chords ? 'acordes' : 'tablatura');
 
   return (
-    <div className="max-w-6xl mx-auto p-4 lg:p-8">
+    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6">
       {/* Header */}
-      <div className="mb-4">
-        <Link
-          to={`/${artistSlug}`}
-          className="inline-flex items-center text-muted-foreground hover:text-foreground text-sm mb-4 transition-colors"
+      <div className="mb-5">
+        <Link to={`/${artistSlug}`}
+          className="inline-flex items-center text-sm mb-4 transition-colors"
+          style={{ color: '#747B7F' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#FF7200'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#747B7F'; }}
         >
           <ArrowLeft className="w-4 h-4 mr-1" /> {song.artist_name}
         </Link>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground">{displayTitle}</h1>
-            <p className="text-muted-foreground mt-1 text-base">{song.artist_name}</p>
+            <h1 className="text-2xl lg:text-3xl font-bold" style={{ color: '#F4F4F2' }}>{displayTitle}</h1>
+            <p className="mt-1 text-base" style={{ color: '#A7ACAE' }}>{song.artist_name}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={toggleFavorite}
-              className={`p-2 rounded-xl transition-colors ${isFav ? 'text-orange-500' : 'text-muted-foreground hover:text-orange-500'}`}
-            >
+            <button onClick={toggleFavorite}
+              className="p-2 rounded-xl transition-colors"
+              style={{ color: isFav ? '#FF7200' : '#747B7F' }}>
               <Heart className={`w-5 h-5 ${isFav ? 'fill-current' : ''}`} />
             </button>
-            <button className="p-2 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
+            <button className="p-2 rounded-xl transition-colors" style={{ color: '#747B7F' }}>
               <Share2 className="w-5 h-5" />
             </button>
           </div>
@@ -122,27 +124,23 @@ export default function SongPage() {
 
           {/* Tabs */}
           {(song.has_chords || song.has_tablature) && (
-            <div className="flex items-center gap-1 mb-6 border-b border-border">
+            <div className="flex items-center gap-1 mb-6" style={{ borderBottom: '1px solid #272C2F' }}>
               {song.has_chords && (
-                <Link
-                  to={`/${artistSlug}/${songSlug}/acordes`}
-                  className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                    activeView === 'acordes' || isTransposed
-                      ? 'border-orange-500 text-orange-500'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
+                <Link to={`/${artistSlug}/${songSlug}/acordes`}
+                  className="px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+                  style={activeView === 'acordes' || isTransposed
+                    ? { borderColor: '#FF7200', color: '#FF7200' }
+                    : { borderColor: 'transparent', color: '#747B7F' }}
                 >
                   Acordes
                 </Link>
               )}
               {song.has_tablature && (
-                <Link
-                  to={`/${artistSlug}/${songSlug}/tablatura`}
-                  className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                    activeView === 'tablatura'
-                      ? 'border-orange-500 text-orange-500'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
+                <Link to={`/${artistSlug}/${songSlug}/tablatura`}
+                  className="px-4 py-3 text-sm font-medium border-b-2 transition-colors"
+                  style={activeView === 'tablatura'
+                    ? { borderColor: '#FF7200', color: '#FF7200' }
+                    : { borderColor: 'transparent', color: '#747B7F' }}
                 >
                   Tablatura
                 </Link>
@@ -156,14 +154,15 @@ export default function SongPage() {
           {activeView === 'tablatura' && song.has_tablature && <TablatureViewer song={song} />}
           {activeView === 'acordes' && !song.has_chords && song.has_tablature && <TablatureViewer song={song} />}
 
-          {/* Botón Chat IA para seguir buscando */}
-          <div className="mt-8 pt-6 border-t border-border">
+          {/* IA CTA */}
+          <div className="mt-8 pt-6" style={{ borderTop: '1px solid #272C2F' }}>
             <button
               onClick={() => navigate('/chat')}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm bg-gradient-brand hover:opacity-90 transition-opacity shadow-md"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#FF7200' }}
             >
               <Sparkles className="w-4 h-4" />
-              Buscar Tablaturas con IA
+              Preguntar a GuitarraIA
             </button>
           </div>
         </div>
@@ -173,6 +172,7 @@ export default function SongPage() {
           <SpotifyPlayer song={song} />
         </div>
       </div>
+    </div>
     </div>
   );
 }

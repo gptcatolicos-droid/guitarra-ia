@@ -292,7 +292,7 @@ IMPORTANTE:
 
   const inner = (
     <>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4" style={{ backgroundColor: '#0B0D0E' }}>
         <div className="max-w-3xl mx-auto space-y-6">
           {messages.map((msg, i) => (
             <ChatMessage key={i} message={msg} onSuggestionClick={handleSend} />
@@ -331,9 +331,9 @@ IMPORTANTE:
         </div>
       </div>
 
-      <div className="border-t border-border px-4 py-4">
+      <div className="px-4 py-4" style={{ borderTop: '1px solid #272C2F', backgroundColor: '#0E1112' }}>
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-2 bg-card border border-border rounded-2xl p-2 focus-within:border-primary transition-colors">
+          <div className="flex items-end gap-2 rounded-2xl p-2 transition-colors" style={{ backgroundColor: '#171A1C', border: '1px solid #303538' }}>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -345,12 +345,12 @@ IMPORTANTE:
               }}
               placeholder="Escribe el nombre de una canción o artista..."
               rows={1}
-              className="flex-1 bg-transparent text-foreground placeholder-muted-foreground resize-none outline-none py-2 text-sm max-h-32"
+              className="flex-1 resize-none outline-none py-2 text-sm max-h-32" style={{ backgroundColor: 'transparent', color: '#F4F4F2' }}
             />
             <button
               onClick={() => handleSend()}
               disabled={!input.trim() || loading}
-              className="p-2.5 text-white rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity bg-gradient-brand"
+              className="p-2.5 text-white rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity" style={{ backgroundColor: '#FF7200' }}
             >
               <Send className="w-5 h-5" />
             </button>
@@ -368,7 +368,7 @@ IMPORTANTE:
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] lg:h-screen">
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)', backgroundColor: '#0B0D0E' }}>
       {inner}
     </div>
   );
