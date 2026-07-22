@@ -57,7 +57,7 @@ const AuthenticatedApp = () => {
         <Route path="/terminos" element={<TermsPage />} />
         <Route path="/acordes" element={<AcordesPage />} />
         <Route path="/artistas" element={<TopArtistsPage />} />
-        <Route path="/canciones" element={<ChatPage />} />
+        <Route path="/canciones" element={<TopSongsPage />} />
         <Route path="/tienda" element={<GuitarStorePage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />

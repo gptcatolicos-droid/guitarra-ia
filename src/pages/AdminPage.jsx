@@ -10,6 +10,7 @@ import TrendingManager from '@/components/admin/TrendingManager';
 import HeroBannerManager from '@/components/admin/HeroBannerManager';
 import AmazonProductsManager from '@/components/admin/AmazonProductsManager';
 import CatalogTab from '@/components/admin/CatalogTab';
+import ArtistsManager from '@/components/admin/ArtistsManager';
 
 const ADMIN_EMAILS = ['danipalacio@gmail.com'];
 const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
@@ -45,12 +46,24 @@ function slugify(text) {
 async function upsertArtist(artistName, artistSlug) {
   const existing = await base44.entities.Artist.filter({ slug: artistSlug });
   if (existing && existing.length > 0) return existing[0];
-  return base44.entities.Artist.create({
+
+  // Create artist first
+  const created = await base44.entities.Artist.create({
     name: artistName,
     slug: artistSlug,
     normalized_name: artistName.toLowerCase(),
     is_demo: false,
   });
+
+  // Auto-fetch Spotify image in background
+  try {
+    const res = await base44.functions.spotifyArtist({ artist_name: artistName });
+    if (res?.image_url) {
+      await base44.entities.Artist.update(created.id, { image_url: res.image_url });
+    }
+  } catch (_) {}
+
+  return created;
 }
 
 async function upsertSong(parsed) {
@@ -430,6 +443,7 @@ export default function AdminPage() {
       <div className="flex gap-1 mb-6 bg-secondary rounded-xl p-1">
         {[
           { id: 'catalog', label: 'Catálogo' },
+          { id: 'artists', label: 'Artistas' },
           { id: 'import', label: 'Importar' },
           { id: 'hero', label: 'Hero Banner' },
           { id: 'trending', label: 'Tendencias' },
@@ -475,6 +489,8 @@ Tengo la camisa negra...`}</pre>
           </div>
         </>
       )}
+
+      {tab === 'artists' && <ArtistsManager />}
 
       {tab === 'catalog' && (
         <CatalogTab

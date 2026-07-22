@@ -29,6 +29,10 @@
     "is_demo": {
       "type": "boolean",
       "default": false
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [
