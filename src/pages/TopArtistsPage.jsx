@@ -11,22 +11,9 @@ export default function TopArtistsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.Artist.list('-created_date', 100)
-      .then(a => {
-        if (a?.length) { setArtists(a); setLoading(false); return; }
-        base44.entities.Song.list('-views', 500).then(songs => {
-          const seen = new Set();
-          const unique = [];
-          for (const s of (songs || [])) {
-            if (!seen.has(s.artist_slug)) {
-              seen.add(s.artist_slug);
-              unique.push({ name: s.artist_name, slug: s.artist_slug });
-            }
-          }
-          setArtists(unique);
-          setLoading(false);
-        });
-      })
+    // Only show artists marked as featured (top 10), sorted by sort_order or created_date
+    base44.entities.Artist.filter({ is_demo: false }, '-created_date', 10)
+      .then(a => { setArtists(a || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -64,7 +51,7 @@ export default function TopArtistsPage() {
             className="shrink-0 px-5 py-2.5 rounded-xl font-bold text-sm transition-opacity hover:opacity-90 whitespace-nowrap"
             style={{ backgroundColor: '#FF7200', color: '#fff' }}
           >
-            Preguntar ahora
+            Pregunta a GuitarraIA
           </button>
         </div>
 

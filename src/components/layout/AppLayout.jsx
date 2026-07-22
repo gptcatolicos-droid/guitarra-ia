@@ -47,24 +47,21 @@ export default function AppLayout() {
 
       {/* Main content */}
       <main
-        className="lg:ml-[240px] pt-[56px] lg:pt-0 pb-[72px] lg:pb-0 min-h-screen"
+        className="lg:ml-[240px] pt-[56px] lg:pt-0 pb-[72px] lg:pb-0"
         style={{ backgroundColor: '#0B0D0E' }}
       >
-        {/* Desktop header — logo centered at 250px height equivalent (large logo display) */}
+        {/* Desktop header — logo 330px height */}
         <div
           className="hidden lg:flex items-center justify-center"
           style={{
-            height: '64px',
+            height: '330px',
             backgroundColor: 'rgba(11,13,14,0.92)',
             backdropFilter: 'blur(20px)',
             borderBottom: '1px solid #272C2F',
-            position: 'sticky',
-            top: 0,
-            zIndex: 20,
           }}
         >
-          <Link to="/" className="flex items-center justify-center" style={{ height: '64px' }}>
-            <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '44px', width: 'auto', objectFit: 'contain' }} />
+          <Link to="/" className="flex items-center justify-center" style={{ height: '330px' }}>
+            <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '280px', width: 'auto', objectFit: 'contain' }} />
           </Link>
         </div>
 

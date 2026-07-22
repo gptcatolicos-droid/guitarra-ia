@@ -29,44 +29,42 @@ function SpotifySongCard({ song }) {
   const embedUrl = getSpotifyEmbedUrl(song.spotify_embed);
 
   return (
-    <Link
-      to={`/${song.artist_slug}/${song.slug}`}
-      className="flex flex-col rounded-xl overflow-hidden transition-all duration-150"
-      style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,114,0,0.45)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; e.currentTarget.style.transform = 'translateY(0)'; }}
-    >
+    <div className="flex flex-col rounded-xl overflow-hidden" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+      {/* Spotify player — full height, no clip */}
       {embedUrl ? (
-        <div className="w-full" style={{ height: '80px', overflow: 'hidden', borderRadius: '8px 8px 0 0' }}>
-          <iframe
-            src={embedUrl}
-            width="100%"
-            height="80"
-            frameBorder="0"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            style={{ display: 'block' }}
-            onClick={e => e.preventDefault()}
-          />
-        </div>
+        <iframe
+          src={embedUrl}
+          width="100%"
+          height="152"
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          style={{ display: 'block', borderRadius: '10px 10px 0 0' }}
+        />
       ) : (
-        <div className="flex items-center justify-center" style={{ height: '80px', backgroundColor: '#121516' }}>
+        <div className="flex items-center justify-center" style={{ height: '152px', backgroundColor: '#121516' }}>
           <Music className="w-8 h-8" style={{ color: '#303538' }} />
         </div>
       )}
-      <div className="p-3">
-        <p className="text-sm font-semibold leading-snug line-clamp-1 mb-0.5" style={{ color: '#F4F4F2' }}>
-          {song.title.replace(/\s*\d+$/, '').trim()}
-        </p>
-        <p className="text-xs mb-2" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+      {/* Meta */}
+      <Link
+        to={`/${song.artist_slug}/${song.slug}`}
+        className="p-3 flex items-center justify-between gap-2 transition-opacity hover:opacity-80"
+      >
+        <div className="min-w-0">
+          <p className="text-sm font-semibold leading-snug line-clamp-1 mb-0.5" style={{ color: '#F4F4F2' }}>
+            {song.title.replace(/\s*\d+$/, '').trim()}
+          </p>
+          <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+        </div>
         {song.difficulty && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
             style={{ backgroundColor: diff.bg, color: diff.color }}>
             {song.difficulty}
           </span>
         )}
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
@@ -76,6 +74,7 @@ export default function Home() {
   const [topSongs, setTopSongs] = useState([]);
   const [easySongs, setEasySongs] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   useSEO({
     title: 'Guitarra IA — Acordes, tablaturas y asistente IA | guitarraia.com',
@@ -101,7 +100,7 @@ export default function Home() {
     base44.entities.Song.list('-views', 100)
       .then(songs => {
         const withSpotify = (songs || []).filter(s => s.spotify_embed);
-        setTopSongs(withSpotify.slice(0, 5));
+        setTopSongs(withSpotify.slice(0, 3));
       })
       .catch(() => {});
     base44.entities.Song.filter({ difficulty: 'Fácil' }, '-views', 6)
@@ -196,8 +195,46 @@ export default function Home() {
                 Ver todas <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {topSongs.map(song => <SpotifySongCard key={song.id} song={song} />)}
+            {/* Carrusel con flechas */}
+            <div className="relative">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {topSongs.map((song, i) => (
+                  <div
+                    key={song.id}
+                    className={`transition-opacity duration-300 ${topSongs.length === 3 || i === carouselIndex ? 'opacity-100' : 'hidden sm:block opacity-60'}`}
+                  >
+                    <SpotifySongCard song={song} />
+                  </div>
+                ))}
+              </div>
+              {/* Mobile: show one at a time with arrows */}
+              <div className="sm:hidden">
+                <div className="mt-2">
+                  <SpotifySongCard song={topSongs[carouselIndex]} />
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <button
+                    onClick={() => setCarouselIndex(i => (i - 1 + topSongs.length) % topSongs.length)}
+                    className="w-9 h-9 flex items-center justify-center rounded-full transition-all"
+                    style={{ backgroundColor: '#181B1D', border: '1px solid #303538', color: '#A7ACAE' }}
+                  >
+                    <ChevronRight className="w-4 h-4 rotate-180" />
+                  </button>
+                  <div className="flex gap-1.5">
+                    {topSongs.map((_, i) => (
+                      <span key={i} className="w-1.5 h-1.5 rounded-full transition-all"
+                        style={{ backgroundColor: i === carouselIndex ? '#FF7200' : '#303538' }} />
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setCarouselIndex(i => (i + 1) % topSongs.length)}
+                    className="w-9 h-9 flex items-center justify-center rounded-full transition-all"
+                    style={{ backgroundColor: '#181B1D', border: '1px solid #303538', color: '#A7ACAE' }}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -268,7 +305,7 @@ export default function Home() {
               className="shrink-0 px-6 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#FF7200', color: '#fff' }}
             >
-              Preguntar ahora
+              Pregunta a GuitarraIA
             </Link>
           </div>
         </div>
