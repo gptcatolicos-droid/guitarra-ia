@@ -149,6 +149,104 @@
     "spotify_manual_lock": {
       "type": "boolean",
       "default": false
+    },
+    "seo_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "generated",
+        "review_required",
+        "approved",
+        "published",
+        "error",
+        "disabled"
+      ],
+      "default": "pending"
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "seo_meta_description": {
+      "type": "string"
+    },
+    "seo_h1": {
+      "type": "string"
+    },
+    "seo_intro": {
+      "type": "string"
+    },
+    "seo_how_to_play": {
+      "type": "string"
+    },
+    "seo_easy_version_text": {
+      "type": "string"
+    },
+    "seo_original_key_text": {
+      "type": "string"
+    },
+    "seo_capo_text": {
+      "type": "string"
+    },
+    "seo_strumming_text": {
+      "type": "string"
+    },
+    "seo_chord_explanation": {
+      "type": "string"
+    },
+    "seo_beginner_tips": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "seo_faq": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "seo_keyword_cluster": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "seo_related_song_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "seo_content_hash": {
+      "type": "string"
+    },
+    "seo_source_hash": {
+      "type": "string"
+    },
+    "seo_generated_at": {
+      "type": "string"
+    },
+    "seo_updated_at": {
+      "type": "string"
+    },
+    "seo_manual_lock": {
+      "type": "boolean",
+      "default": false
+    },
+    "seo_review_notes": {
+      "type": "string"
+    },
+    "seo_quality_score": {
+      "type": "number"
     }
   },
   "required": [
