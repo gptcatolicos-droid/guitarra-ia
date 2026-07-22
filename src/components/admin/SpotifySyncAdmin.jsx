@@ -153,11 +153,11 @@ export default function SpotifySyncAdmin({ allSongs }) {
   const computeStats = (songs) => {
     const total = songs.length;
     const matched = songs.filter(s => s.spotify_match_status === 'matched').length;
-    const pending = songs.filter(s => !s.spotify_match_status || s.spotify_match_status === 'pending').length;
+    const unsynced = songs.filter(s => !s.spotify_match_status || s.spotify_match_status === 'pending').length;
     const review = songs.filter(s => s.spotify_match_status === 'review_required').length;
     const notFound = songs.filter(s => s.spotify_match_status === 'not_found').length;
     const errors = songs.filter(s => s.spotify_match_status === 'error').length;
-    return { total, matched, pending, review, notFound, errors };
+    return { total, matched, unsynced, review, notFound, errors };
   };
 
   useEffect(() => {
@@ -244,8 +244,8 @@ export default function SpotifySyncAdmin({ allSongs }) {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             { label: 'Total canciones', value: stats.total, color: '#A7ACAE' },
-            { label: 'Con Spotify', value: stats.matched, color: '#1DB954' },
-            { label: 'Pendientes', value: stats.pending, color: '#4F9ED8' },
+            { label: 'Con Spotify ✓', value: stats.matched, color: '#1DB954' },
+            { label: 'Sin sincronizar', value: stats.unsynced, color: '#4F9ED8', note: 'No han pasado por el sync aún' },
             { label: 'Para revisar', value: stats.review, color: '#D8A62A' },
             { label: 'No encontradas', value: stats.notFound, color: '#747B7F' },
             { label: 'Errores', value: stats.errors, color: '#E06464' },
@@ -254,6 +254,7 @@ export default function SpotifySyncAdmin({ allSongs }) {
               style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
               <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
               <p className="text-xs mt-1" style={{ color: '#747B7F' }}>{s.label}</p>
+              {s.note && <p className="text-[10px] mt-0.5" style={{ color: '#555B5E' }}>{s.note}</p>}
             </div>
           ))}
         </div>

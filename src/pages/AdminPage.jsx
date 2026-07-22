@@ -14,6 +14,7 @@ import ArtistsManager from '@/components/admin/ArtistsManager';
 import SpotifySyncAdmin from '@/components/admin/SpotifySyncAdmin';
 import SongCreatorForm from '@/components/admin/SongCreatorForm';
 import SeoManager from '@/components/admin/SeoManager';
+import SitemapPanel from '@/components/admin/SitemapPanel';
 
 const ADMIN_EMAILS = ['danipalacio@gmail.com'];
 const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
@@ -454,6 +455,7 @@ export default function AdminPage() {
           { id: 'store', label: 'Guitar Store' },
           { id: 'spotify', label: 'Spotify Sync' },
           { id: 'seo', label: 'SEO' },
+          { id: 'sitemap', label: 'Sitemap' },
           { id: 'stats', label: 'Estadísticas' },
           { id: 'theme', label: 'Tema' },
         ].map((t) => (
@@ -535,6 +537,10 @@ Tengo la camisa negra...`}</pre>
 
       {tab === 'seo' && (
         <SeoManager allSongs={allSongsList} onRefresh={loadStats} />
+      )}
+
+      {tab === 'sitemap' && (
+        <SitemapPanel allSongs={allSongsList} />
       )}
 
       {tab === 'stats' && (
