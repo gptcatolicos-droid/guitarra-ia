@@ -1,0 +1,54 @@
+{
+  "name": "SpotifySyncJob",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "running",
+        "paused",
+        "completed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "total_records": {
+      "type": "number",
+      "default": 0
+    },
+    "processed_records": {
+      "type": "number",
+      "default": 0
+    },
+    "matched_records": {
+      "type": "number",
+      "default": 0
+    },
+    "review_records": {
+      "type": "number",
+      "default": 0
+    },
+    "not_found_records": {
+      "type": "number",
+      "default": 0
+    },
+    "error_records": {
+      "type": "number",
+      "default": 0
+    },
+    "cursor": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "finished_at": {
+      "type": "string"
+    },
+    "last_error": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

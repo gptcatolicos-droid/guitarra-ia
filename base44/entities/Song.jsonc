@@ -86,6 +86,69 @@
     },
     "spotify_embed": {
       "type": "string"
+    },
+    "spotify_track_id": {
+      "type": "string"
+    },
+    "spotify_uri": {
+      "type": "string"
+    },
+    "spotify_url": {
+      "type": "string"
+    },
+    "spotify_embed_url": {
+      "type": "string"
+    },
+    "spotify_track_name": {
+      "type": "string"
+    },
+    "spotify_artist_name": {
+      "type": "string"
+    },
+    "spotify_album_name": {
+      "type": "string"
+    },
+    "spotify_duration_ms": {
+      "type": "number"
+    },
+    "spotify_isrc": {
+      "type": "string"
+    },
+    "spotify_match_score": {
+      "type": "number"
+    },
+    "spotify_match_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "matched",
+        "review_required",
+        "not_found",
+        "error",
+        "disabled"
+      ],
+      "default": "pending"
+    },
+    "spotify_match_method": {
+      "type": "string",
+      "enum": [
+        "isrc",
+        "exact_artist_title",
+        "fuzzy_artist_title",
+        "manual",
+        "existing_url"
+      ]
+    },
+    "spotify_last_sync": {
+      "type": "string"
+    },
+    "spotify_sync_error": {
+      "type": "string"
+    },
+    "spotify_manual_lock": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

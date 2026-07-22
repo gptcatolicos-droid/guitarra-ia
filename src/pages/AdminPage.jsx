@@ -11,6 +11,7 @@ import HeroBannerManager from '@/components/admin/HeroBannerManager';
 import AmazonProductsManager from '@/components/admin/AmazonProductsManager';
 import CatalogTab from '@/components/admin/CatalogTab';
 import ArtistsManager from '@/components/admin/ArtistsManager';
+import SpotifySyncAdmin from '@/components/admin/SpotifySyncAdmin';
 
 const ADMIN_EMAILS = ['danipalacio@gmail.com'];
 const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
@@ -448,6 +449,7 @@ export default function AdminPage() {
           { id: 'hero', label: 'Hero Banner' },
           { id: 'trending', label: 'Tendencias' },
           { id: 'store', label: 'Guitar Store' },
+          { id: 'spotify', label: 'Spotify Sync' },
           { id: 'stats', label: 'Estadísticas' },
           { id: 'theme', label: 'Tema' },
         ].map((t) => (
@@ -511,6 +513,10 @@ Tengo la camisa negra...`}</pre>
 
       {tab === 'store' && (
         <AmazonProductsManager />
+      )}
+
+      {tab === 'spotify' && (
+        <SpotifySyncAdmin allSongs={allSongsList} />
       )}
 
       {tab === 'stats' && (
