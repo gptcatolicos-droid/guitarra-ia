@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Send } from 'lucide-react';
 import ChatMessage from './ChatMessage';
+import { useLocation } from 'react-router-dom';
 
 const SYSTEM_PROMPT = `Eres Guitarra IA, un asistente musical especializado en acordes, cifrados y tablaturas para guitarristas de guitarraia.com.
 
@@ -60,6 +61,7 @@ const normalize = (s) =>
     .trim();
 
 export default function ChatInterface({ embedded }) {
+  const location = useLocation();
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -72,12 +74,24 @@ export default function ChatInterface({ embedded }) {
   const [scanningExternal, setScanningExternal] = useState(false);
   const [songsCache, setSongsCache] = useState([]);
   const scrollRef = useRef(null);
+  const autoQueryFired = useRef(false);
 
   useEffect(() => {
     base44.entities.Song.list('-created_date', 2000)
       .then(setSongsCache)
       .catch(() => {});
   }, []);
+
+  // Auto-fire query from URL param ?q=
+  useEffect(() => {
+    if (autoQueryFired.current) return;
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q');
+    if (q && songsCache.length > 0) {
+      autoQueryFired.current = true;
+      handleSend(q);
+    }
+  }, [songsCache, location.search]);
 
   useEffect(() => {
     if (scrollRef.current) {
