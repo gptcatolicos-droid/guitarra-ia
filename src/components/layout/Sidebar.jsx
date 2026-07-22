@@ -1,12 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home, Users, LayoutGrid,
+  Home, LayoutGrid,
   BookOpen, ShoppingBag, X, MessageCircleMore
 } from 'lucide-react';
 
 const navItems = [
   { icon: Home, label: 'Inicio', path: '/' },
-  { icon: Users, label: 'Artistas', path: '/artistas' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
   { icon: BookOpen, label: 'Blog', path: '/blog' },
   { icon: ShoppingBag, label: 'Guitar Store', path: '/tienda', newTab: true },
