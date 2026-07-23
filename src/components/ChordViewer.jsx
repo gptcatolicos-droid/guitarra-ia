@@ -150,7 +150,7 @@ export default function ChordViewer({ song, transposeKey }) {
   const useAdaptable = adaptable !== false; // treat null (initial) as adaptable-friendly
 
   return (
-    <div className="w-full min-w-0">
+    <div className="song-chord-content w-full min-w-0">
       {/* Action buttons — full width on small screens */}
       <div className="grid grid-cols-2 sm:flex gap-2 mb-3">
         <button
@@ -185,19 +185,21 @@ export default function ChordViewer({ song, transposeKey }) {
         </button>
       </div>
 
-      <TransposeControls
-        semitones={semitones}
-        onTranspose={setSemitones}
-        fontSize={fontSize}
-        onFontSize={setFontSize}
-        autoScroll={autoScroll}
-        onAutoScroll={setAutoScroll}
-        showDiagrams={showDiagrams}
-        onShowDiagrams={setShowDiagrams}
-      />
+      <div className="chord-controls">
+        <TransposeControls
+          semitones={semitones}
+          onTranspose={setSemitones}
+          fontSize={fontSize}
+          onFontSize={setFontSize}
+          autoScroll={autoScroll}
+          onAutoScroll={setAutoScroll}
+          showDiagrams={showDiagrams}
+          onShowDiagrams={setShowDiagrams}
+        />
+      </div>
 
       {showDiagrams && usedChords.length > 0 && (
-        <div className="mb-6 bg-[#1a1d21] border border-[#2b3138] rounded-xl p-4">
+        <div className="chord-diagrams-card mb-6 bg-[#1a1d21] border border-[#2b3138] rounded-xl p-4">
           <h3 className="text-white font-semibold mb-3 text-sm">Acordes principales</h3>
           <div className="w-full max-w-full overflow-x-auto pb-1">
             <div className="flex w-max min-w-full justify-center gap-3 px-1">

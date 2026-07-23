@@ -106,9 +106,9 @@ export default function SongPage() {
 
   return (
     <div className="song-page min-h-[100dvh] w-full max-w-full lg:pb-0" style={{ backgroundColor: '#0B0D0E' }}>
-    <div className="mobile-page-container max-w-6xl py-6 min-w-0" style={{ boxSizing: 'border-box' }}>
+    <div className="main-content mobile-page-container py-6 min-w-0" style={{ boxSizing: 'border-box' }}>
       {/* Header */}
-      <div className="mb-5">
+      <div className="song-header mb-5">
         <Link to={`/${artistSlug}`}
           className="inline-flex items-center text-sm mb-4 transition-colors"
           style={{ color: '#747B7F' }}
@@ -135,14 +135,14 @@ export default function SongPage() {
         </div>
       </div>
 
-      {/* Mobile: Spotify player arriba del contenido */}
+      {/* Mobile player */}
       <div className="lg:hidden mb-6">
         <SpotifyPlayer song={song} />
       </div>
 
-      <div className="grid xl:grid-cols-[minmax(0,1fr)_300px] gap-8">
+      <div className="song-layout grid gap-8">
         {/* Main content */}
-        <div>
+        <div className="song-reading-column min-w-0">
           <SongMeta song={song} />
 
           {/* Tabs */}
@@ -180,6 +180,10 @@ export default function SongPage() {
           <SongSeoContent song={song} />
           <RelatedSongs song={song} />
 
+          <div className="hidden lg:block xl:hidden mt-8">
+            <SpotifyPlayer song={song} />
+          </div>
+
           {/* IA CTA + Donate */}
           <div className="mt-8 pt-6" style={{ borderTop: '1px solid #272C2F' }}>
             <div className="song-actions">
@@ -205,7 +209,7 @@ export default function SongPage() {
         </div>
 
         {/* Right panel — Spotify (solo desktop) */}
-        <div className="hidden xl:block xl:sticky xl:top-24 h-fit">
+        <div className="player-column hidden xl:block h-fit">
           <SpotifyPlayer song={song} />
         </div>
       </div>

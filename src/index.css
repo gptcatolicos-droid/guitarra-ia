@@ -397,3 +397,102 @@
     grid-template-columns: 88px minmax(0, 1fr);
   }
 }
+
+@media (min-width: 1024px) {
+  .main-area {
+    width: calc(100% - 240px);
+  }
+}
+
+/* Song detail: tablet and desktop use controlled reading widths. */
+.song-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.song-actions button,
+.song-actions a {
+  min-height: 52px;
+  padding: 12px 20px;
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .main-content {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .song-header,
+  .song-meta-grid,
+  .song-chord-content,
+  .song-actions {
+    max-width: 1000px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .main-content {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+  .song-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 24px;
+    align-items: start;
+  }
+  .song-header,
+  .song-meta-grid,
+  .song-chord-content,
+  .song-actions {
+    width: 100%;
+    max-width: 1100px;
+  }
+  .song-header h1 {
+    font-size: clamp(34px, 3vw, 44px);
+    line-height: 1.12;
+  }
+  .song-meta-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .song-meta-card {
+    min-height: 76px;
+    padding: 16px 20px;
+  }
+  .chord-controls,
+  .chord-diagrams-card,
+  .chord-sheet-card {
+    width: 100%;
+    max-width: 1100px;
+  }
+  .chord-diagrams-card {
+    padding: 24px;
+  }
+  .chord-controls > div {
+    min-height: 48px;
+  }
+  .chord-sheet-card {
+    margin-bottom: 24px;
+  }
+  .original-chord-scroll,
+  .adaptable-chord-sheet {
+    padding: 24px;
+  }
+  .player-column {
+    position: sticky;
+    top: 120px;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1600px) {
+  .main-content {
+    max-width: 1520px;
+  }
+}
