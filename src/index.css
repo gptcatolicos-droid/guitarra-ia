@@ -311,20 +311,32 @@
   min-width: 0;
   margin-bottom: 14px;
 }
+.chord-sheet-scroll,
 .original-chord-scroll {
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
-  padding: 16px;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overscroll-behavior-x: contain;
+  border-radius: 16px;
+  background: #1b1e22;
 }
+.chord-sheet-original,
 .original-chord-content {
+  display: block;
   width: max-content;
   min-width: 100%;
+  margin: 0;
+  padding: 18px;
+  font-family: "SFMono-Regular", "Roboto Mono", Menlo, Monaco, Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.75;
   white-space: pre;
-  font-family: var(--font-mono);
+  word-break: normal;
+  overflow-wrap: normal;
+  tab-size: 4;
+  color: #f3f4f6;
 }
 
 /* Blog content: never let long words or generated HTML overflow */
@@ -387,8 +399,17 @@
     width: 100%;
     min-height: 48px;
   }
-  .original-chord-scroll {
-    max-height: 62dvh;
+  .song-chord-section {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-right: 16px;
+    padding-left: 16px;
+    margin: 0 auto;
+  }
+  .song-chord-section .chord-sheet-card {
+    width: 100%;
+    max-width: 100%;
   }
 }
 

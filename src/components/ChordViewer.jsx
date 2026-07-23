@@ -107,15 +107,16 @@ export default function ChordViewer({ song, transposeKey }) {
   const artist = song.artist_name || '';
   const isMobile = useIsMobile();
   const [semitones, setSemitones] = useState(0);
-  const [fontSize, setFontSize] = useState(14);
+  const [fontSize, setFontSize] = useState(15);
   const [autoScroll, setAutoScroll] = useState(false);
   const [showDiagrams, setShowDiagrams] = useState(true);
-  const [adaptable, setAdaptable] = useState(null); // null until we know viewport
+  const [adaptable, setAdaptable] = useState(false);
+  const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
   const scrollRef = useRef(null);
 
-  // Adaptable view is the default on mobile, original on desktop
+  // The original view is the safe default on every device.
   useEffect(() => {
-    setAdaptable(isMobile);
+    setAdaptable(false);
   }, [isMobile]);
 
   useEffect(() => {
@@ -136,6 +137,19 @@ export default function ChordViewer({ song, transposeKey }) {
     return () => clearInterval(interval);
   }, [autoScroll]);
 
+  useEffect(() => {
+    const checkOverflow = () => {
+      const sheet = scrollRef.current;
+      setHasHorizontalOverflow(Boolean(sheet && sheet.scrollWidth > sheet.clientWidth + 1));
+    };
+    const frame = requestAnimationFrame(checkOverflow);
+    window.addEventListener('resize', checkOverflow);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, [song.content_raw, semitones, fontSize, adaptable, isMobile]);
+
   if (!song.content_raw) {
     return (
       <p className="text-[#a7afb8] text-center py-12">
@@ -147,10 +161,10 @@ export default function ChordViewer({ song, transposeKey }) {
   const content = transposeContent(song.content_raw, semitones);
   const sections = parseSections(content);
   const usedChords = extractChordsFromContent(content);
-  const useAdaptable = adaptable !== false; // treat null (initial) as adaptable-friendly
+  const useAdaptable = !isMobile && adaptable;
 
   return (
-    <div className="song-chord-content w-full min-w-0">
+    <div className="song-chord-section song-chord-content w-full min-w-0">
       {/* Action buttons — full width on small screens */}
       <div className="grid grid-cols-2 sm:flex gap-2 mb-3">
         <button
@@ -167,23 +181,25 @@ export default function ChordViewer({ song, transposeKey }) {
         </button>
       </div>
 
-      {/* View toggle: Adaptable / Original */}
-      <div className="flex items-center gap-1 mb-3 p-1 rounded-lg w-fit" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
-        <button
-          onClick={() => setAdaptable(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
-          style={useAdaptable ? { backgroundColor: '#FF7200', color: '#fff' } : { color: '#A7ACAE' }}
-        >
-          <AlignLeft className="w-3.5 h-3.5" /> Adaptable
-        </button>
-        <button
-          onClick={() => setAdaptable(false)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
-          style={!useAdaptable ? { backgroundColor: '#FF7200', color: '#fff' } : { color: '#A7ACAE' }}
-        >
-          <MoveHorizontal className="w-3.5 h-3.5" /> Original
-        </button>
-      </div>
+      {/* The adaptable renderer is intentionally unavailable on mobile until songs have structured musical segments. */}
+      {!isMobile && (
+        <div className="flex items-center gap-1 mb-3 p-1 rounded-lg w-fit" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+          <button
+            onClick={() => setAdaptable(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
+            style={useAdaptable ? { backgroundColor: '#FF7200', color: '#fff' } : { color: '#A7ACAE' }}
+          >
+            <AlignLeft className="w-3.5 h-3.5" /> Adaptable
+          </button>
+          <button
+            onClick={() => setAdaptable(false)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
+            style={!useAdaptable ? { backgroundColor: '#FF7200', color: '#fff' } : { color: '#A7ACAE' }}
+          >
+            <MoveHorizontal className="w-3.5 h-3.5" /> Original
+          </button>
+        </div>
+      )}
 
       <div className="chord-controls">
         <TransposeControls
@@ -215,47 +231,34 @@ export default function ChordViewer({ song, transposeKey }) {
         </div>
       )}
 
-      {!useAdaptable && (
-        <p className="text-[11px] mb-1.5 flex items-center gap-1.5" style={{ color: '#747B7F' }}>
-          <MoveHorizontal className="w-3 h-3" /> Desliza horizontalmente para ver el cifrado completo
+      {!useAdaptable && hasHorizontalOverflow && (
+        <p className="text-[12px] mb-1.5 flex items-center gap-1.5" style={{ color: '#747B7F' }}>
+          <MoveHorizontal className="w-3 h-3" /> Desliza horizontalmente para ver el cifrado completo →
         </p>
       )}
 
       <div className="chord-sheet-card bg-[#1a1d21] border border-[#2b3138] rounded-2xl w-full min-w-0">
-        <div ref={scrollRef} className={useAdaptable ? 'adaptable-chord-sheet' : 'original-chord-scroll'} style={{ maxHeight: '70vh' }}>
-          {sections.map((section, i) => (
-            <div key={i} className="mb-5">
-              <div className="text-[#ff7a00] font-bold text-sm mb-2">[{section.name}]</div>
-              {useAdaptable ? (
-                <div className="adaptable-chord-content" style={{ fontSize: isMobile ? 'clamp(15px, 4vw, 17px)' : `${Math.max(fontSize, 14)}px` }}>
+        {useAdaptable ? (
+          <div ref={scrollRef} className="adaptable-chord-sheet" style={{ maxHeight: '70vh' }}>
+            {sections.map((section, i) => (
+              <div key={i} className="mb-5">
+                <div className="text-[#ff7a00] font-bold text-sm mb-2">[{section.name}]</div>
+                <div className="adaptable-chord-content" style={{ fontSize: `${Math.max(fontSize, 14)}px` }}>
                   {buildAdaptableRows(section.lines).map((row, j) => {
                     if (row.type === 'space') return <div key={j} className="h-3" />;
                     if (row.type === 'lyric') return <div key={j} className="song-lyric-line">{row.text}</div>;
-                    return (
-                      <div key={j} className="song-line">
-                        {row.segments.map((seg, k) => (
-                          <span key={k} className="chord-segment">
-                            <span className="chord">{seg.chord || '\u00A0'}</span>
-                            <span className="lyric">{seg.lyric || '\u00A0'}</span>
-                          </span>
-                        ))}
-                      </div>
-                    );
+                    return <div key={j} className="song-line">{row.segments.map((seg, k) => <span key={k} className="chord-segment"><span className="chord">{seg.chord || '\u00A0'}</span><span className="lyric">{seg.lyric || '\u00A0'}</span></span>)}</div>;
                   })}
                 </div>
-              ) : (
-                <div className="original-chord-content" style={{ fontSize: `${fontSize}px`, lineHeight: 1.7 }}>
-                  {section.lines.map((line, j) => (
-                    <div key={j} className={isChordLine(line) ? 'text-[#ff7a00]' : line.trim() ? 'text-[#f3f4f6]' : 'text-[#2b3138]'}>
-                      {line || '\u00A0'}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-          <div className="mt-4 text-[#555] text-xs font-mono border-t border-[#2b3138] pt-3">{SITE_URL}</div>
-        </div>
+              </div>
+            ))}
+            <div className="mt-4 text-[#555] text-xs font-mono border-t border-[#2b3138] pt-3">{SITE_URL}</div>
+          </div>
+        ) : (
+          <div ref={scrollRef} className="chord-sheet-scroll">
+            <pre className="chord-sheet-original" style={{ fontSize: `${fontSize}px` }}>{content}</pre>
+          </div>
+        )}
       </div>
     </div>
   );
