@@ -277,10 +277,14 @@
 }
 /* Adaptable view: wrap long lines, chords stay attached to lyric fragments */
 .chord-sheet--wrap {
-  white-space: pre-wrap;
+  white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
   width: 100%;
+  min-width: 0;
+}
+.chord-sheet--wrap > * {
+  max-width: 100%;
   min-width: 0;
 }
 

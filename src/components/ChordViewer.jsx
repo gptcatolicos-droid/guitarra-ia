@@ -70,12 +70,12 @@ function pairLineToSegments(chordLine, lyricLine) {
   for (let i = 0; i < positions.length; i++) {
     const start = positions[i].index;
     const end = i + 1 < positions.length ? positions[i + 1].index : lyricLine.length;
-    const lyric = lyricLine.slice(start, end);
+    const lyric = lyricLine.slice(start, end).trim();
     segments.push({ chord: positions[i].chord, lyric });
   }
   // Preserve any lyric text before the first chord
   if (positions[0].index > 0) {
-    segments.unshift({ chord: '', lyric: lyricLine.slice(0, positions[0].index) });
+    segments.unshift({ chord: '', lyric: lyricLine.slice(0, positions[0].index).trim() });
   }
   return segments;
 }
@@ -199,8 +199,8 @@ export default function ChordViewer({ song, transposeKey }) {
       {showDiagrams && usedChords.length > 0 && (
         <div className="mb-6 bg-[#1a1d21] border border-[#2b3138] rounded-xl p-4">
           <h3 className="text-white font-semibold mb-3 text-sm">Acordes principales</h3>
-          <div className="overflow-x-auto pb-1">
-            <div className="flex gap-3" style={{ minWidth: 'max-content' }}>
+          <div className="w-full max-w-full overflow-x-auto pb-1">
+            <div className="flex w-max min-w-full justify-center gap-3 px-1">
               {usedChords.map((chord) => (
                 <ChordDiagram
                   key={chord}
@@ -232,17 +232,16 @@ export default function ChordViewer({ song, transposeKey }) {
               </div>
 
               {useAdaptable ? (
-                <div className="chord-sheet--wrap" style={{ fontSize: `${Math.max(fontSize, 15)}px`, lineHeight: 1.9 }}>
+                <div className="chord-sheet--wrap" style={{ fontSize: `${Math.max(fontSize, 14)}px`, lineHeight: 1.75 }}>
                   {buildAdaptableRows(section.lines).map((row, j) => {
-                    if (row.type === 'space') return <div key={j} style={{ height: '0.6em' }} />;
-                    if (row.type === 'lyric') return <div key={j} className="text-[#f3f4f6] font-mono" style={{ fontFamily: 'var(--font-mono)' }}>{row.text}</div>;
-                    // pair or chords: render attached segments that can wrap
+                    if (row.type === 'space') return <div key={j} style={{ height: '0.7em' }} />;
+                    if (row.type === 'lyric') return <div key={j} className="text-[#f3f4f6] font-mono break-words" style={{ fontFamily: 'var(--font-mono)', overflowWrap: 'anywhere' }}>{row.text}</div>;
                     return (
-                      <div key={j} className="flex flex-wrap items-end" style={{ gap: '0 2px' }}>
+                      <div key={j} className="flex flex-wrap items-end gap-x-1 gap-y-3">
                         {row.segments.map((seg, k) => (
-                          <span key={k} className="inline-flex min-w-0 flex-col" style={{ fontFamily: 'var(--font-mono)' }}>
+                          <span key={k} className="inline-flex min-w-0 max-w-full flex-[0_1_auto] flex-col" style={{ fontFamily: 'var(--font-mono)' }}>
                             <span className="text-[#ff7a00] font-bold leading-tight" style={{ minHeight: seg.chord ? undefined : '1.2em' }}>{seg.chord || '\u00A0'}</span>
-                            <span className="text-[#f3f4f6] leading-tight" style={{ whiteSpace: 'pre-wrap' }}>{seg.lyric || '\u00A0'}</span>
+                            <span className="max-w-full break-words text-[#f3f4f6] leading-tight" style={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{seg.lyric || '\u00A0'}</span>
                           </span>
                         ))}
                       </div>

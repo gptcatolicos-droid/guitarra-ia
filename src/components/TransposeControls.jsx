@@ -13,7 +13,7 @@ export default function TransposeControls({
   const btn = 'w-8 h-8 flex items-center justify-center bg-[#20242a] text-white rounded-lg hover:bg-[#2b3138] transition-colors';
 
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-4 p-3 bg-[#1a1d21] border border-[#2b3138] rounded-xl">
+    <div className="flex flex-wrap items-center gap-2 mb-4 p-3 min-w-0 bg-[#1a1d21] border border-[#2b3138] rounded-xl">
       <div className="flex items-center gap-1">
         <span className="text-[#a7afb8] text-xs mr-1">Transponer:</span>
         <button className={btn} onClick={() => onTranspose(semitones - 1)}>

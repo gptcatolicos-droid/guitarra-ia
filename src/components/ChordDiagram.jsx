@@ -1,7 +1,7 @@
 export default function ChordDiagram({ chordName, diagram }) {
   if (!diagram) {
     return (
-      <div className="flex flex-col items-center">
+      <div className="flex w-[60px] shrink-0 flex-col items-center">
         <span className="text-[#ff7a00] text-sm font-bold mb-1">{chordName}</span>
         <div className="w-[60px] h-[76px] flex items-center justify-center text-[#a7afb8] text-[10px] border border-[#2b3138] rounded">
           N/A
