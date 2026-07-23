@@ -408,6 +408,13 @@ export default function AdminPage() {
     loadStats();
   };
 
+  const handleBulkDelete = async (songIds) => {
+    for (const id of songIds) {
+      await base44.entities.Song.delete(id);
+    }
+    loadStats();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -514,6 +521,7 @@ Tengo la camisa negra...`}</pre>
           allSongsList={allSongsList}
           onEdit={setEditingSong}
           onDelete={handleDelete}
+          onBulkDelete={handleBulkDelete}
           deletingId={deletingId}
         />
       )}
