@@ -97,7 +97,7 @@ export default function Home() {
 
       {/* ===== HERO with background photo ===== */}
       <section
-        className="relative px-4 lg:px-8 py-16 lg:py-24 overflow-hidden"
+        className="relative px-4 lg:px-8 py-10 lg:py-24 overflow-hidden"
         style={{ borderBottom: '1px solid #272C2F' }}
       >
         {/* Background photo — desktop/tablet only, 85% dark overlay */}
@@ -115,7 +115,7 @@ export default function Home() {
         <div className="md:hidden absolute inset-0 z-0" style={{ backgroundColor: '#121516' }} />
 
         <div className="relative z-10 max-w-2xl mx-auto text-center w-full">
-          <h1 className="text-3xl lg:text-5xl font-bold mb-4 leading-tight" style={{ color: '#F4F4F2' }}>
+          <h1 className="text-[28px] leading-[1.15] sm:text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#F4F4F2' }}>
             Toca tus canciones{' '}
             <span style={{ color: '#FF7200' }}>favoritas</span>
           </h1>

@@ -9,7 +9,8 @@ import {
 } from '@/lib/musicTheory';
 import ChordDiagram from '@/components/ChordDiagram';
 import TransposeControls from '@/components/TransposeControls';
-import { Download } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Download, Printer, MoveHorizontal, AlignLeft } from 'lucide-react';
 
 const SITE_URL = 'www.guitarraia.com';
 
@@ -52,14 +53,69 @@ function downloadChordsTxt(title, artist, text) {
   URL.revokeObjectURL(url);
 }
 
+// Split a chord line + lyric line into attached { chord, lyric } segments,
+// so the adaptable view can wrap without absolute positioning.
+function pairLineToSegments(chordLine, lyricLine) {
+  const segments = [];
+  const chordRe = /\S+/g;
+  const positions = [];
+  let m;
+  while ((m = chordRe.exec(chordLine)) !== null) {
+    positions.push({ chord: m[0], index: m.index });
+  }
+  if (positions.length === 0) {
+    return [{ chord: '', lyric: lyricLine }];
+  }
+  for (let i = 0; i < positions.length; i++) {
+    const start = positions[i].index;
+    const end = i + 1 < positions.length ? positions[i + 1].index : lyricLine.length;
+    const lyric = lyricLine.slice(start, end);
+    segments.push({ chord: positions[i].chord, lyric });
+  }
+  // Preserve any lyric text before the first chord
+  if (positions[0].index > 0) {
+    segments.unshift({ chord: '', lyric: lyricLine.slice(0, positions[0].index) });
+  }
+  return segments;
+}
+
+// Build adaptable rows: pair a chord line with the lyric line that follows it.
+function buildAdaptableRows(lines) {
+  const rows = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isChordLine(line) && line.trim()) {
+      const next = lines[i + 1];
+      if (next !== undefined && !isChordLine(next)) {
+        rows.push({ type: 'pair', segments: pairLineToSegments(line, next) });
+        i++;
+      } else {
+        rows.push({ type: 'chords', segments: pairLineToSegments(line, '') });
+      }
+    } else if (line.trim()) {
+      rows.push({ type: 'lyric', text: line });
+    } else {
+      rows.push({ type: 'space' });
+    }
+  }
+  return rows;
+}
+
 export default function ChordViewer({ song, transposeKey }) {
   const title = song.title?.replace(/\s*\d+$/, '').trim() || '';
   const artist = song.artist_name || '';
+  const isMobile = useIsMobile();
   const [semitones, setSemitones] = useState(0);
   const [fontSize, setFontSize] = useState(14);
   const [autoScroll, setAutoScroll] = useState(false);
   const [showDiagrams, setShowDiagrams] = useState(true);
+  const [adaptable, setAdaptable] = useState(null); // null until we know viewport
   const scrollRef = useRef(null);
+
+  // Adaptable view is the default on mobile, original on desktop
+  useEffect(() => {
+    setAdaptable(isMobile);
+  }, [isMobile]);
 
   useEffect(() => {
     if (transposeKey && song.original_key) {
@@ -90,23 +146,44 @@ export default function ChordViewer({ song, transposeKey }) {
   const content = transposeContent(song.content_raw, semitones);
   const sections = parseSections(content);
   const usedChords = extractChordsFromContent(content);
+  const useAdaptable = adaptable !== false; // treat null (initial) as adaptable-friendly
 
   return (
-    <div>
-      <div className="flex gap-2 mb-3">
+    <div className="w-full min-w-0">
+      {/* Action buttons — full width on small screens */}
+      <div className="grid grid-cols-2 sm:flex gap-2 mb-3">
         <button
           onClick={() => downloadChordsTxt(title, artist, song.content_raw)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground hover:text-foreground text-xs transition-colors"
+          className="flex items-center justify-center gap-1.5 min-h-11 px-3 rounded-lg bg-secondary text-muted-foreground hover:text-foreground text-sm transition-colors"
         >
-          <Download className="w-3.5 h-3.5" /> Descargar
+          <Download className="w-4 h-4" /> Descargar
         </button>
         <button
           onClick={() => printChords(title, artist, song.content_raw)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground hover:text-foreground text-xs transition-colors"
+          className="flex items-center justify-center gap-1.5 min-h-11 px-3 rounded-lg bg-secondary text-muted-foreground hover:text-foreground text-sm transition-colors"
         >
-          🖨️ Imprimir
+          <Printer className="w-4 h-4" /> Imprimir
         </button>
       </div>
+
+      {/* View toggle: Adaptable / Original */}
+      <div className="flex items-center gap-1 mb-3 p-1 rounded-lg w-fit" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+        <button
+          onClick={() => setAdaptable(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
+          style={useAdaptable ? { backgroundColor: '#FF7200', color: '#fff' } : { color: '#A7ACAE' }}
+        >
+          <AlignLeft className="w-3.5 h-3.5" /> Adaptable
+        </button>
+        <button
+          onClick={() => setAdaptable(false)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
+          style={!useAdaptable ? { backgroundColor: '#FF7200', color: '#fff' } : { color: '#A7ACAE' }}
+        >
+          <MoveHorizontal className="w-3.5 h-3.5" /> Original
+        </button>
+      </div>
+
       <TransposeControls
         semitones={semitones}
         onTranspose={setSemitones}
@@ -135,36 +212,63 @@ export default function ChordViewer({ song, transposeKey }) {
         </div>
       )}
 
-      <div className="chord-viewer-wrap bg-[#1a1d21] border border-[#2b3138] rounded-xl overflow-hidden">
+      {!useAdaptable && (
+        <p className="text-[11px] mb-1.5 flex items-center gap-1.5" style={{ color: '#747B7F' }}>
+          <MoveHorizontal className="w-3 h-3" /> Desliza horizontalmente para ver el cifrado completo
+        </p>
+      )}
+
+      <div className="bg-[#1a1d21] border border-[#2b3138] rounded-2xl overflow-hidden w-full min-w-0">
         <div
           ref={scrollRef}
-          className="chord-viewer-scroll p-4"
-          style={{ maxHeight: '70vh', overflowX: 'auto', overflowY: 'auto' }}
+          className={useAdaptable ? 'p-4 overflow-y-auto' : 'chord-sheet-wrapper p-4'}
+          style={{ maxHeight: '70vh' }}
         >
           {sections.map((section, i) => (
             <div key={i} className="mb-5">
               <div className="text-[#ff7a00] font-bold text-sm mb-1">
                 [{section.name}]
               </div>
-              <pre
-                className="chord-pre font-mono"
-                style={{ fontSize: `${fontSize}px`, lineHeight: 1.7, margin: 0, whiteSpace: 'pre' }}
-              >
-                {section.lines.map((line, j) => (
-                  <div
-                    key={j}
-                    className={
-                      isChordLine(line)
-                        ? 'text-[#ff7a00]'
-                        : line.trim()
-                        ? 'text-[#f3f4f6]'
-                        : 'text-[#2b3138]'
-                    }
-                  >
-                    {line || '\u00A0'}
-                  </div>
-                ))}
-              </pre>
+
+              {useAdaptable ? (
+                <div className="chord-sheet--wrap" style={{ fontSize: `${Math.max(fontSize, 15)}px`, lineHeight: 1.9 }}>
+                  {buildAdaptableRows(section.lines).map((row, j) => {
+                    if (row.type === 'space') return <div key={j} style={{ height: '0.6em' }} />;
+                    if (row.type === 'lyric') return <div key={j} className="text-[#f3f4f6] font-mono" style={{ fontFamily: 'var(--font-mono)' }}>{row.text}</div>;
+                    // pair or chords: render attached segments that can wrap
+                    return (
+                      <div key={j} className="flex flex-wrap items-end" style={{ gap: '0 2px' }}>
+                        {row.segments.map((seg, k) => (
+                          <span key={k} className="inline-flex flex-col" style={{ fontFamily: 'var(--font-mono)' }}>
+                            <span className="text-[#ff7a00] font-bold leading-tight" style={{ minHeight: seg.chord ? undefined : '1.2em' }}>{seg.chord || '\u00A0'}</span>
+                            <span className="text-[#f3f4f6] leading-tight" style={{ whiteSpace: 'pre-wrap' }}>{seg.lyric || '\u00A0'}</span>
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <pre
+                  className="chord-sheet"
+                  style={{ fontSize: `${fontSize}px`, lineHeight: 1.7, margin: 0, padding: 0 }}
+                >
+                  {section.lines.map((line, j) => (
+                    <div
+                      key={j}
+                      className={
+                        isChordLine(line)
+                          ? 'text-[#ff7a00]'
+                          : line.trim()
+                          ? 'text-[#f3f4f6]'
+                          : 'text-[#2b3138]'
+                      }
+                    >
+                      {line || '\u00A0'}
+                    </div>
+                  ))}
+                </pre>
+              )}
             </div>
           ))}
           <div className="mt-4 text-[#555] text-xs font-mono border-t border-[#2b3138] pt-3">{SITE_URL}</div>

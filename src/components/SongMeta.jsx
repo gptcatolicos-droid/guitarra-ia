@@ -8,14 +8,14 @@ export default function SongMeta({ song }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div className="grid grid-cols-1 min-[390px]:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
       {items.map((item) => (
         <div
           key={item.label}
-          className="bg-[#20242a] border border-[#2b3138] rounded-xl p-3"
+          className="bg-[#20242a] border border-[#2b3138] rounded-xl p-3 min-w-0"
         >
           <p className="text-[#a7afb8] text-xs mb-1">{item.label}</p>
-          <p className="text-white text-sm font-medium">{item.value}</p>
+          <p className="text-white text-sm font-medium break-words">{item.value}</p>
         </div>
       ))}
     </div>

@@ -74,8 +74,8 @@ export default function BlogPostPage() {
   const cc = CAT_COLORS[post.category] || { bg: 'rgba(255,114,0,0.12)', color: '#FF7200' };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
-      <div className="max-w-3xl mx-auto px-4 lg:px-8 py-8">
+    <div className="min-h-screen w-full overflow-x-hidden" style={{ backgroundColor: '#0B0D0E' }}>
+      <div className="max-w-3xl mx-auto px-4 lg:px-8 py-8 min-w-0">
 
         <Link to="/blog" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#747B7F' }}
           onMouseEnter={e => { e.currentTarget.style.color = '#FF7200'; }}
@@ -90,11 +90,11 @@ export default function BlogPostPage() {
               style={{ backgroundColor: cc.bg, color: cc.color }}>
               {post.category}
             </span>
-            <h1 className="text-2xl lg:text-3xl font-bold leading-tight mb-3" style={{ color: '#F4F4F2' }}>
+            <h1 className="text-2xl lg:text-3xl font-bold leading-tight mb-3 break-words" style={{ color: '#F4F4F2', overflowWrap: 'anywhere' }}>
               {post.title}
             </h1>
             {post.excerpt && (
-              <p className="text-base leading-relaxed mb-4" style={{ color: '#A7ACAE' }}>{post.excerpt}</p>
+              <p className="text-[17px] leading-relaxed mb-4 break-words" style={{ color: '#A7ACAE', overflowWrap: 'anywhere' }}>{post.excerpt}</p>
             )}
             <div className="flex items-center gap-2 text-xs" style={{ color: '#747B7F' }}>
               <Clock className="w-3.5 h-3.5" />
@@ -105,13 +105,13 @@ export default function BlogPostPage() {
           </div>
 
           {/* Content */}
-          <div className="space-y-4">
+          <div className="space-y-4 blog-content min-w-0">
             <ReactMarkdown
               components={{
                 h1: ({ children }) => <h1 className="text-2xl font-bold mt-10 mb-4" style={{ color: '#F4F4F2' }}>{children}</h1>,
                 h2: ({ children }) => <h2 className="text-xl font-bold mt-8 mb-3" style={{ color: '#F4F4F2' }}>{children}</h2>,
                 h3: ({ children }) => <h3 className="text-lg font-semibold mt-6 mb-2" style={{ color: '#F4F4F2' }}>{children}</h3>,
-                p: ({ children }) => <p className="text-base leading-relaxed mb-4" style={{ color: '#A7ACAE' }}>{children}</p>,
+                p: ({ children }) => <p className="text-[17px] leading-relaxed mb-4" style={{ color: '#A7ACAE' }}>{children}</p>,
                 ul: ({ children }) => <ul className="list-disc list-inside space-y-1.5 mb-4" style={{ color: '#A7ACAE' }}>{children}</ul>,
                 ol: ({ children }) => <ol className="list-decimal list-inside space-y-1.5 mb-4" style={{ color: '#A7ACAE' }}>{children}</ol>,
                 li: ({ children }) => <li style={{ color: '#A7ACAE' }}>{children}</li>,

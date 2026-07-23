@@ -97,6 +97,12 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
   html {
     background-color: var(--bg-page);
@@ -107,6 +113,10 @@
     font-family: 'Faculty Glyphic', Georgia, serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  /* Media never overflows its container on mobile */
+  img, iframe, video, svg, table {
+    max-width: 100%;
   }
 }
 
@@ -203,9 +213,42 @@
 }
 
 /* ============================
-   SONG PAGE — MOBILE FIXES
-   Only affects screens < 768px
+   CHORD SHEET — RESPONSIVE
    ============================ */
+/* Original view: monospace, horizontal scroll ONLY inside the block */
+.chord-sheet-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.chord-sheet {
+  font-family: var(--font-mono);
+  white-space: pre;
+  width: max-content;
+  min-width: 100%;
+}
+/* Adaptable view: wrap long lines, chords stay attached to lyric fragments */
+.chord-sheet--wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Blog content: never let long words or generated HTML overflow */
+.blog-content, .blog-content * {
+  max-width: 100%;
+}
+.blog-content p, .blog-content li, .blog-content h1, .blog-content h2, .blog-content h3 {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
 @media (max-width: 767px) {
   .song-page {
     width: 100%;
@@ -213,28 +256,7 @@
     overflow-x: hidden;
     padding-bottom: calc(88px + env(safe-area-inset-bottom));
   }
-
-  .song-page .chord-viewer-wrap {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .song-page .chord-viewer-scroll {
-    width: 100%;
-    max-height: 58dvh;
-    overflow-x: auto;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .song-page .chord-pre {
-    margin: 0;
-    white-space: pre;
-    font-size: clamp(13px, 3.7vw, 15px);
-    line-height: 1.8;
-    min-width: max-content;
+  .chord-sheet-wrapper {
+    max-height: 62dvh;
   }
 }

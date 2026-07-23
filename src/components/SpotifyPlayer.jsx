@@ -77,26 +77,26 @@ export default function SpotifyPlayer({ song, compact = false }) {
         title="Spotify"
       />
 
-      <div className="flex gap-2 px-4 pb-4 pt-1">
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2 px-4 pb-4 pt-1">
         <a
           href={data?.track_id ? `https://open.spotify.com/track/${data.track_id}` : spotifySearchUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
+          className="flex items-center justify-center gap-1.5 min-h-11 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
           style={{ background: '#1DB954' }}
         >
-          <ExternalLink className="w-3.5 h-3.5" />
+          <ExternalLink className="w-3.5 h-3.5 shrink-0" />
           Spotify
         </a>
         <a
           href={youtubeMusicUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
+          className="flex items-center justify-center gap-1.5 min-h-11 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
           style={{ background: '#FF0000' }}
         >
-          <ExternalLink className="w-3.5 h-3.5" />
-          YouTube Music
+          <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">YouTube Music</span>
         </a>
       </div>
     </div>

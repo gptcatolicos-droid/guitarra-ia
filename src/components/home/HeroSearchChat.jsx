@@ -13,21 +13,21 @@ export default function HeroSearchChat({ quickChips }) {
   };
 
   return (
-    <div className="w-full">
-      <div className="flex items-center gap-2 rounded-xl p-2 mb-4"
+    <div className="w-full min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 rounded-xl p-2 mb-4"
         style={{ backgroundColor: '#171A1C', border: '1px solid #303538' }}>
         <input
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
           placeholder="Busca canciones, artistas, acordes o géneros…"
-          className="flex-1 py-2 px-3 text-sm outline-none"
+          className="flex-1 min-w-0 py-2 px-3 text-sm outline-none"
           style={{ backgroundColor: 'transparent', color: '#F4F4F2', caretColor: '#FF7200' }}
         />
         <button
           onClick={() => handleSearch()}
           disabled={!query.trim()}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90 disabled:opacity-40 shrink-0"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto min-h-11 px-5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90 disabled:opacity-40 shrink-0"
           style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)', color: '#fff' }}
         >
           <Send className="w-4 h-4" />

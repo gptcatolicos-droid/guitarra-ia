@@ -20,9 +20,9 @@ export default function MobileBottomNav() {
 
   return (
     <div
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch px-1"
       style={{
-        minHeight: '64px',
+        height: 'calc(66px + env(safe-area-inset-bottom))',
         paddingBottom: 'env(safe-area-inset-bottom)',
         backgroundColor: '#0E1112',
         borderTop: '1px solid #272C2F',
@@ -36,32 +36,35 @@ export default function MobileBottomNav() {
           <Link
             key={item.path}
             to={item.path}
-            className="flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors"
+            className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 transition-colors"
             style={{ color: active ? '#FF7200' : '#747B7F' }}
             aria-label={item.label}
           >
-            <item.icon className="w-5 h-5" />
-            <span className="text-[10px] font-medium leading-none">{item.label}</span>
+            <item.icon className="w-5 h-5 shrink-0" />
+            <span className="text-[10px] font-medium leading-none truncate max-w-full px-0.5">{item.label}</span>
           </Link>
         );
       })}
 
-      {/* Chat IA — prominent center-right button */}
-      <div className="flex-1 flex items-center justify-center px-2">
-        <Link
-          to="/chat"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-opacity hover:opacity-90"
+      {/* Chat IA — compact accent tab, same footprint as the others */}
+      <Link
+        to="/chat"
+        className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0"
+        style={{ color: isChatActive ? '#FF7200' : '#FF7200' }}
+        aria-label="Chat IA"
+      >
+        <span
+          className="flex items-center justify-center rounded-xl"
           style={{
+            width: '34px', height: '30px',
             background: isChatActive ? 'linear-gradient(135deg, #D95D00 0%, #FF7200 100%)' : 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)',
-            color: '#fff',
-            boxShadow: '0 4px 16px rgba(255,114,0,0.4)',
+            boxShadow: '0 3px 12px rgba(255,114,0,0.4)',
           }}
-          aria-label="Chat IA"
         >
-          <Sparkles className="w-4 h-4" />
-          <span>Chat IA</span>
-        </Link>
-      </div>
+          <Sparkles className="w-4 h-4 text-white" />
+        </span>
+        <span className="text-[10px] font-bold leading-none">Chat IA</span>
+      </Link>
     </div>
   );
 }
