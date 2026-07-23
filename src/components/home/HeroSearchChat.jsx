@@ -21,8 +21,8 @@ export default function HeroSearchChat({ quickChips }) {
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
           placeholder="Busca canciones, artistas, acordes o géneros…"
-          className="flex-1 min-w-0 py-2 px-3 text-sm outline-none"
-          style={{ backgroundColor: 'transparent', color: '#F4F4F2', caretColor: '#FF7200' }}
+          className="w-full min-w-0 flex-1 py-3 px-3 text-sm outline-none"
+          style={{ backgroundColor: 'transparent', color: '#F4F4F2', WebkitTextFillColor: '#F4F4F2', caretColor: '#FF7200', opacity: 1 }}
         />
         <button
           onClick={() => handleSearch()}
