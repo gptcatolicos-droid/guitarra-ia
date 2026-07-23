@@ -92,11 +92,6 @@ export default function AboutPage() {
               style={{ backgroundColor: '#FF7200' }}>
               <Sparkles className="w-4 h-4" /> Probar el asistente IA
             </Link>
-            <Link to="/contacto"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-colors"
-              style={{ backgroundColor: '#181B1D', color: '#A7ACAE', border: '1px solid #303538' }}>
-              Contactarnos
-            </Link>
           </div>
         </div>
       </div>

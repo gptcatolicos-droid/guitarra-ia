@@ -63,9 +63,9 @@ async function upsertArtist(artistName, artistSlug) {
 
   // Auto-fetch Spotify image in background
   try {
-    const res = await base44.functions.spotifyArtist({ artist_name: artistName });
-    if (res?.image_url) {
-      await base44.entities.Artist.update(created.id, { image_url: res.image_url });
+    const res = await base44.functions.invoke('spotifyArtist', { artist_name: artistName });
+    if (res?.data?.image_url) {
+      await base44.entities.Artist.update(created.id, { image_url: res.data.image_url });
     }
   } catch (_) {}
 

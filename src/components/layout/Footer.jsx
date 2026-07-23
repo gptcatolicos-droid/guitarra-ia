@@ -6,7 +6,6 @@ const cols = [
   {
     title: 'Contenido',
     links: [
-      { label: 'Canciones', path: '/canciones' },
       { label: 'Artistas', path: '/artistas' },
       { label: 'Acordes', path: '/acordes' },
       { label: 'Blog', path: '/blog' },
@@ -26,7 +25,6 @@ const cols = [
     links: [
       { label: 'Términos', path: '/terminos' },
       { label: 'Acerca de', path: '/acerca' },
-      { label: 'Contacto', path: '/contacto' },
     ],
   },
 ];

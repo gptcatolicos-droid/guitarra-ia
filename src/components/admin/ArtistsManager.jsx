@@ -35,10 +35,11 @@ export default function ArtistsManager() {
   const fetchAndSaveImage = async (artist) => {
     setFetchingImage(prev => ({ ...prev, [artist.id]: true }));
     try {
-      const res = await base44.functions.spotifyArtist({ artist_name: artist.name });
-      if (res?.image_url) {
-        await base44.entities.Artist.update(artist.id, { image_url: res.image_url });
-        setArtists(prev => prev.map(a => a.id === artist.id ? { ...a, image_url: res.image_url } : a));
+      const res = await base44.functions.invoke('spotifyArtist', { artist_name: artist.name });
+      const image_url = res?.data?.image_url;
+      if (image_url) {
+        await base44.entities.Artist.update(artist.id, { image_url });
+        setArtists(prev => prev.map(a => a.id === artist.id ? { ...a, image_url } : a));
       }
     } finally {
       setFetchingImage(prev => ({ ...prev, [artist.id]: false }));
@@ -80,11 +81,11 @@ export default function ArtistsManager() {
     setSavingEdit(true);
     const updates = { spotify_artist_url: editSpotifyUrl || null };
 
-    // If a spotify artist URL is provided, try to fetch image from it
-    if (editSpotifyUrl && !editingArtist.image_url) {
+    // If a spotify artist URL is provided, fetch the exact artist image from it
+    if (editSpotifyUrl) {
       try {
-        const res = await base44.functions.spotifyArtist({ artist_name: editingArtist.name, spotify_url: editSpotifyUrl });
-        if (res?.image_url) updates.image_url = res.image_url;
+        const res = await base44.functions.invoke('spotifyArtist', { artist_name: editingArtist.name, spotify_url: editSpotifyUrl });
+        if (res?.data?.image_url) updates.image_url = res.data.image_url;
       } catch {}
     }
 

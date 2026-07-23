@@ -64,6 +64,23 @@ async function findOrCreateArtist(base44, artistName) {
   return { artist, created: true, reused: false };
 }
 
+// Extract the first valid chord token from a chord sheet, to use as fallback key
+const CHORD_RE = /^[A-G](#|b)?(m|maj|min|dim|aug|sus|add|°|ø)?[0-9]*(\/[A-G](#|b)?)?$/;
+function firstChordFromContent(content) {
+  if (!content) return '';
+  for (const rawLine of content.split('\n')) {
+    const line = rawLine.trim();
+    if (!line || (line.startsWith('[') && line.endsWith(']'))) continue;
+    const tokens = line.split(/\s+/);
+    // A chord line is one where every token looks like a chord
+    if (tokens.length && tokens.every((t) => CHORD_RE.test(t))) {
+      // Return the root chord (strip slash bass so "Am/E" -> "Am")
+      return tokens[0].split('/')[0];
+    }
+  }
+  return '';
+}
+
 // Detect duplicate song by slug + artist_slug
 async function detectDuplicate(base44, songSlug, artistSlug) {
   const existing = await base44.asServiceRole.entities.Song.filter({
@@ -138,6 +155,11 @@ Deno.serve(async (req) => {
     // --- Find or create artist ---
     const { artist, created: artistCreated, reused: artistReused } = await findOrCreateArtist(base44, artist_name);
 
+    // --- Auto-detect key from first chord if none provided ---
+    const resolvedKey = (original_key && original_key.trim())
+      ? original_key.trim()
+      : firstChordFromContent(content_raw);
+
     // --- Create song ---
     const songData = {
       title: title.trim(),
@@ -145,7 +167,7 @@ Deno.serve(async (req) => {
       artist_name: artist.name, // use canonical name from artist record
       artist_slug: artistSlug,
       artist_id: artist.id,
-      original_key: original_key || '',
+      original_key: resolvedKey || '',
       capo: Number(capo) || 0,
       tuning: tuning || 'Estándar',
       difficulty: difficulty || 'Intermedia',
