@@ -157,6 +157,13 @@ function ChordCard({ chord, allSongs }) {
       <div className="text-center text-[10px] mt-1 font-mono" style={{ color: '#747B7F' }}>
         {chord.frets.map(x => x < 0 ? 'x' : x).join(' · ')}
       </div>
+      <Link
+        to={`/acordes/${encodeURIComponent(chord.name)}`}
+        className="mt-2 w-full text-center text-[11px] font-bold py-1.5 rounded-lg"
+        style={{ border: '1px solid #FF7200', color: '#FF7200' }}
+      >
+        Estudiar acorde
+      </Link>
       <button
         onClick={handleViewSongs}
         disabled={loading}

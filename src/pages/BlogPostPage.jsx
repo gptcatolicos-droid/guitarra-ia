@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
 import ReactMarkdown from 'react-markdown';
-import { Clock, ChevronLeft, BookOpen } from 'lucide-react';
+import { Clock, ChevronLeft, BookOpen, Music2 } from 'lucide-react';
+import { extractChordNames } from '@/lib/chordSearch';
 
 const CAT_COLORS = {
   'Acordes': { bg: 'rgba(255,114,0,0.12)', color: '#FF7200' },
@@ -72,6 +73,8 @@ export default function BlogPostPage() {
   }
 
   const cc = CAT_COLORS[post.category] || { bg: 'rgba(255,114,0,0.12)', color: '#FF7200' };
+  const practiceChords = extractChordNames(`${post.title} ${(post.tags || []).join(' ')} ${post.content || ''}`).slice(0, 8);
+  const chordLinks = practiceChords.length ? practiceChords : ['C', 'G', 'Am', 'F'];
 
   return (
     <div className="min-h-screen w-full" style={{ backgroundColor: '#0B0D0E' }}>
@@ -138,6 +141,20 @@ export default function BlogPostPage() {
             </ReactMarkdown>
           </div>
         </article>
+
+        <section className="mt-8 rounded-2xl p-5" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+          <h2 className="flex items-center gap-2 text-base font-bold mb-2" style={{ color: '#F4F4F2' }}>
+            <Music2 className="w-4 h-4" style={{ color: '#FF7200' }} /> Acordes para practicar
+          </h2>
+          <p className="text-sm mb-4" style={{ color: '#A7ACAE' }}>Abre un acorde para ver su posición, canciones y material de estudio.</p>
+          <div className="flex flex-wrap gap-2">
+            {chordLinks.map((chord) => (
+              <Link key={chord} to={`/acordes/${encodeURIComponent(chord)}`} className="px-3 py-1.5 rounded-lg text-sm font-bold" style={{ color: '#FF7200', border: '1px solid rgba(255,114,0,0.45)' }}>
+                {chord}
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* Tags */}
         {post.tags?.length > 0 && (

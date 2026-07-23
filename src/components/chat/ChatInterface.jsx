@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Send } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import { useLocation } from 'react-router-dom';
+import { findSongsStartingWithChord, normalizeChordName } from '@/lib/chordSearch';
 
 const SYSTEM_PROMPT = `Eres Guitarra IA, un asistente musical especializado en acordes, cifrados y tablaturas para guitarristas de guitarraia.com.
 
@@ -135,6 +136,23 @@ export default function ChatInterface({ embedded, heroMode }) {
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setLoading(true);
     setScanningExternal(false);
+
+    const requestedChord = normalizeChordName(userMessage);
+    if (requestedChord) {
+      const startingSongs = findSongsStartingWithChord(songsCache, requestedChord)
+        .slice(0, 12)
+        .map((song) => ({ ...song, title: song.title.replace(/\s*\d+$/, '').trim() }));
+      setMessages((prev) => [...prev, {
+        role: 'assistant',
+        content: startingSongs.length
+          ? `Estas son las canciones del catálogo que comienzan con **${requestedChord}**.`
+          : `Aún no hay canciones del catálogo que comiencen con **${requestedChord}**.`,
+        songs: startingSongs,
+        suggestions: [],
+      }]);
+      setLoading(false);
+      return;
+    }
 
     // Check if we have local results first — if yes, skip scanning animation
     const localMatches = quickLocalSearch(userMessage, songsCache);
