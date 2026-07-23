@@ -40,25 +40,29 @@ export default function InfographicPage() {
 
   return (
     <div className="min-h-screen bg-page">
-      <div className="mobile-page-container max-w-4xl py-8">
+      <div className="infographics-page-container">
         <Link to="/infografias" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-6"><ArrowLeft className="w-4 h-4" /> Infografías</Link>
-        <h1 className="text-3xl lg:text-4xl font-bold text-foreground">{item.title}</h1>
-        {item.description && <p className="mt-3 text-lg text-muted-foreground">{item.description}</p>}
 
-        <div className="mt-8 space-y-6">
-          {item.image_urls.map((url, index) => (
-            <figure key={url} className="rounded-2xl overflow-hidden bg-card border border-border">
-              <Image
-                src={url}
-                alt={`${item.seo_alt_text || item.title} — diapositiva ${index + 1}`}
-                className="w-full h-auto block"
-                fittingType="fit"
-              />
-            </figure>
-          ))}
+        <div className="infographic-detail-layout">
+          <div className="space-y-6">
+            {item.image_urls?.map((url, index) => (
+              <figure key={url} className="infographic-detail-image-wrapper">
+                <Image
+                  src={url}
+                  alt={`${item.seo_alt_text || item.title} — diapositiva ${index + 1}`}
+                  className="infographic-detail-image"
+                  fittingType="fit"
+                />
+              </figure>
+            ))}
+          </div>
+          <aside className="infographic-detail-content">
+            <h1 className="text-3xl lg:text-4xl font-bold text-foreground">{item.title}</h1>
+            {item.description && <p className="mt-3 text-lg text-muted-foreground">{item.description}</p>}
+          </aside>
         </div>
 
-        <section className="mt-10 pt-8 border-t border-border">
+        <section className="infographic-related-section mt-10 pt-8 border-t border-border">
           <h2 className="text-xl font-bold text-foreground mb-4">Canciones recomendadas</h2>
           <div className="grid md:grid-cols-2 gap-4">
             {songs.map((song) => (
