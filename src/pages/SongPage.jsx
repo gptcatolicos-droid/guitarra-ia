@@ -140,7 +140,7 @@ export default function SongPage() {
         <SpotifyPlayer song={song} />
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_300px] gap-8">
+      <div className="grid xl:grid-cols-[minmax(0,1fr)_300px] gap-8">
         {/* Main content */}
         <div>
           <SongMeta song={song} />
@@ -205,7 +205,7 @@ export default function SongPage() {
         </div>
 
         {/* Right panel — Spotify (solo desktop) */}
-        <div className="hidden lg:block lg:sticky lg:top-24 h-fit">
+        <div className="hidden xl:block xl:sticky xl:top-24 h-fit">
           <SpotifyPlayer song={song} />
         </div>
       </div>
