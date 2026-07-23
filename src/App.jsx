@@ -21,6 +21,8 @@ import TopSongsPage from '@/pages/TopSongsPage';
 import GuitarStorePage from '@/pages/GuitarStorePage';
 import BlogPage from '@/pages/BlogPage';
 import BlogPostPage from '@/pages/BlogPostPage';
+import AboutPage from '@/pages/AboutPage';
+import ContactPage from '@/pages/ContactPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -61,6 +63,8 @@ const AuthenticatedApp = () => {
         <Route path="/tienda" element={<GuitarStorePage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
+        <Route path="/acerca" element={<AboutPage />} />
+        <Route path="/contacto" element={<ContactPage />} />
         <Route path="/:artistSlug" element={<ArtistPage />} />
         <Route path="/:artistSlug/:songSlug" element={<SongPage />} />
         <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />

@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Trash2, RefreshCw, Star, StarOff, Image, Search } from 'lucide-react';
+import { Trash2, RefreshCw, Star, StarOff, Image, Search, Edit2, X, Save } from 'lucide-react';
 
 export default function ArtistsManager() {
   const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchingImage, setFetchingImage] = useState({});
+  const [editingArtist, setEditingArtist] = useState(null);
+  const [editSpotifyUrl, setEditSpotifyUrl] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -67,6 +70,30 @@ export default function ArtistsManager() {
     }
   };
 
+  const openEdit = (artist) => {
+    setEditingArtist(artist);
+    setEditSpotifyUrl(artist.spotify_artist_url || '');
+  };
+
+  const saveEdit = async () => {
+    if (!editingArtist) return;
+    setSavingEdit(true);
+    const updates = { spotify_artist_url: editSpotifyUrl || null };
+
+    // If a spotify artist URL is provided, try to fetch image from it
+    if (editSpotifyUrl && !editingArtist.image_url) {
+      try {
+        const res = await base44.functions.spotifyArtist({ artist_name: editingArtist.name, spotify_url: editSpotifyUrl });
+        if (res?.image_url) updates.image_url = res.image_url;
+      } catch {}
+    }
+
+    await base44.entities.Artist.update(editingArtist.id, updates);
+    setArtists(prev => prev.map(a => a.id === editingArtist.id ? { ...a, ...updates } : a));
+    setSavingEdit(false);
+    setEditingArtist(null);
+  };
+
   const [search, setSearch] = useState('');
   const featured = artists.filter(a => a.is_featured);
   const rest = artists.filter(a => !a.is_featured).filter(a =>
@@ -77,6 +104,43 @@ export default function ArtistsManager() {
 
   return (
     <div className="space-y-5">
+
+      {/* Edit Spotify URL modal */}
+      {editingArtist && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+          <div className="rounded-2xl w-full max-w-md" style={{ backgroundColor: '#181B1D', border: '1px solid #303538' }}>
+            <div className="flex items-center justify-between p-4" style={{ borderBottom: '1px solid #272C2F' }}>
+              <p className="font-bold text-sm" style={{ color: '#F4F4F2' }}>Editar artista: {editingArtist.name}</p>
+              <button onClick={() => setEditingArtist(null)}><X className="w-5 h-5" style={{ color: '#747B7F' }} /></button>
+            </div>
+            <div className="p-4 space-y-3">
+              <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: '#A7ACAE' }}>URL del artista en Spotify</label>
+                <input
+                  value={editSpotifyUrl}
+                  onChange={e => setEditSpotifyUrl(e.target.value)}
+                  placeholder="https://open.spotify.com/artist/..."
+                  className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ backgroundColor: '#121516', border: '1px solid #303538', color: '#F4F4F2' }}
+                />
+                <p className="text-xs mt-1" style={{ color: '#555B5E' }}>Si el artista no tiene imagen, se intentará obtener automáticamente desde Spotify.</p>
+              </div>
+            </div>
+            <div className="flex gap-3 p-4" style={{ borderTop: '1px solid #272C2F' }}>
+              <button onClick={() => setEditingArtist(null)}
+                className="flex-1 py-2 rounded-xl text-sm" style={{ color: '#747B7F', border: '1px solid #272C2F' }}>
+                Cancelar
+              </button>
+              <button onClick={saveEdit} disabled={savingEdit}
+                className="flex-1 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-40 flex items-center justify-center gap-2"
+                style={{ backgroundColor: '#FF7200' }}>
+                <Save className="w-4 h-4" />{savingEdit ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <p className="text-foreground font-semibold">{artists.length} artistas · <span style={{ color: '#FF7200' }}>{featured.length}/10 destacados</span></p>
@@ -100,7 +164,7 @@ export default function ArtistsManager() {
           </div>
           <div className="divide-y divide-border">
             {featured.map(artist => (
-              <ArtistRow key={artist.id} artist={artist} onToggle={toggleFeatured} onDelete={deleteArtist} onFetchImage={fetchAndSaveImage} fetching={!!fetchingImage[artist.id]} />
+              <ArtistRow key={artist.id} artist={artist} onToggle={toggleFeatured} onDelete={deleteArtist} onFetchImage={fetchAndSaveImage} fetching={!!fetchingImage[artist.id]} onEdit={openEdit} />
             ))}
           </div>
         </div>
@@ -120,7 +184,7 @@ export default function ArtistsManager() {
         </div>
         <div className="max-h-[500px] overflow-y-auto divide-y divide-border">
           {rest.map(artist => (
-            <ArtistRow key={artist.id} artist={artist} onToggle={toggleFeatured} onDelete={deleteArtist} onFetchImage={fetchAndSaveImage} fetching={!!fetchingImage[artist.id]} />
+            <ArtistRow key={artist.id} artist={artist} onToggle={toggleFeatured} onDelete={deleteArtist} onFetchImage={fetchAndSaveImage} fetching={!!fetchingImage[artist.id]} onEdit={openEdit} />
           ))}
           {rest.length === 0 && <p className="text-center text-muted-foreground text-sm py-6">Todos los artistas están destacados.</p>}
         </div>
@@ -129,7 +193,7 @@ export default function ArtistsManager() {
   );
 }
 
-function ArtistRow({ artist, onToggle, onDelete, onFetchImage, fetching }) {
+function ArtistRow({ artist, onToggle, onDelete, onFetchImage, fetching, onEdit }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/30">
       {/* Avatar */}
@@ -154,6 +218,10 @@ function ArtistRow({ artist, onToggle, onDelete, onFetchImage, fetching }) {
             {fetching ? <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /> : <RefreshCw className="w-4 h-4" />}
           </button>
         )}
+        <button onClick={() => onEdit(artist)} title="Editar artista"
+          className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+          <Edit2 className="w-4 h-4" />
+        </button>
         <button onClick={() => onToggle(artist)} title={artist.is_featured ? 'Quitar de destacados' : 'Marcar como destacado'}
           className="p-2 transition-colors"
           style={{ color: artist.is_featured ? '#FF7200' : '#444A4E' }}>

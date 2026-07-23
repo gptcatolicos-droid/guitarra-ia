@@ -11,6 +11,10 @@
     "last_synced_at": {
       "type": "string"
     },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    },
     "total_files": {
       "type": "number",
       "default": 0
@@ -31,6 +35,7 @@
       "type": "string"
     }
   },
+  "required": [],
   "rls": {
     "create": {
       "user_condition": {
@@ -52,6 +57,5 @@
         "role": "admin"
       }
     }
-  },
-  "required": []
+  }
 }

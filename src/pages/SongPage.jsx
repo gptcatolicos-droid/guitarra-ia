@@ -180,17 +180,26 @@ export default function SongPage() {
           <SongSeoContent song={song} />
           <RelatedSongs song={song} />
 
-          {/* IA CTA */}
+          {/* IA CTA + Donate */}
           <div className="mt-8 pt-6" style={{ borderTop: '1px solid #272C2F' }}>
-            <div className="flex w-full justify-start md:justify-start">
+            <div className="flex flex-wrap gap-3 w-full">
               <button
                 onClick={() => navigate('/chat')}
-                className="inline-flex items-center justify-center gap-2 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90 w-full md:w-auto"
-                style={{ backgroundColor: '#FF7200', minHeight: '46px', maxWidth: '280px', padding: '12px 24px' }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#FF7200', minHeight: '46px', padding: '12px 24px' }}
               >
                 <Sparkles className="w-4 h-4" />
                 Preguntar a GuitarraIA
               </button>
+              <a
+                href="https://paypal.me/schoolmarketing/1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90"
+                style={{ backgroundColor: '#0070BA', color: '#fff', minHeight: '46px', padding: '12px 24px' }}
+              >
+                💙 Donar U$1
+              </a>
             </div>
           </div>
         </div>

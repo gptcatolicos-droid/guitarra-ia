@@ -20,7 +20,14 @@
     "biography_short": {
       "type": "string"
     },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    },
     "image_url": {
+      "type": "string"
+    },
+    "spotify_artist_url": {
       "type": "string"
     },
     "country": {

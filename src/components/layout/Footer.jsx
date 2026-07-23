@@ -24,6 +24,8 @@ const cols = [
     title: 'Sitio',
     links: [
       { label: 'Términos', path: '/terminos' },
+      { label: 'Acerca de', path: '/acerca' },
+      { label: 'Contacto', path: '/contacto' },
     ],
   },
 ];

@@ -237,6 +237,22 @@ export default function Home() {
 
 
 
+      {/* ===== DONATE ===== */}
+      <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #272C2F' }}>
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl px-6 py-5"
+          style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+          <div>
+            <p className="font-bold text-sm" style={{ color: '#F4F4F2' }}>¿Te gusta GuitarraIA? 💙</p>
+            <p className="text-xs mt-0.5" style={{ color: '#747B7F' }}>Con 1 USD nos ayudas a mantener el sitio activo y seguir añadiendo canciones.</p>
+          </div>
+          <a href="https://paypal.me/schoolmarketing/1" target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 shrink-0"
+            style={{ backgroundColor: '#0070BA' }}>
+            💙 Donar U$1 con PayPal
+          </a>
+        </div>
+      </section>
+
       {/* ===== BLOG ===== */}
       {blogPosts.length > 0 && (
         <section className="px-4 lg:px-8 py-8 pb-12" style={{ borderTop: '1px solid #272C2F' }}>
