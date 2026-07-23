@@ -13,10 +13,19 @@ import { Download } from 'lucide-react';
 
 const SITE_URL = 'www.guitarraia.com';
 
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function printChords(title, artist, text) {
   const win = window.open('', '_blank');
   win.document.write(`
-    <html><head><title>${title} - ${artist}</title>
+    <html><head><title>${escapeHtml(title)} - ${escapeHtml(artist)}</title>
     <style>
       body { font-family: monospace; font-size: 13px; padding: 24px; color: #111; }
       h1 { font-size: 18px; margin-bottom: 4px; }
@@ -24,9 +33,9 @@ function printChords(title, artist, text) {
       pre { white-space: pre; line-height: 1.7; }
       .footer { margin-top: 24px; font-size: 11px; color: #888; border-top: 1px solid #eee; padding-top: 8px; }
     </style></head><body>
-    <h1>${title}</h1><h2>${artist}</h2>
-    <pre>${text}</pre>
-    <div class="footer">${SITE_URL}</div>
+    <h1>${escapeHtml(title)}</h1><h2>${escapeHtml(artist)}</h2>
+    <pre>${escapeHtml(text)}</pre>
+    <div class="footer">${escapeHtml(SITE_URL)}</div>
     </body></html>`);
   win.document.close();
   win.print();
