@@ -379,8 +379,8 @@ IMPORTANTE:
 
   const inner = (
     <>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4" style={{ backgroundColor: '#0B0D0E' }}>
-        <div className="max-w-3xl mx-auto space-y-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4" style={{ backgroundColor: '#0B0D0E' }}>
+        <div className="max-w-3xl mx-auto w-full min-w-0 space-y-6">
           {messages.map((msg, i) => (
             <ChatMessage key={i} message={msg} onSuggestionClick={handleSend} />
           ))}

@@ -29,13 +29,16 @@ export default function SongCard({ song }) {
   const hasChords = song.has_chords;
   const hasTab = song.has_tablature;
 
-  // Start with stored embed if exists
-  const storedEmbed = getSpotifyEmbedUrl(song.spotify_embed);
-  const [embedUrl, setEmbedUrl] = useState(storedEmbed);
-  const [fetched, setFetched] = useState(!!storedEmbed);
+  // Prefer a stored track id from Spotify sync (confirmed to exist).
+  const storedTrackId = song.spotify_track_id || (song.spotify_embed || '').match(/track\/([A-Za-z0-9]+)/)?.[1] || null;
+  const [embedUrl, setEmbedUrl] = useState(storedTrackId ? getSpotifyEmbedUrl(`track/${storedTrackId}`) : null);
+  const [fetched, setFetched] = useState(false);
 
+  // Always confirm the track exists via search so we never render a 404 player.
   useEffect(() => {
     if (fetched) return;
+    // If sync already matched a track id, trust it and skip the lookup.
+    if (storedTrackId) { setFetched(true); return; }
     setFetched(true);
     base44.functions.invoke('spotifySearch', {
       artist: song.artist_name,

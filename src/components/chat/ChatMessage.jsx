@@ -53,8 +53,8 @@ export default function ChatMessage({ message, onSuggestionClick }) {
       : message.content);
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`${isUser ? 'max-w-[80%] items-end' : 'w-full items-start'} flex flex-col gap-2`}>
+    <div className={`flex w-full min-w-0 ${isUser ? 'justify-end' : 'justify-start'}`}>
+      <div className={`${isUser ? 'max-w-[80%] items-end' : 'w-full items-start'} min-w-0 flex flex-col gap-2`}>
         {displayContent && (
           <div
             className={`rounded-2xl px-4 py-3 ${

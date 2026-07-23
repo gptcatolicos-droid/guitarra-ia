@@ -55,27 +55,29 @@ export default function SpotifyPlayer({ song, compact = false }) {
   const rawManualSrc = song.spotify_embed ? extractSrcFromEmbed(song.spotify_embed) || song.spotify_embed : null;
   const manualSrc = normalizeSpotifyUrl(rawManualSrc);
   const autoSrc = data?.track_id ? `https://open.spotify.com/embed/track/${data.track_id}` : null;
-  const searchSrc = `https://open.spotify.com/embed/search/${encodeURIComponent(`${title} ${artist}`)}`;
-  const embedSrc = manualSrc || autoSrc || searchSrc;
+  // Only embed a CONFIRMED track. The embed/search URL returns 404, so we never use it.
+  const embedSrc = manualSrc || autoSrc;
 
   return (
     <div className={compact ? '' : 'bg-card border border-border rounded-2xl overflow-hidden'}>
       {!compact && (
         <div className="px-4 pt-3 pb-2">
           <p className="text-foreground font-semibold text-sm">Escuchar en Spotify</p>
-          <p className="text-muted-foreground text-xs">{(manualSrc || data?.track_id) ? 'Vista previa (30s)' : 'Busca y reproduce en Spotify'}</p>
+          <p className="text-muted-foreground text-xs">{embedSrc ? 'Vista previa (30s)' : 'Busca y reproduce en Spotify'}</p>
         </div>
       )}
 
-      <iframe
-        src={embedSrc}
-        width="100%"
-        height={compact ? 80 : 152}
-        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-        loading="lazy"
-        className="border-0"
-        title="Spotify"
-      />
+      {embedSrc && (
+        <iframe
+          src={embedSrc}
+          width="100%"
+          height={compact ? 80 : 152}
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          className="border-0"
+          title="Spotify"
+        />
+      )}
 
       <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2 px-4 pb-4 pt-1">
         <a
