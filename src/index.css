@@ -103,7 +103,6 @@
     width: 100%;
     max-width: 100%;
     margin: 0;
-    overflow-x: clip;
   }
   html {
     background-color: var(--bg-page);
@@ -260,32 +259,72 @@
 /* ============================
    CHORD SHEET — RESPONSIVE
    ============================ */
-/* Original view: monospace, horizontal scroll ONLY inside the block */
-.chord-sheet-wrapper {
+.chord-sheet-card {
+  max-width: 100%;
+  overflow: hidden;
+}
+.adaptable-chord-sheet {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  padding: 16px;
+  font-family: var(--font-mono);
+}
+.adaptable-chord-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  line-height: 1.8;
+}
+.song-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px 10px;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 14px;
+}
+.chord-segment {
+  display: inline-flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+.chord {
+  color: #ff7a1a;
+  font-weight: 700;
+  line-height: 1.2;
+  min-height: 20px;
+}
+.lyric,
+.song-lyric-line {
+  color: #f2f2f2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.song-lyric-line {
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 14px;
+}
+.original-chord-scroll {
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: hidden;
+  padding: 16px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
-.chord-sheet {
-  font-family: var(--font-mono);
-  white-space: pre;
+.original-chord-content {
   width: max-content;
   min-width: 100%;
-}
-/* Adaptable view: wrap long lines, chords stay attached to lyric fragments */
-.chord-sheet--wrap {
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  width: 100%;
-  min-width: 0;
-}
-.chord-sheet--wrap > * {
-  max-width: 100%;
-  min-width: 0;
+  white-space: pre;
+  font-family: var(--font-mono);
 }
 
 /* Blog content: never let long words or generated HTML overflow */
@@ -302,7 +341,43 @@
   .song-page {
     width: 100%;
     max-width: 100%;
-    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+    min-width: 0;
+    padding: 0 16px calc(140px + env(safe-area-inset-bottom));
+  }
+  .song-page .mobile-page-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .song-page .grid,
+  .song-page .flex,
+  .song-page .chord-sheet-card,
+  .song-page .adaptable-chord-sheet,
+  .song-page .song-line,
+  .song-page .song-lyric-line {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .song-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 24px;
+  }
+  .song-actions button,
+  .song-actions a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 52px;
+    padding: 12px 16px;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .song-card-actions {
     width: 100%;
@@ -312,7 +387,7 @@
     width: 100%;
     min-height: 48px;
   }
-  .chord-sheet-wrapper {
+  .original-chord-scroll {
     max-height: 62dvh;
   }
 }

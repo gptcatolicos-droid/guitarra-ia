@@ -219,29 +219,22 @@ export default function ChordViewer({ song, transposeKey }) {
         </p>
       )}
 
-      <div className="bg-[#1a1d21] border border-[#2b3138] rounded-2xl overflow-hidden w-full min-w-0">
-        <div
-          ref={scrollRef}
-          className={useAdaptable ? 'p-4 overflow-y-auto' : 'chord-sheet-wrapper p-4'}
-          style={{ maxHeight: '70vh' }}
-        >
+      <div className="chord-sheet-card bg-[#1a1d21] border border-[#2b3138] rounded-2xl w-full min-w-0">
+        <div ref={scrollRef} className={useAdaptable ? 'adaptable-chord-sheet' : 'original-chord-scroll'} style={{ maxHeight: '70vh' }}>
           {sections.map((section, i) => (
             <div key={i} className="mb-5">
-              <div className="text-[#ff7a00] font-bold text-sm mb-1">
-                [{section.name}]
-              </div>
-
+              <div className="text-[#ff7a00] font-bold text-sm mb-2">[{section.name}]</div>
               {useAdaptable ? (
-                <div className="chord-sheet--wrap" style={{ fontSize: `${Math.max(fontSize, 14)}px`, lineHeight: 1.75 }}>
+                <div className="adaptable-chord-content" style={{ fontSize: isMobile ? 'clamp(15px, 4vw, 17px)' : `${Math.max(fontSize, 14)}px` }}>
                   {buildAdaptableRows(section.lines).map((row, j) => {
-                    if (row.type === 'space') return <div key={j} style={{ height: '0.7em' }} />;
-                    if (row.type === 'lyric') return <div key={j} className="text-[#f3f4f6] font-mono break-words" style={{ fontFamily: 'var(--font-mono)', overflowWrap: 'anywhere' }}>{row.text}</div>;
+                    if (row.type === 'space') return <div key={j} className="h-3" />;
+                    if (row.type === 'lyric') return <div key={j} className="song-lyric-line">{row.text}</div>;
                     return (
-                      <div key={j} className="flex flex-wrap items-end gap-x-1 gap-y-3">
+                      <div key={j} className="song-line">
                         {row.segments.map((seg, k) => (
-                          <span key={k} className="inline-flex min-w-0 max-w-full flex-[0_1_auto] flex-col" style={{ fontFamily: 'var(--font-mono)' }}>
-                            <span className="text-[#ff7a00] font-bold leading-tight" style={{ minHeight: seg.chord ? undefined : '1.2em' }}>{seg.chord || '\u00A0'}</span>
-                            <span className="max-w-full break-words text-[#f3f4f6] leading-tight" style={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{seg.lyric || '\u00A0'}</span>
+                          <span key={k} className="chord-segment">
+                            <span className="chord">{seg.chord || '\u00A0'}</span>
+                            <span className="lyric">{seg.lyric || '\u00A0'}</span>
                           </span>
                         ))}
                       </div>
@@ -249,25 +242,13 @@ export default function ChordViewer({ song, transposeKey }) {
                   })}
                 </div>
               ) : (
-                <pre
-                  className="chord-sheet"
-                  style={{ fontSize: `${fontSize}px`, lineHeight: 1.7, margin: 0, padding: 0 }}
-                >
+                <div className="original-chord-content" style={{ fontSize: `${fontSize}px`, lineHeight: 1.7 }}>
                   {section.lines.map((line, j) => (
-                    <div
-                      key={j}
-                      className={
-                        isChordLine(line)
-                          ? 'text-[#ff7a00]'
-                          : line.trim()
-                          ? 'text-[#f3f4f6]'
-                          : 'text-[#2b3138]'
-                      }
-                    >
+                    <div key={j} className={isChordLine(line) ? 'text-[#ff7a00]' : line.trim() ? 'text-[#f3f4f6]' : 'text-[#2b3138]'}>
                       {line || '\u00A0'}
                     </div>
                   ))}
-                </pre>
+                </div>
               )}
             </div>
           ))}

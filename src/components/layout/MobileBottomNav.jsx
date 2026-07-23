@@ -20,7 +20,7 @@ export default function MobileBottomNav() {
 
   return (
     <div
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch px-1"
+      className="bottom-navigation lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-stretch px-1"
       style={{
         height: 'calc(66px + env(safe-area-inset-bottom))',
         paddingBottom: 'env(safe-area-inset-bottom)',
