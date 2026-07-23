@@ -16,6 +16,7 @@ import SongCreatorForm from '@/components/admin/SongCreatorForm';
 import SeoManager from '@/components/admin/SeoManager';
 import SitemapPanel from '@/components/admin/SitemapPanel';
 import FacebookPostManager from '@/components/admin/FacebookPostManager';
+import InfographicsManager from '@/components/admin/InfographicsManager';
 
 const ADMIN_EMAILS = ['danipalacio@gmail.com'];
 const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
@@ -425,7 +426,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
-    <div className="max-w-5xl mx-auto p-4 lg:p-8">
+    <div className="max-w-6xl mx-auto p-4 lg:p-8">
       {editingSong && (
         <SongEditor
           song={editingSong}
@@ -440,7 +441,7 @@ export default function AdminPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-card border border-border rounded-xl p-5">
           <Music className="w-5 h-5 text-primary mb-2" />
           <p className="text-3xl font-bold text-foreground">{stats.songs}</p>
@@ -459,32 +460,14 @@ export default function AdminPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-secondary rounded-xl p-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-6">
         {[
-          { id: 'new-song', label: '+ Canción' },
-          { id: 'catalog', label: 'Catálogo' },
-          { id: 'artists', label: 'Artistas' },
-          { id: 'import', label: 'Importar' },
-          { id: 'hero', label: 'Hero Banner' },
-          { id: 'trending', label: 'Tendencias' },
-          { id: 'store', label: 'Guitar Store' },
-          { id: 'spotify', label: 'Spotify Sync' },
-          { id: 'seo', label: 'SEO' },
-          { id: 'sitemap', label: 'Sitemap' },
-          { id: 'stats', label: 'Estadísticas' },
-          { id: 'facebook', label: 'Facebook' },
-          { id: 'theme', label: 'Tema' },
-        ].map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-              tab === t.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+          { id: 'new-song', label: '+ Canción' }, { id: 'catalog', label: 'Catálogo' }, { id: 'artists', label: 'Artistas' },
+          { id: 'import', label: 'Importar' }, { id: 'hero', label: 'Hero Banner' }, { id: 'trending', label: 'Tendencias' },
+          { id: 'store', label: 'Guitar Store' }, { id: 'infographics', label: 'Infografías' }, { id: 'spotify', label: 'Spotify Sync' },
+          { id: 'seo', label: 'SEO' }, { id: 'sitemap', label: 'Sitemap' }, { id: 'stats', label: 'Estadísticas' },
+          { id: 'facebook', label: 'Facebook' }, { id: 'theme', label: 'Tema' },
+        ].map((t) => <button key={t.id} onClick={() => setTab(t.id)} className={`min-h-11 py-2 px-3 rounded-xl text-sm font-medium transition-colors ${tab === t.id ? 'bg-card text-foreground border border-border shadow-sm' : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-card'}`}>{t.label}</button>)}
       </div>
 
       {tab === 'new-song' && (
@@ -546,6 +529,8 @@ Tengo la camisa negra...`}</pre>
       {tab === 'store' && (
         <AmazonProductsManager />
       )}
+
+      {tab === 'infographics' && <InfographicsManager />}
 
       {tab === 'spotify' && (
         <SpotifySyncAdmin allSongs={allSongsList} />

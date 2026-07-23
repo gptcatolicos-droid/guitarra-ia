@@ -21,6 +21,7 @@ export default function SearchPage() {
   const [inputVal, setInputVal] = useState(query);
   const [songs, setSongs] = useState([]);
   const [artists, setArtists] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useSEO({
@@ -30,17 +31,19 @@ export default function SearchPage() {
 
   useEffect(() => {
     setInputVal(query);
-    if (!query) { setSongs([]); setArtists([]); return; }
+    if (!query) { setSongs([]); setArtists([]); setPosts([]); return; }
     setLoading(true);
     Promise.all([
-      base44.entities.Song.list('-created_date', 500),
-      base44.entities.Artist.list('-created_date', 200),
+      base44.entities.Song.list('-created_date', 5000),
+      base44.entities.Artist.list('-created_date', 5000),
+      base44.entities.BlogPost.list('-created_date', 500),
     ])
-      .then(([allSongs, allArtists]) => {
+      .then(([allSongs, allArtists, allPosts]) => {
         const normalize = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const nq = normalize(query);
         setSongs(allSongs.filter(s => normalize(s.title).includes(nq) || normalize(s.artist_name).includes(nq)));
         setArtists(allArtists.filter(a => normalize(a.name).includes(nq)));
+        setPosts(allPosts.filter(p => p.published && [p.title, p.excerpt, p.content, p.category].some(value => normalize(value).includes(nq))));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -51,7 +54,7 @@ export default function SearchPage() {
     if (inputVal.trim()) navigate(`/buscar?q=${encodeURIComponent(inputVal.trim())}`);
   };
 
-  const hasResults = songs.length > 0 || artists.length > 0;
+  const hasResults = songs.length > 0 || artists.length > 0 || posts.length > 0;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
@@ -121,6 +124,19 @@ export default function SearchPage() {
                       <span className="text-sm font-medium" style={{ color: '#F4F4F2' }}>{a.name}</span>
                     </Link>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {posts.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Search className="w-4 h-4" style={{ color: '#FF7200' }} />
+                  <h2 className="text-sm font-semibold" style={{ color: '#A7ACAE' }}>Artículos del blog</h2>
+                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: '#181B1D', color: '#747B7F' }}>{posts.length}</span>
+                </div>
+                <div className="space-y-1.5">
+                  {posts.map(post => <Link key={post.id} to={`/blog/${post.slug}`} className="block px-4 py-3 rounded-xl transition-all" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}><p className="text-sm font-semibold" style={{ color: '#F4F4F2' }}>{post.title}</p><p className="text-xs mt-1 line-clamp-1" style={{ color: '#747B7F' }}>{post.excerpt || post.category}</p></Link>)}
                 </div>
               </div>
             )}

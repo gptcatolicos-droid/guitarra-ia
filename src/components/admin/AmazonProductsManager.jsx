@@ -6,29 +6,15 @@ const CATEGORIES = ['Guitarras', 'Amplificadores', 'Accesorios', 'Cuerdas', 'Efe
 const EMPTY = { title: '', description: '', image_url: '', price: '', affiliate_url: '', category: 'Guitarras', is_featured: false, sort_order: 0 };
 
 async function fetchAmazonProduct(url) {
-  const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `Analiza este producto de Amazon y extrae su información: ${url}
+  const response = await base44.functions.invoke('amazonProductLookup', { url });
+  if (response.data?.title && response.data?.image_url && response.data?.price) return response.data;
 
-Instrucciones CRÍTICAS:
-- title: nombre completo del producto tal como aparece en Amazon (no lo acortes)
-- price: precio ACTUAL en formato "$XX.XX" o "COP XX.XXX". Busca el precio principal de venta (no el precio tachado).
-- image_url: URL directa de la imagen principal del producto (debe terminar en .jpg o .png, desde images-amazon.com o similar). Si no puedes obtenerla exacta, devuelve null.
-- description: resumen de 1-2 líneas sobre el producto, enfocado en guitarristas
-
-Si no puedes obtener algún dato con certeza, devuelve null para ese campo. NO inventes datos.`,
+  return base44.integrations.Core.InvokeLLM({
+    prompt: `Extrae de esta página de Amazon el título completo, precio actual, URL directa de la imagen principal y una descripción corta para guitarristas: ${url}. No inventes datos.`,
     add_context_from_internet: true,
     model: 'gemini_3_flash',
-    response_json_schema: {
-      type: 'object',
-      properties: {
-        title: { type: 'string' },
-        description: { type: 'string' },
-        price: { type: 'string' },
-        image_url: { type: 'string' },
-      },
-    },
+    response_json_schema: { type: 'object', properties: { title: { type: 'string' }, description: { type: 'string' }, price: { type: 'string' }, image_url: { type: 'string' } } },
   });
-  return result;
 }
 
 export default function AmazonProductsManager() {
@@ -56,6 +42,7 @@ export default function AmazonProductsManager() {
     setFetching(true);
     try {
       const data = await fetchAmazonProduct(form.affiliate_url);
+      if (!data.title && !data.image_url && !data.price) throw new Error('No se encontró información del producto.');
       setForm(f => ({
         ...f,
         title: data.title || f.title,

@@ -74,8 +74,8 @@ export default function AboutPage() {
               <h2 className="text-lg font-bold" style={{ color: '#F4F4F2' }}>¿Quién lo construye?</h2>
             </div>
             <p className="mb-3">
-              GuitarraIA es un proyecto independiente construido por <strong style={{ color: '#F4F4F2' }}>Dany Palacio</strong>,
-              guitarrista y desarrollador apasionado por la música y la tecnología. La plataforma nació de la frustración
+              GuitarraIA es un proyecto independiente construido por un <strong style={{ color: '#F4F4F2' }}>Emprendedor Digital experto en IA</strong>,
+              apasionado por la música y la tecnología. La plataforma nació de la frustración
               de no encontrar un sitio moderno, en español, con buena tecnología y sin anuncios invasivos para aprender guitarra.
             </p>
             <p>

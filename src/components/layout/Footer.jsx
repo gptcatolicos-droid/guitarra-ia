@@ -10,6 +10,7 @@ const cols = [
       { label: 'Artistas', path: '/artistas' },
       { label: 'Acordes', path: '/acordes' },
       { label: 'Blog', path: '/blog' },
+      { label: 'Infografías', path: '/infografias' },
     ],
   },
   {

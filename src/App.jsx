@@ -23,6 +23,8 @@ import BlogPage from '@/pages/BlogPage';
 import BlogPostPage from '@/pages/BlogPostPage';
 import AboutPage from '@/pages/AboutPage';
 import ContactPage from '@/pages/ContactPage';
+import InfographicsPage from '@/pages/InfographicsPage';
+import InfographicPage from '@/pages/InfographicPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -65,6 +67,8 @@ const AuthenticatedApp = () => {
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/acerca" element={<AboutPage />} />
         <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/infografias" element={<InfographicsPage />} />
+        <Route path="/infografias/:slug" element={<InfographicPage />} />
         <Route path="/:artistSlug" element={<ArtistPage />} />
         <Route path="/:artistSlug/:songSlug" element={<SongPage />} />
         <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />

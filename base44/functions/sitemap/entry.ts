@@ -9,6 +9,7 @@ const STATIC_URLS = [
   { loc: '/artistas', changefreq: 'weekly', priority: '0.8' },
   { loc: '/canciones', changefreq: 'weekly', priority: '0.8' },
   { loc: '/blog', changefreq: 'weekly', priority: '0.7' },
+  { loc: '/infografias', changefreq: 'weekly', priority: '0.7' },
   { loc: '/tienda', changefreq: 'monthly', priority: '0.5' },
   { loc: '/chat', changefreq: 'monthly', priority: '0.6' },
 ];
@@ -56,6 +57,11 @@ Sitemap: ${SITE_URL}/sitemap.xml
       { published: true }, '-created_date', 500
     );
 
+    // Fetch published infographics
+    const infographics = await base44.asServiceRole.entities.Infographic.filter(
+      { published: true }, '-created_date', 500
+    );
+
     const entries = [];
 
     // Static pages
@@ -98,6 +104,17 @@ Sitemap: ${SITE_URL}/sitemap.xml
         lastmod: p.updated_date ? p.updated_date.split('T')[0] : undefined,
         changefreq: 'monthly',
         priority: '0.6',
+      }));
+    }
+
+    // Infographic pages
+    for (const infographic of infographics) {
+      if (!infographic.slug) continue;
+      entries.push(urlEntry({
+        loc: `/infografias/${infographic.slug}`,
+        lastmod: infographic.updated_date ? infographic.updated_date.split('T')[0] : undefined,
+        changefreq: 'monthly',
+        priority: '0.7',
       }));
     }
 
