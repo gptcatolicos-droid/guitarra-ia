@@ -15,6 +15,7 @@ import SpotifySyncAdmin from '@/components/admin/SpotifySyncAdmin';
 import SongCreatorForm from '@/components/admin/SongCreatorForm';
 import SeoManager from '@/components/admin/SeoManager';
 import SitemapPanel from '@/components/admin/SitemapPanel';
+import FacebookPostManager from '@/components/admin/FacebookPostManager';
 
 const ADMIN_EMAILS = ['danipalacio@gmail.com'];
 const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
@@ -471,6 +472,7 @@ export default function AdminPage() {
           { id: 'seo', label: 'SEO' },
           { id: 'sitemap', label: 'Sitemap' },
           { id: 'stats', label: 'Estadísticas' },
+          { id: 'facebook', label: 'Facebook' },
           { id: 'theme', label: 'Tema' },
         ].map((t) => (
           <button
@@ -559,6 +561,12 @@ Tengo la camisa negra...`}</pre>
 
       {tab === 'stats' && (
         <AdminStats allSongs={allSongsList} />
+      )}
+
+      {tab === 'facebook' && (
+        <div className="bg-card border border-border rounded-xl p-6">
+          <FacebookPostManager />
+        </div>
       )}
 
       {tab === 'theme' && <ThemeSettings />}
