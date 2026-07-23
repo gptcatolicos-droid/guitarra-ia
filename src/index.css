@@ -339,6 +339,27 @@
   color: #f3f4f6;
 }
 
+.mobile-chord-sheet {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+.mobile-chord-space { height: 18px; }
+.song-section-label { margin: 0 0 8px; color: #ff7a1a; font-size: 16px; font-weight: 700; }
+.song-info-line { margin: 0 0 16px; color: #f3f4f6; font-family: var(--font-mono); font-size: 16px; line-height: 1.6; white-space: normal; }
+.mobile-chord-progression { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; color: #ff7a1a; font-family: var(--font-mono); font-size: 16px; font-weight: 700; }
+.responsive-chord-line { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0 4px; width: 100%; margin-bottom: 20px; }
+.mobile-chord-segment { display: inline-flex; flex: 0 1 auto; flex-direction: column; align-items: flex-start; min-width: 0; max-width: 100%; }
+.chord-label { min-height: 22px; color: #ff7a1a; font-family: var(--font-mono); font-size: 16px; font-weight: 700; line-height: 1.2; }
+.lyric-text { color: #f3f4f6; font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace; font-size: 17px; line-height: 1.6; white-space: normal; word-break: normal; overflow-wrap: normal; }
+.lyric-only-line { width: 100%; margin: 0 0 18px; color: #f3f4f6; font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace; font-size: 17px; line-height: 1.65; word-break: normal; overflow-wrap: normal; }
+
 /* Blog content: never let long words or generated HTML overflow */
 .blog-content, .blog-content * {
   max-width: 100%;
@@ -403,8 +424,8 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    padding-right: 16px;
-    padding-left: 16px;
+    padding-right: 0;
+    padding-left: 0;
     margin: 0 auto;
   }
   .song-chord-section .chord-sheet-card {

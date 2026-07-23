@@ -8,6 +8,7 @@ import {
   calculateTransposeSemitones,
 } from '@/lib/musicTheory';
 import ChordDiagram from '@/components/ChordDiagram';
+import MobileChordSheet from '@/components/MobileChordSheet';
 import TransposeControls from '@/components/TransposeControls';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Download, Printer, MoveHorizontal, AlignLeft } from 'lucide-react';
@@ -231,35 +232,40 @@ export default function ChordViewer({ song, transposeKey }) {
         </div>
       )}
 
-      {!useAdaptable && hasHorizontalOverflow && (
-        <p className="text-[12px] mb-1.5 flex items-center gap-1.5" style={{ color: '#747B7F' }}>
-          <MoveHorizontal className="w-3 h-3" /> Desliza horizontalmente para ver el cifrado completo →
-        </p>
-      )}
-
-      <div className="chord-sheet-card bg-[#1a1d21] border border-[#2b3138] rounded-2xl w-full min-w-0">
-        {useAdaptable ? (
-          <div ref={scrollRef} className="adaptable-chord-sheet" style={{ maxHeight: '70vh' }}>
-            {sections.map((section, i) => (
-              <div key={i} className="mb-5">
-                <div className="text-[#ff7a00] font-bold text-sm mb-2">[{section.name}]</div>
-                <div className="adaptable-chord-content" style={{ fontSize: `${Math.max(fontSize, 14)}px` }}>
-                  {buildAdaptableRows(section.lines).map((row, j) => {
-                    if (row.type === 'space') return <div key={j} className="h-3" />;
-                    if (row.type === 'lyric') return <div key={j} className="song-lyric-line">{row.text}</div>;
-                    return <div key={j} className="song-line">{row.segments.map((seg, k) => <span key={k} className="chord-segment"><span className="chord">{seg.chord || '\u00A0'}</span><span className="lyric">{seg.lyric || '\u00A0'}</span></span>)}</div>;
-                  })}
-                </div>
+      {isMobile ? (
+        <MobileChordSheet content={content} songId={song.id} />
+      ) : (
+        <>
+          {!useAdaptable && hasHorizontalOverflow && (
+            <p className="text-[12px] mb-1.5 flex items-center gap-1.5" style={{ color: '#747B7F' }}>
+              <MoveHorizontal className="w-3 h-3" /> Desliza horizontalmente para ver el cifrado completo →
+            </p>
+          )}
+          <div className="chord-sheet-card bg-[#1a1d21] border border-[#2b3138] rounded-2xl w-full min-w-0">
+            {useAdaptable ? (
+              <div ref={scrollRef} className="adaptable-chord-sheet" style={{ maxHeight: '70vh' }}>
+                {sections.map((section, i) => (
+                  <div key={i} className="mb-5">
+                    <div className="text-[#ff7a00] font-bold text-sm mb-2">[{section.name}]</div>
+                    <div className="adaptable-chord-content" style={{ fontSize: `${Math.max(fontSize, 14)}px` }}>
+                      {buildAdaptableRows(section.lines).map((row, j) => {
+                        if (row.type === 'space') return <div key={j} className="h-3" />;
+                        if (row.type === 'lyric') return <div key={j} className="song-lyric-line">{row.text}</div>;
+                        return <div key={j} className="song-line">{row.segments.map((seg, k) => <span key={k} className="chord-segment"><span className="chord">{seg.chord || '\u00A0'}</span><span className="lyric">{seg.lyric || '\u00A0'}</span></span>)}</div>;
+                      })}
+                    </div>
+                  </div>
+                ))}
+                <div className="mt-4 text-[#555] text-xs font-mono border-t border-[#2b3138] pt-3">{SITE_URL}</div>
               </div>
-            ))}
-            <div className="mt-4 text-[#555] text-xs font-mono border-t border-[#2b3138] pt-3">{SITE_URL}</div>
+            ) : (
+              <div ref={scrollRef} className="chord-sheet-scroll">
+                <pre className="chord-sheet-original" style={{ fontSize: `${fontSize}px` }}>{content}</pre>
+              </div>
+            )}
           </div>
-        ) : (
-          <div ref={scrollRef} className="chord-sheet-scroll">
-            <pre className="chord-sheet-original" style={{ fontSize: `${fontSize}px` }}>{content}</pre>
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
