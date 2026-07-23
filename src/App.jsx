@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import AppLayout from '@/components/layout/AppLayout';
+import AdminRoute from '@/components/AdminRoute';
 import Home from '@/pages/Home';
 import ArtistPage from '@/pages/ArtistPage';
 import SongPage from '@/pages/SongPage';
@@ -56,7 +57,6 @@ const AuthenticatedApp = () => {
         <Route path="/buscar" element={<SearchPage />} />
         <Route path="/chat" element={<ChatPage />} />
 
-        <Route path="/admin" element={<AdminPage />} />
         <Route path="/terminos" element={<TermsPage />} />
         <Route path="/acordes" element={<AcordesPage />} />
         <Route path="/artistas" element={<TopArtistsPage />} />
@@ -70,6 +70,10 @@ const AuthenticatedApp = () => {
         <Route path="/:artistSlug" element={<ArtistPage />} />
         <Route path="/:artistSlug/:songSlug" element={<SongPage />} />
         <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />
+      </Route>
+      {/* Admin routes — require an authenticated platform admin */}
+      <Route element={<AdminRoute />}>
+        <Route path="/admin" element={<AdminPage />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

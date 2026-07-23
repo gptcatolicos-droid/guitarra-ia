@@ -2,10 +2,20 @@
   "properties": {
     "role": {
       "type": "string",
-      "description": "The role of the user in the app",
+      "description": "Platform role that gates all admin access and RLS. Must be 'admin' to enter the admin panel.",
       "enum": [
         "admin",
         "user"
+      ]
+    },
+    "admin_role": {
+      "type": "string",
+      "description": "Administrative role within the admin panel. Only Super Admin can manage users and settings.",
+      "enum": [
+        "Super Admin",
+        "Administrador",
+        "Editor",
+        "Autor"
       ]
     }
   },

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { Music, Users, FileText, Trash2, Edit2, X, Sparkles, Save, Palette, Type } from 'lucide-react';
+import { Music, Users, FileText, Trash2, Edit2, X, Sparkles, Save, Palette, Type, LogOut } from 'lucide-react';
 import FileDropZone from '@/components/admin/FileDropZone';
 import { parseFileContent } from '@/lib/fileParser';
 import { useAuth } from '@/lib/AuthContext';
@@ -17,9 +17,6 @@ import SeoManager from '@/components/admin/SeoManager';
 import SitemapPanel from '@/components/admin/SitemapPanel';
 import FacebookPostManager from '@/components/admin/FacebookPostManager';
 import InfographicsManager from '@/components/admin/InfographicsManager';
-
-const ADMIN_EMAILS = ['danipalacio@gmail.com'];
-const isAdminUser = (user) => user && (ADMIN_EMAILS.includes(user.email) || user.role === 'admin');
 
 const THEME_COLORS = [
   { label: 'Naranja', value: '28 100% 50%' },
@@ -353,7 +350,7 @@ export default function AdminPage() {
   const [editingSong, setEditingSong] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [tab, setTab] = useState('catalog');
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   useSEO({ title: 'Admin - Importar archivos | Tablaturas AI' });
 
@@ -423,7 +420,9 @@ export default function AdminPage() {
     );
   }
 
-  if (!user || !isAdminUser(user)) {
+  // AdminRoute already guards this page (auth + platform admin role).
+  // This is a defensive fallback in case it is ever rendered unguarded.
+  if (!user || user.role !== 'admin') {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-muted-foreground">Página no encontrada.</p>
@@ -442,9 +441,23 @@ export default function AdminPage() {
         />
       )}
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Panel de Administración</h1>
-        <p className="text-muted-foreground text-sm mt-1">Importa, edita y personaliza el catálogo.</p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Panel de Administración</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Importa, edita y personaliza el catálogo.
+          </p>
+          <p className="text-muted-foreground text-xs mt-1">
+            Sesión: {user.email}
+            {user.admin_role ? ` · ${user.admin_role}` : ''}
+          </p>
+        </div>
+        <button
+          onClick={() => logout(true)}
+          className="flex items-center gap-2 shrink-0 px-3 min-h-11 rounded-lg bg-secondary text-muted-foreground hover:text-foreground border border-border text-sm transition-colors"
+        >
+          <LogOut className="w-4 h-4" /> Cerrar sesión
+        </button>
       </div>
 
       {/* Stats */}
