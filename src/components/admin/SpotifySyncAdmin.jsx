@@ -239,6 +239,24 @@ export default function SpotifySyncAdmin({ allSongs }) {
         />
       )}
 
+      {/* Explanation */}
+      <div className="rounded-xl p-4 space-y-3" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+        <p className="text-sm font-bold" style={{ color: '#F4F4F2' }}>¿Qué hace el Spotify Sync?</p>
+        <p className="text-xs leading-relaxed" style={{ color: '#A7ACAE' }}>
+          Busca automáticamente cada canción del catálogo en Spotify para mostrar el <strong style={{ color: '#1DB954' }}>player embebido</strong> en la página de cada canción.
+          Compara título y artista con la API de Spotify y guarda el enlace si hay coincidencia.
+        </p>
+        <div className="grid grid-cols-2 gap-1.5 text-xs" style={{ color: '#A7ACAE' }}>
+          <span>🟢 <strong style={{ color: '#59B879' }}>Con Spotify ✓</strong> — player visible en la canción</span>
+          <span>🔵 <strong style={{ color: '#4F9ED8' }}>Sin sincronizar</strong> — pendiente de procesar</span>
+          <span>🟡 <strong style={{ color: '#D8A62A' }}>Para revisar</strong> — coincidencia de baja confianza</span>
+          <span>⚫ <strong style={{ color: '#747B7F' }}>No encontradas</strong> — no existe en Spotify</span>
+        </div>
+        <p className="text-xs px-3 py-2 rounded-lg" style={{ backgroundColor: 'rgba(255,114,0,0.08)', color: '#FF7200' }}>
+          💡 Pulsa <strong>"Procesar siguiente lote"</strong> varias veces hasta que "Sin sincronizar" llegue a 0. Cada lote procesa ~20 canciones.
+        </p>
+      </div>
+
       {/* Stats grid */}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
