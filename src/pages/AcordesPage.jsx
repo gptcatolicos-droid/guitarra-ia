@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
+import { Music2, X } from 'lucide-react';
 
 // ─── Chord data (from ChatGPT design) ────────────────────────────────────────
 const ROOTS = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -97,8 +99,42 @@ function ChordDiagramSVG({ frets, name }) {
   );
 }
 
-function ChordCard({ chord }) {
-  const navigate = useNavigate();
+function SongMiniCard({ song }) {
+  const title = song.title.replace(/\s*\d+$/, '').trim();
+  return (
+    <Link to={`/${song.artist_slug}/${song.slug}`}
+      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
+      style={{ border: '1px solid #272C2F', backgroundColor: '#121516' }}>
+      <Music2 className="w-3.5 h-3.5 shrink-0" style={{ color: '#FF7200' }} />
+      <div className="min-w-0">
+        <p className="text-xs font-medium truncate" style={{ color: '#F4F4F2' }}>{title}</p>
+        <p className="text-[10px] truncate" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+      </div>
+    </Link>
+  );
+}
+
+function ChordCard({ chord, allSongs }) {
+  const [songs, setSongs] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleViewSongs = async () => {
+    if (songs !== null) { setSongs(null); return; }
+    setLoading(true);
+    try {
+      // Search locally first using chords_used field, then filter content_raw
+      const chordLower = chord.name.toLowerCase();
+      const matched = allSongs.filter(s => {
+        if (s.chords_used?.some(c => c.toLowerCase() === chordLower)) return true;
+        if (s.content_raw?.toLowerCase().includes(` ${chordLower} `) || s.content_raw?.toLowerCase().includes(`\n${chordLower}\n`)) return true;
+        return false;
+      }).slice(0, 6);
+      setSongs(matched);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       className="relative overflow-hidden rounded-xl p-3 transition-all flex flex-col"
@@ -120,12 +156,21 @@ function ChordCard({ chord }) {
         {chord.frets.map(x => x < 0 ? 'x' : x).join(' · ')}
       </div>
       <button
-        onClick={() => navigate(`/chat?q=canciones con acorde ${chord.name}`)}
-        className="mt-2 w-full text-[11px] font-bold py-1.5 rounded-lg transition-opacity hover:opacity-80"
-        style={{ backgroundColor: '#FF7200', color: '#fff' }}
+        onClick={handleViewSongs}
+        disabled={loading}
+        className="mt-2 w-full text-[11px] font-bold py-1.5 rounded-lg transition-opacity hover:opacity-80 disabled:opacity-50"
+        style={{ backgroundColor: songs !== null ? '#272C2F' : '#FF7200', color: songs !== null ? '#A7ACAE' : '#fff' }}
       >
-        Ver canciones
+        {loading ? '...' : songs !== null ? 'Cerrar' : 'Ver canciones'}
       </button>
+      {songs !== null && (
+        <div className="mt-2 space-y-1">
+          {songs.length === 0
+            ? <p className="text-[10px] text-center py-2" style={{ color: '#747B7F' }}>Sin canciones con este acorde</p>
+            : songs.map(s => <SongMiniCard key={s.id} song={s} />)
+          }
+        </div>
+      )}
     </div>
   );
 }
@@ -140,6 +185,12 @@ export default function AcordesPage() {
   const [search, setSearch] = useState('');
   const [rootFilter, setRootFilter] = useState('');
   const [qualityFilter, setQualityFilter] = useState('');
+  const [allSongs, setAllSongs] = useState([]);
+
+  // Load songs once for "Ver canciones" feature
+  useMemo(() => {
+    base44.entities.Song.list('-views', 2000).then(s => setAllSongs(s || [])).catch(() => {});
+  }, []);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -192,7 +243,7 @@ export default function AcordesPage() {
 
       {filtered.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-          {filtered.map((chord, i) => <ChordCard key={i} chord={chord} />)}
+          {filtered.map((chord, i) => <ChordCard key={i} chord={chord} allSongs={allSongs} />)}
         </div>
       ) : (
         <div className="text-center py-16 rounded-2xl" style={{ border: '1px dashed #303538' }}>

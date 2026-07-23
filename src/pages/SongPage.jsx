@@ -8,6 +8,7 @@ import TablatureViewer from '@/components/TablatureViewer';
 import SongMeta from '@/components/SongMeta';
 import SpotifyPlayer from '@/components/SpotifyPlayer';
 import SongSeoContent from '@/components/SongSeoContent';
+import RelatedSongs from '@/components/RelatedSongs';
 
 export default function SongPage() {
   const { artistSlug, songSlug, view } = useParams();
@@ -177,6 +178,7 @@ export default function SongPage() {
           {activeView === 'acordes' && !song.has_chords && song.has_tablature && <TablatureViewer song={song} />}
 
           <SongSeoContent song={song} />
+          <RelatedSongs song={song} />
 
           {/* IA CTA */}
           <div className="mt-8 pt-6" style={{ borderTop: '1px solid #272C2F' }}>

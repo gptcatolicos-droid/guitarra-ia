@@ -1,16 +1,30 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Trash2, RefreshCw, Star, StarOff, Image } from 'lucide-react';
+import { Trash2, RefreshCw, Star, StarOff, Image, Search } from 'lucide-react';
 
 export default function ArtistsManager() {
   const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchingImage, setFetchingImage] = useState({});
 
-  const load = () => {
-    base44.entities.Artist.list('-created_date', 200)
-      .then(a => setArtists(a || []))
-      .finally(() => setLoading(false));
+  const load = async () => {
+    setLoading(true);
+    try {
+      // Load all artists in batches of 500
+      let all = [];
+      let page = 0;
+      const PAGE = 500;
+      while (true) {
+        const batch = await base44.entities.Artist.list('-created_date', PAGE, page * PAGE);
+        if (!batch || batch.length === 0) break;
+        all = [...all, ...batch];
+        if (batch.length < PAGE) break;
+        page++;
+      }
+      setArtists(all);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -53,8 +67,11 @@ export default function ArtistsManager() {
     }
   };
 
+  const [search, setSearch] = useState('');
   const featured = artists.filter(a => a.is_featured);
-  const rest = artists.filter(a => !a.is_featured);
+  const rest = artists.filter(a => !a.is_featured).filter(a =>
+    !search || a.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   if (loading) return <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: '#303538', borderTopColor: '#FF7200' }} /></div>;
 
@@ -91,10 +108,17 @@ export default function ArtistsManager() {
 
       {/* Rest */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-sm font-semibold text-muted-foreground">Todos los artistas ({rest.length})</p>
+        <div className="px-4 py-3 border-b border-border space-y-2">
+          <p className="text-sm font-semibold text-muted-foreground">Todos los artistas ({artists.length} total)</p>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar artista..."
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg text-sm outline-none"
+              style={{ backgroundColor: '#121516', border: '1px solid #303538', color: '#F4F4F2' }} />
+          </div>
         </div>
-        <div className="max-h-[400px] overflow-y-auto divide-y divide-border">
+        <div className="max-h-[500px] overflow-y-auto divide-y divide-border">
           {rest.map(artist => (
             <ArtistRow key={artist.id} artist={artist} onToggle={toggleFeatured} onDelete={deleteArtist} onFetchImage={fetchAndSaveImage} fetching={!!fetchingImage[artist.id]} />
           ))}

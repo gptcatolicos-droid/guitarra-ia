@@ -17,6 +17,7 @@ const EMPTY = {
   has_tablature: false,
   content_raw: '',
   tablature: '',
+  spotify_embed: '',
 };
 
 export default function SongCreatorForm({ onCreated }) {
@@ -115,6 +116,15 @@ export default function SongCreatorForm({ onCreated }) {
             className="accent-primary w-4 h-4" />
           Tiene tablatura
         </label>
+      </div>
+
+      {/* Spotify Embed */}
+      <div>
+        <label className={labelCls}>Código embed de Spotify (opcional)</label>
+        <input className={`${inputCls} font-mono text-xs`} value={form.spotify_embed}
+          onChange={e => set('spotify_embed', e.target.value)}
+          placeholder='<iframe src="https://open.spotify.com/embed/track/...">' />
+        <p className="text-xs text-muted-foreground mt-1">En Spotify → compartir → Insertar → copia el iframe.</p>
       </div>
 
       {/* Content */}

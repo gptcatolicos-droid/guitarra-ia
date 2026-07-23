@@ -102,8 +102,11 @@ async function upsertSong(parsed) {
   return { ...created, updated: false };
 }
 
+const KEYS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B','Cm','C#m','Dm','D#m','Em','Fm','F#m','Gm','G#m','Am','A#m','Bm'];
+
 function SongEditor({ song, onClose, onSaved }) {
   const [title, setTitle] = useState(song.title || '');
+  const [originalKey, setOriginalKey] = useState(song.original_key || '');
   const [content, setContent] = useState(song.content_raw || song.tablature || '');
   const [spotifyEmbed, setSpotifyEmbed] = useState(song.spotify_embed || '');
   const [saving, setSaving] = useState(false);
@@ -117,6 +120,7 @@ function SongEditor({ song, onClose, onSaved }) {
     // Build update payload
     const updateData = {
       title,
+      original_key: originalKey || null,
       ...(isTab ? { tablature: content } : { content_raw: content }),
       spotify_embed: spotifyEmbed || null,
     };
@@ -172,7 +176,17 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
               className="text-foreground font-bold text-lg bg-transparent border-b border-transparent hover:border-border focus:border-primary outline-none w-full"
               placeholder="Título de la canción"
             />
-            <p className="text-muted-foreground text-sm mt-0.5">{song.artist_name}</p>
+            <div className="flex items-center gap-3 mt-1">
+              <p className="text-muted-foreground text-sm">{song.artist_name}</p>
+              <select
+                value={originalKey}
+                onChange={e => setOriginalKey(e.target.value)}
+                className="text-xs bg-transparent border border-border rounded px-2 py-0.5 text-foreground outline-none focus:border-primary"
+              >
+                <option value="">Sin tonalidad</option>
+                {KEYS.map(k => <option key={k} value={k}>{k}</option>)}
+              </select>
+            </div>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1 shrink-0">
             <X className="w-5 h-5" />

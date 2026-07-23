@@ -60,14 +60,11 @@ const normalize = (s) =>
     .replace(/\s*\d+$/, '')
     .trim();
 
-export default function ChatInterface({ embedded }) {
+const HERO_BG = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/2fe719569_foto.png';
+
+export default function ChatInterface({ embedded, heroMode }) {
   const location = useLocation();
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: '¡Hola! Soy Guitarra IA. ¿Qué quieres tocar hoy?',
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [scanningExternal, setScanningExternal] = useState(false);
@@ -290,6 +287,96 @@ IMPORTANTE:
     setLoading(false);
   };
 
+  const hasMessages = messages.length > 0;
+
+  const inputBar = (
+    <div className="px-4 py-4" style={{ borderTop: hasMessages ? '1px solid #272C2F' : 'none', backgroundColor: '#0E1112' }}>
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-end gap-2 rounded-2xl p-2 transition-colors" style={{ backgroundColor: '#171A1C', border: '1px solid #303538' }}>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="Escribe el nombre de una canción o artista..."
+            rows={1}
+            className="flex-1 resize-none outline-none py-2 text-sm max-h-32" style={{ backgroundColor: 'transparent', color: '#F4F4F2' }}
+          />
+          <button
+            onClick={() => handleSend()}
+            disabled={!input.trim() || loading}
+            className="p-2.5 text-white rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity" style={{ backgroundColor: '#FF7200' }}
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
+        <p className="text-muted-foreground text-xs text-center mt-2">
+          La IA puede equivocarse. Verifica siempre los acordes.
+        </p>
+      </div>
+    </div>
+  );
+
+  if (heroMode && !hasMessages) {
+    // Hero state: centered layout with background image, input in the middle
+    return (
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <div
+          className="flex-1 flex flex-col items-center justify-center text-center px-6 relative overflow-hidden"
+          style={{ backgroundColor: '#0B0D0E' }}
+        >
+          <div className="absolute inset-0 z-0"
+            style={{ backgroundImage: `url(${HERO_BG})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+          <div className="absolute inset-0 z-0" style={{ backgroundColor: 'rgba(11,13,14,0.82)' }} />
+          <div className="relative z-10 w-full max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-5"
+              style={{ backgroundColor: 'rgba(255,114,0,0.18)', border: '1px solid rgba(255,114,0,0.4)', color: '#FF7200' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+              Asistente IA activo
+            </div>
+            <h1 className="text-2xl lg:text-4xl font-bold mb-3" style={{ color: '#F4F4F2' }}>
+              Tu profe de guitarra con <span style={{ color: '#FF7200' }}>inteligencia artificial</span>
+            </h1>
+            <p className="text-sm lg:text-base mb-8" style={{ color: '#A7ACAE' }}>
+              Pregunta por acordes, tablaturas, tonos, canciones o técnica.
+            </p>
+            {/* Input bar centered */}
+            <div className="flex items-end gap-2 rounded-2xl p-2" style={{ backgroundColor: '#171A1C', border: '1px solid #444A4E' }}>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }}}
+                placeholder="Escribe el nombre de una canción o artista..."
+                rows={1}
+                className="flex-1 resize-none outline-none py-2 text-sm max-h-32"
+                style={{ backgroundColor: 'transparent', color: '#F4F4F2' }}
+              />
+              <button onClick={() => handleSend()} disabled={!input.trim() || loading}
+                className="p-2.5 text-white rounded-xl hover:opacity-90 disabled:opacity-30 transition-opacity"
+                style={{ backgroundColor: '#FF7200' }}>
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            {/* Quick suggestions */}
+            <div className="flex flex-wrap justify-center gap-2 mt-4">
+              {SUGGESTIONS.map((s, i) => (
+                <button key={i} onClick={() => handleSend(s)}
+                  className="text-xs px-3 py-1.5 rounded-full transition-colors hover:border-orange-500/50"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid #303538', color: '#A7ACAE' }}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const inner = (
     <>
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4" style={{ backgroundColor: '#0B0D0E' }}>
@@ -312,43 +399,13 @@ IMPORTANTE:
               )}
             </div>
           )}
-
         </div>
       </div>
-
-      <div className="px-4 py-4" style={{ borderTop: '1px solid #272C2F', backgroundColor: '#0E1112' }}>
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-2 rounded-2xl p-2 transition-colors" style={{ backgroundColor: '#171A1C', border: '1px solid #303538' }}>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Escribe el nombre de una canción o artista..."
-              rows={1}
-              className="flex-1 resize-none outline-none py-2 text-sm max-h-32" style={{ backgroundColor: 'transparent', color: '#F4F4F2' }}
-            />
-            <button
-              onClick={() => handleSend()}
-              disabled={!input.trim() || loading}
-              className="p-2.5 text-white rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity" style={{ backgroundColor: '#FF7200' }}
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </div>
-          <p className="text-muted-foreground text-xs text-center mt-2">
-            La IA puede equivocarse. Verifica siempre los acordes.
-          </p>
-        </div>
-      </div>
+      {inputBar}
     </>
   );
 
-  if (embedded) {
+  if (embedded || heroMode) {
     return <div className="flex flex-col flex-1 overflow-hidden">{inner}</div>;
   }
 

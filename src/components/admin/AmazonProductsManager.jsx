@@ -6,12 +6,16 @@ const CATEGORIES = ['Guitarras', 'Amplificadores', 'Accesorios', 'Cuerdas', 'Efe
 const EMPTY = { title: '', description: '', image_url: '', price: '', affiliate_url: '', category: 'Guitarras', is_featured: false, sort_order: 0 };
 
 async function fetchAmazonProduct(url) {
-  // Use LLM with web context to extract product info from Amazon URL
   const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `Extrae los datos del producto de Amazon desde esta URL: ${url}
-    
-Devuelve el título del producto, descripción breve (máx 150 caracteres), precio actual, y la URL directa de la imagen principal del producto.
-Si no puedes extraer algún dato, devuelve null para ese campo.`,
+    prompt: `Analiza este producto de Amazon y extrae su información: ${url}
+
+Instrucciones CRÍTICAS:
+- title: nombre completo del producto tal como aparece en Amazon (no lo acortes)
+- price: precio ACTUAL en formato "$XX.XX" o "COP XX.XXX". Busca el precio principal de venta (no el precio tachado).
+- image_url: URL directa de la imagen principal del producto (debe terminar en .jpg o .png, desde images-amazon.com o similar). Si no puedes obtenerla exacta, devuelve null.
+- description: resumen de 1-2 líneas sobre el producto, enfocado en guitarristas
+
+Si no puedes obtener algún dato con certeza, devuelve null para ese campo. NO inventes datos.`,
     add_context_from_internet: true,
     model: 'gemini_3_flash',
     response_json_schema: {
