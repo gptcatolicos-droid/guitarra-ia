@@ -125,6 +125,8 @@ function ChordCard({ chord, allSongs }) {
       // Search locally first using chords_used field, then filter content_raw
       const chordLower = chord.name.toLowerCase();
       const matched = allSongs.filter(s => {
+        const hasSpotifyEmbed = Boolean(s.spotify_embed || s.spotify_embed_url);
+        if (!hasSpotifyEmbed) return false;
         if (s.chords_used?.some(c => c.toLowerCase() === chordLower)) return true;
         if (s.content_raw?.toLowerCase().includes(` ${chordLower} `) || s.content_raw?.toLowerCase().includes(`\n${chordLower}\n`)) return true;
         return false;

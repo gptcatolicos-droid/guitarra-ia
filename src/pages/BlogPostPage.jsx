@@ -75,17 +75,19 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-screen w-full" style={{ backgroundColor: '#0B0D0E' }}>
-      <div className="mobile-page-container max-w-3xl py-8 min-w-0">
+      <div className="blog-article min-w-0">
 
+        <nav aria-label="Migas de pan">
         <Link to="/blog" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#747B7F' }}
           onMouseEnter={e => { e.currentTarget.style.color = '#FF7200'; }}
           onMouseLeave={e => { e.currentTarget.style.color = '#747B7F'; }}
         >
           <ChevronLeft className="w-4 h-4" /> Volver al blog
         </Link>
+        </nav>
 
         <article>
-          <div className="mb-8">
+          <header className="blog-article-header">
             <span className="text-xs font-bold px-2.5 py-1 rounded-full inline-block mb-3"
               style={{ backgroundColor: cc.bg, color: cc.color }}>
               {post.category}
@@ -102,39 +104,29 @@ export default function BlogPostPage() {
               <span>·</span>
               <span>guitarraia.com</span>
             </div>
-          </div>
+          </header>
 
           {/* Content */}
-          <div className="space-y-4 blog-content min-w-0">
+          <div className="blog-article-content blog-content min-w-0">
             <ReactMarkdown
               components={{
-                h1: ({ children }) => <h1 className="text-2xl font-bold mt-10 mb-4" style={{ color: '#F4F4F2' }}>{children}</h1>,
-                h2: ({ children }) => <h2 className="text-xl font-bold mt-8 mb-3" style={{ color: '#F4F4F2' }}>{children}</h2>,
-                h3: ({ children }) => <h3 className="text-lg font-semibold mt-6 mb-2" style={{ color: '#F4F4F2' }}>{children}</h3>,
-                p: ({ children }) => <p className="text-[17px] leading-relaxed mb-4" style={{ color: '#A7ACAE' }}>{children}</p>,
-                ul: ({ children }) => <ul className="list-disc list-inside space-y-1.5 mb-4" style={{ color: '#A7ACAE' }}>{children}</ul>,
-                ol: ({ children }) => <ol className="list-decimal list-inside space-y-1.5 mb-4" style={{ color: '#A7ACAE' }}>{children}</ol>,
-                li: ({ children }) => <li style={{ color: '#A7ACAE' }}>{children}</li>,
+                h1: ({ children }) => <h2>{children}</h2>,
+                h2: ({ children }) => <h2>{children}</h2>,
+                h3: ({ children }) => <h3>{children}</h3>,
+                p: ({ children }) => <p>{children}</p>,
+                ul: ({ children }) => <ul>{children}</ul>,
+                ol: ({ children }) => <ol>{children}</ol>,
+                li: ({ children }) => <li>{children}</li>,
                 strong: ({ children }) => <strong className="font-semibold" style={{ color: '#F4F4F2' }}>{children}</strong>,
-                code: ({ children, className }) => {
-                  const isBlock = className?.includes('language-');
-                  if (isBlock) {
-                    return (
-                      <pre className="rounded-xl p-4 overflow-x-auto mb-4 text-sm" style={{ backgroundColor: '#121516', border: '1px solid #272C2F' }}>
-                        <code className="font-mono" style={{ color: '#FF7200', fontFamily: '"IBM Plex Mono", monospace' }}>{children}</code>
-                      </pre>
-                    );
-                  }
-                  return <code className="px-1.5 py-0.5 rounded text-sm font-mono" style={{ backgroundColor: '#121516', color: '#FF7200', fontFamily: '"IBM Plex Mono", monospace' }}>{children}</code>;
-                },
-                pre: ({ children }) => (
-                  <pre className="rounded-xl p-4 overflow-x-auto mb-4 text-sm" style={{ backgroundColor: '#121516', border: '1px solid #272C2F', fontFamily: '"IBM Plex Mono", monospace', color: '#FF7200' }}>{children}</pre>
-                ),
+                code: ({ children, className }) => className?.includes('language-')
+                  ? <code className="font-mono" style={{ color: '#FF7200', fontFamily: '"IBM Plex Mono", monospace' }}>{children}</code>
+                  : <code className="px-1.5 py-0.5 rounded text-sm font-mono" style={{ backgroundColor: '#121516', color: '#FF7200', fontFamily: '"IBM Plex Mono", monospace' }}>{children}</code>,
+                pre: ({ children }) => <pre className="blog-code-block">{children}</pre>,
                 blockquote: ({ children }) => (
                   <blockquote className="pl-4 italic mb-4" style={{ borderLeft: '3px solid #FF7200', color: '#A7ACAE' }}>{children}</blockquote>
                 ),
                 table: ({ children }) => (
-                  <div className="overflow-x-auto mb-4">
+                  <div className="blog-table-wrapper">
                     <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>{children}</table>
                   </div>
                 ),
@@ -160,7 +152,7 @@ export default function BlogPostPage() {
 
         {/* Related */}
         {related.length > 0 && (
-          <div className="mt-10">
+          <div className="blog-related-posts mt-10">
             <h2 className="text-base font-bold mb-4 flex items-center gap-2" style={{ color: '#F4F4F2' }}>
               <BookOpen className="w-4 h-4" style={{ color: '#FF7200' }} /> Artículos relacionados
             </h2>

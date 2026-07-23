@@ -70,7 +70,7 @@ export default function ArtistPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
-      <div className="mobile-page-container max-w-4xl py-8">
+      <div className="artist-page-container">
         <Link to="/artistas" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#747B7F' }}
           onMouseEnter={e => { e.currentTarget.style.color = '#FF7200'; }}
           onMouseLeave={e => { e.currentTarget.style.color = '#747B7F'; }}>
@@ -78,7 +78,7 @@ export default function ArtistPage() {
         </Link>
 
         {/* Artist header */}
-        <div className="flex items-center gap-5 mb-8 pb-6 min-w-0" style={{ borderBottom: '1px solid #272C2F' }}>
+        <div className="artist-page-header flex items-center gap-5 mb-8 pb-6 min-w-0" style={{ borderBottom: '1px solid #272C2F' }}>
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
             style={{ background: 'linear-gradient(135deg, #FF7200, #D95D00)' }}
@@ -95,7 +95,7 @@ export default function ArtistPage() {
 
         {/* Songs list */}
         {uniqueSongs.length > 0 ? (
-          <div className="space-y-1.5">
+          <div className="artist-song-list space-y-1.5">
             {uniqueSongs.map(song => (
               <Link key={song.id} to={`/${artistSlug}/${song.slug}`}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"

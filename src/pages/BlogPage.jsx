@@ -43,10 +43,10 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
-      <div className="mobile-page-container max-w-6xl py-8">
+      <div className="blog-page">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="blog-page-header mb-8">
           <div className="flex items-center gap-3 mb-2">
             <BookOpen className="w-6 h-6" style={{ color: '#FF7200' }} />
             <h1 className="text-2xl lg:text-3xl font-bold" style={{ color: '#F4F4F2' }}>
@@ -57,7 +57,7 @@ export default function BlogPage() {
         </div>
 
         {/* Search */}
-        <div className="relative mb-5">
+        <div className="blog-search relative mb-5">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#747B7F' }} />
           <input
             value={search}
@@ -71,7 +71,7 @@ export default function BlogPage() {
         </div>
 
         {/* Categories */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="blog-filters flex flex-wrap gap-2 mb-8">
           {CATEGORIES.map(cat => {
             const active = category === cat;
             return (
@@ -97,12 +97,12 @@ export default function BlogPage() {
             <p style={{ color: '#747B7F' }}>No se encontraron artículos.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="blog-grid">
             {filtered.map(post => {
               const cc = CAT_COLORS[post.category] || { bg: 'rgba(255,114,0,0.12)', color: '#FF7200' };
               return (
                 <Link key={post.id} to={`/blog/${post.slug}`}
-                  className="flex flex-col p-5 rounded-xl transition-all"
+                  className="blog-card"
                   style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = '#444A4E'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -115,8 +115,8 @@ export default function BlogPage() {
                       <Clock className="w-3 h-3" />{post.reading_time_min || 5} min
                     </span>
                   </div>
-                  <h2 className="text-sm font-semibold leading-snug mb-2 flex-1" style={{ color: '#F4F4F2' }}>{post.title}</h2>
-                  {post.excerpt && <p className="text-xs leading-relaxed mb-4 line-clamp-2" style={{ color: '#747B7F' }}>{post.excerpt}</p>}
+                  <h2 className="blog-card-title" style={{ color: '#F4F4F2' }}>{post.title}</h2>
+                  {post.excerpt && <p className="blog-card-description" style={{ color: '#747B7F' }}>{post.excerpt}</p>}
                   <div className="flex items-center gap-1 text-xs font-semibold mt-auto" style={{ color: '#FF7200' }}>
                     Leer artículo <ChevronRight className="w-3.5 h-3.5" />
                   </div>
