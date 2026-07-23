@@ -43,7 +43,7 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
-      <div className="max-w-6xl mx-auto px-4 lg:px-8 py-8">
+      <div className="mobile-page-container max-w-6xl py-8">
 
         {/* Header */}
         <div className="mb-8">

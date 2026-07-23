@@ -105,8 +105,8 @@ export default function SongPage() {
   const activeView = view || (song.has_chords ? 'acordes' : 'tablatura');
 
   return (
-    <div className="song-page min-h-[100dvh] w-full max-w-full overflow-x-hidden lg:pb-0" style={{ backgroundColor: '#0B0D0E' }}>
-    <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8 py-6 min-w-0 w-full" style={{ boxSizing: 'border-box' }}>
+    <div className="song-page min-h-[100dvh] w-full max-w-full lg:pb-0" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="mobile-page-container max-w-6xl py-6 min-w-0" style={{ boxSizing: 'border-box' }}>
       {/* Header */}
       <div className="mb-5">
         <Link to={`/${artistSlug}`}
@@ -119,8 +119,8 @@ export default function SongPage() {
         </Link>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl lg:text-3xl font-bold" style={{ color: '#F4F4F2' }}>{displayTitle}</h1>
-            <p className="mt-1 text-base" style={{ color: '#A7ACAE' }}>{song.artist_name}</p>
+            <h1 className="text-2xl lg:text-3xl font-bold break-words" style={{ color: '#F4F4F2' }}>{displayTitle}</h1>
+            <p className="mt-1 text-base break-words" style={{ color: '#A7ACAE' }}>{song.artist_name}</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <button onClick={toggleFavorite}

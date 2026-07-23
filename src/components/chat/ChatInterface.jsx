@@ -291,8 +291,8 @@ IMPORTANTE:
 
   const inputBar = (
     <div className="px-4 py-4" style={{ borderTop: hasMessages ? '1px solid #272C2F' : 'none', backgroundColor: '#0E1112' }}>
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-end gap-2 rounded-2xl p-2 transition-colors" style={{ backgroundColor: '#171A1C', border: '1px solid #303538' }}>
+      <div className="max-w-3xl mx-auto w-full min-w-0">
+        <div className="flex items-end gap-2 rounded-2xl p-2 transition-colors min-w-0" style={{ backgroundColor: '#171A1C', border: '1px solid #303538' }}>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -304,12 +304,12 @@ IMPORTANTE:
             }}
             placeholder="Escribe el nombre de una canción o artista..."
             rows={1}
-            className="flex-1 resize-none outline-none py-2 text-sm max-h-32" style={{ backgroundColor: 'transparent', color: '#F4F4F2' }}
+            className="flex-1 min-w-0 w-0 resize-none outline-none py-2 text-sm max-h-32" style={{ backgroundColor: 'transparent', color: '#F4F4F2' }}
           />
           <button
             onClick={() => handleSend()}
             disabled={!input.trim() || loading}
-            className="p-2.5 text-white rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity" style={{ backgroundColor: '#FF7200' }}
+            className="p-2.5 shrink-0 text-white rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity" style={{ backgroundColor: '#FF7200' }}
           >
             <Send className="w-5 h-5" />
           </button>
@@ -345,18 +345,18 @@ IMPORTANTE:
               Pregunta por acordes, tablaturas, tonos, canciones o técnica.
             </p>
             {/* Input bar centered */}
-            <div className="flex items-end gap-2 rounded-2xl p-2" style={{ backgroundColor: '#171A1C', border: '1px solid #444A4E' }}>
+            <div className="flex items-end gap-2 rounded-2xl p-2 min-w-0" style={{ backgroundColor: '#171A1C', border: '1px solid #444A4E' }}>
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }}}
                 placeholder="Escribe el nombre de una canción o artista..."
                 rows={1}
-                className="flex-1 resize-none outline-none py-2 text-sm max-h-32"
+                className="flex-1 min-w-0 w-0 resize-none outline-none py-2 text-sm max-h-32"
                 style={{ backgroundColor: 'transparent', color: '#F4F4F2' }}
               />
               <button onClick={() => handleSend()} disabled={!input.trim() || loading}
-                className="p-2.5 text-white rounded-xl hover:opacity-90 disabled:opacity-30 transition-opacity"
+                className="p-2.5 shrink-0 text-white rounded-xl hover:opacity-90 disabled:opacity-30 transition-opacity"
                 style={{ backgroundColor: '#FF7200' }}>
                 <Send className="w-5 h-5" />
               </button>
@@ -379,7 +379,7 @@ IMPORTANTE:
 
   const inner = (
     <>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4" style={{ backgroundColor: '#0B0D0E' }}>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4" style={{ backgroundColor: '#0B0D0E' }}>
         <div className="max-w-3xl mx-auto w-full min-w-0 space-y-6">
           {messages.map((msg, i) => (
             <ChatMessage key={i} message={msg} onSuggestionClick={handleSend} />

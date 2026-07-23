@@ -59,7 +59,7 @@ export default function SpotifyPlayer({ song, compact = false }) {
   const embedSrc = manualSrc || autoSrc;
 
   return (
-    <div className={compact ? '' : 'bg-card border border-border rounded-2xl overflow-hidden'}>
+    <div className={compact ? 'spotify-card' : 'spotify-card bg-card border border-border'}>
       {!compact && (
         <div className="px-4 pt-3 pb-2">
           <p className="text-foreground font-semibold text-sm">Escuchar en Spotify</p>
@@ -68,15 +68,16 @@ export default function SpotifyPlayer({ song, compact = false }) {
       )}
 
       {embedSrc && (
-        <iframe
-          src={embedSrc}
-          width="100%"
-          height={compact ? 80 : 152}
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-          className="border-0"
-          title="Spotify"
-        />
+        <div className="spotify-embed-wrapper">
+          <iframe
+            src={embedSrc}
+            width="100%"
+            height={compact ? 80 : 152}
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            title="Spotify"
+          />
+        </div>
       )}
 
       <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2 px-4 pb-4 pt-1">

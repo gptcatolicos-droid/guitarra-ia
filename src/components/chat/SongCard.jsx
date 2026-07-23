@@ -62,49 +62,39 @@ export default function SongCard({ song }) {
   const actionLabel = hasChords ? 'Ver acordes' : hasTab ? 'Ver tablatura' : 'Ver canción';
 
   return (
-    <div className="rounded-xl overflow-hidden w-full" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
-      {/* Spotify player — full width, 152px like home */}
+    <div className="song-card spotify-card" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
       {embedUrl ? (
-        <iframe
-          src={embedUrl}
-          width="100%"
-          height="152"
-          frameBorder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-          style={{ display: 'block', borderRadius: '10px 10px 0 0' }}
-        />
+        <div className="spotify-embed-wrapper">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="152"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            title={`Spotify: ${displayTitle}`}
+          />
+        </div>
       ) : (
-        <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: '1px solid #272C2F', minHeight: '72px' }}>
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)' }}>
+        <div className="flex items-center gap-3 px-4 py-4 min-w-0" style={{ borderBottom: '1px solid #272C2F', minHeight: '72px' }}>
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)' }}>
             <Music className="w-4 h-4 text-white" />
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold truncate" style={{ color: '#F4F4F2' }}>{displayTitle}</p>
-            <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+          <div className="song-card-info flex-1">
+            <p className="song-card-title text-sm font-bold" style={{ color: '#F4F4F2' }}>{displayTitle}</p>
+            <p className="song-card-artist text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
           </div>
         </div>
       )}
 
-      {/* Bottom bar: info + button */}
-      <div className="flex items-center gap-3 px-3 py-2.5">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{displayTitle}</p>
-          <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+      <div className="song-card-content grid grid-cols-[110px_minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_auto] gap-3 px-3 py-3">
+        <div className="song-card-info col-span-2 sm:col-span-1">
+          <p className="song-card-title text-sm font-semibold" style={{ color: '#F4F4F2' }}>{displayTitle}</p>
+          <p className="song-card-artist text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {diff && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full hidden sm:inline"
-              style={{ backgroundColor: diff.bg, color: diff.color }}>
-              {song.difficulty}
-            </span>
-          )}
-          <Link
-            to={actionLink}
-            className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-opacity hover:opacity-80"
-            style={{ backgroundColor: '#FF7200' }}
-          >
+        <div className="song-card-actions flex items-center gap-2 sm:col-auto sm:w-auto">
+          {diff && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full hidden sm:inline" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
+          <Link to={actionLink} className="flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-80" style={{ backgroundColor: '#FF7200' }}>
             {actionLabel}
           </Link>
         </div>

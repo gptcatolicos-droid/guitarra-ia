@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Sparkles, Music } from 'lucide-react';
 import SpotifyPlayer from '@/components/SpotifyPlayer';
 import { useSEO } from '@/lib/seo';
+import { Image } from '@/components/ui/image';
 
 function shuffle(array) {
   const copy = [...array];
@@ -39,7 +40,7 @@ export default function InfographicPage() {
 
   return (
     <div className="min-h-screen bg-page">
-      <div className="max-w-4xl mx-auto px-4 lg:px-8 py-8">
+      <div className="mobile-page-container max-w-4xl py-8">
         <Link to="/infografias" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-6"><ArrowLeft className="w-4 h-4" /> Infografías</Link>
         <h1 className="text-3xl lg:text-4xl font-bold text-foreground">{item.title}</h1>
         {item.description && <p className="mt-3 text-lg text-muted-foreground">{item.description}</p>}
@@ -47,11 +48,11 @@ export default function InfographicPage() {
         <div className="mt-8 space-y-6">
           {item.image_urls.map((url, index) => (
             <figure key={url} className="rounded-2xl overflow-hidden bg-card border border-border">
-              <img
+              <Image
                 src={url}
                 alt={`${item.seo_alt_text || item.title} — diapositiva ${index + 1}`}
-                loading={index === 0 ? 'eager' : 'lazy'}
                 className="w-full h-auto block"
+                fittingType="fit"
               />
             </figure>
           ))}

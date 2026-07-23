@@ -14,18 +14,19 @@ function FeaturedCard({ song }) {
   const spotifySrc = extractSpotifySrc(song.spotify_embed);
 
   return (
-    <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col">
+    <div className="spotify-card bg-card border border-border flex flex-col">
       {/* Spotify embed */}
       {spotifySrc ? (
-        <iframe
-          src={spotifySrc}
-          width="100%"
-          height={152}
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-          className="border-0"
-          title="Spotify"
-        />
+        <div className="spotify-embed-wrapper">
+          <iframe
+            src={spotifySrc}
+            width="100%"
+            height={152}
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            title="Spotify"
+          />
+        </div>
       ) : (
         <div className="h-[152px] bg-gradient-brand flex items-center justify-center">
           <Music className="w-8 h-8 text-white/60" />
@@ -35,8 +36,8 @@ function FeaturedCard({ song }) {
       {/* Info + buttons */}
       <div className="p-3 flex flex-col gap-2">
         <div>
-          <p className="text-foreground font-bold text-sm truncate">{title}</p>
-          <p className="text-muted-foreground text-xs truncate">{song.artist_name}</p>
+          <p className="text-foreground font-bold text-sm break-words">{title}</p>
+          <p className="text-muted-foreground text-xs break-words">{song.artist_name}</p>
         </div>
         <div className="flex gap-2">
           {song.has_chords && (

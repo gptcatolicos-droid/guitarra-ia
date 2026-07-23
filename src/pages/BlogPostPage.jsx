@@ -74,8 +74,8 @@ export default function BlogPostPage() {
   const cc = CAT_COLORS[post.category] || { bg: 'rgba(255,114,0,0.12)', color: '#FF7200' };
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden" style={{ backgroundColor: '#0B0D0E' }}>
-      <div className="max-w-3xl mx-auto px-4 lg:px-8 py-8 min-w-0">
+    <div className="min-h-screen w-full" style={{ backgroundColor: '#0B0D0E' }}>
+      <div className="mobile-page-container max-w-3xl py-8 min-w-0">
 
         <Link to="/blog" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#747B7F' }}
           onMouseEnter={e => { e.currentTarget.style.color = '#FF7200'; }}

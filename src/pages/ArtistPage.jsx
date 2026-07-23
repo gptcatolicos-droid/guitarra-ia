@@ -70,7 +70,7 @@ export default function ArtistPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
-      <div className="max-w-4xl mx-auto px-4 lg:px-8 py-8">
+      <div className="mobile-page-container max-w-4xl py-8">
         <Link to="/artistas" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#747B7F' }}
           onMouseEnter={e => { e.currentTarget.style.color = '#FF7200'; }}
           onMouseLeave={e => { e.currentTarget.style.color = '#747B7F'; }}>
@@ -78,15 +78,15 @@ export default function ArtistPage() {
         </Link>
 
         {/* Artist header */}
-        <div className="flex items-center gap-5 mb-8 pb-6" style={{ borderBottom: '1px solid #272C2F' }}>
+        <div className="flex items-center gap-5 mb-8 pb-6 min-w-0" style={{ borderBottom: '1px solid #272C2F' }}>
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
             style={{ background: 'linear-gradient(135deg, #FF7200, #D95D00)' }}
           >
             <span className="text-white text-2xl font-bold">{artist.name[0]}</span>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold" style={{ color: '#F4F4F2' }}>{artist.name}</h1>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold break-words" style={{ color: '#F4F4F2' }}>{artist.name}</h1>
             <p className="text-sm mt-0.5" style={{ color: '#747B7F' }}>
               {uniqueSongs.length} {uniqueSongs.length === 1 ? 'canción disponible' : 'canciones disponibles'}
             </p>
@@ -114,7 +114,7 @@ export default function ArtistPage() {
                     {song.difficulty && <span className="text-xs" style={{ color: '#747B7F' }}>· {song.difficulty}</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex flex-wrap justify-end gap-1.5 shrink-0">
                   {song.has_chords && (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,114,0,0.12)', color: '#FF7200' }}>
                       Acordes

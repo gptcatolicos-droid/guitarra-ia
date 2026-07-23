@@ -63,14 +63,14 @@ export default function SearchPage() {
         className="sticky top-0 z-10 px-4 py-3"
         style={{ backgroundColor: '#0E1112', borderBottom: '1px solid #272C2F' }}
       >
-        <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
+        <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto w-full min-w-0">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#747B7F' }} />
           <input
             value={inputVal}
             onChange={e => setInputVal(e.target.value)}
             placeholder="Buscar canciones, artistas, acordes…"
             autoFocus
-            className="w-full pl-11 pr-10 py-3 rounded-xl text-sm outline-none"
+            className="w-full max-w-full min-w-0 pl-11 pr-10 py-3 rounded-xl text-sm outline-none"
             style={{ backgroundColor: '#171A1C', border: '1px solid #303538', color: '#F4F4F2', caretColor: '#FF7200' }}
             onFocus={e => { e.target.style.borderColor = '#FF7200'; }}
             onBlur={e => { e.target.style.borderColor = '#303538'; }}
@@ -121,7 +121,7 @@ export default function SearchPage() {
                         style={{ backgroundColor: 'rgba(255,114,0,0.15)' }}>
                         <span className="text-sm font-bold" style={{ color: '#FF7200' }}>{a.name[0]}</span>
                       </div>
-                      <span className="text-sm font-medium" style={{ color: '#F4F4F2' }}>{a.name}</span>
+                      <span className="min-w-0 break-words text-sm font-medium" style={{ color: '#F4F4F2' }}>{a.name}</span>
                     </Link>
                   ))}
                 </div>
@@ -166,7 +166,7 @@ export default function SearchPage() {
                           <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{cleanTitle(s.title)}</p>
                           <p className="text-xs" style={{ color: '#747B7F' }}>{s.artist_name}</p>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex flex-wrap justify-end gap-1.5 shrink-0">
                           {diff && (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: diff.bg, color: diff.color }}>
                               {s.difficulty}

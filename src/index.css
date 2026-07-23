@@ -95,14 +95,15 @@
 }
 
 @layer base {
-  * {
+  *, *::before, *::after {
     @apply border-border outline-ring/50;
     box-sizing: border-box;
   }
   html, body, #root {
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    margin: 0;
+    overflow-x: clip;
   }
   html {
     background-color: var(--bg-page);
@@ -115,7 +116,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
   /* Media never overflows its container on mobile */
-  img, iframe, video, svg, table {
+  img, iframe, video, svg, canvas, table {
     max-width: 100%;
   }
 }
@@ -212,6 +213,50 @@
   padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
+/* Shared mobile containment */
+.mobile-page-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.spotify-card,
+.spotify-embed-wrapper {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.spotify-card iframe,
+.spotify-embed-wrapper iframe {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  border: 0;
+}
+
+.song-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.song-card-info {
+  min-width: 0;
+}
+
+.song-card-title,
+.song-card-artist {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
 /* ============================
    CHORD SHEET — RESPONSIVE
    ============================ */
@@ -253,10 +298,23 @@
   .song-page {
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
     padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+  .song-card-actions {
+    width: 100%;
+    grid-column: 1 / -1;
+  }
+  .song-card-actions a {
+    width: 100%;
+    min-height: 48px;
   }
   .chord-sheet-wrapper {
     max-height: 62dvh;
+  }
+}
+
+@media (max-width: 389px) {
+  .song-card-content {
+    grid-template-columns: 88px minmax(0, 1fr);
   }
 }

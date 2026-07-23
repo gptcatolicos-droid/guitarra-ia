@@ -30,32 +30,28 @@ function SpotifySongCard({ song }) {
   const embedUrl = getSpotifyEmbedUrl(song.spotify_embed);
 
   return (
-    <div className="flex flex-col rounded-xl overflow-hidden" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+    <div className="spotify-card flex flex-col" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
       {embedUrl ? (
-        <iframe src={embedUrl} width="100%" height="152" frameBorder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy" style={{ display: 'block', borderRadius: '10px 10px 0 0' }} />
+        <div className="spotify-embed-wrapper">
+          <iframe src={embedUrl} width="100%" height="152" frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy" title={`Spotify: ${song.title}`} />
+        </div>
       ) : (
         <div className="flex items-center justify-center" style={{ height: '152px', backgroundColor: '#121516' }}>
           <Music className="w-8 h-8" style={{ color: '#303538' }} />
         </div>
       )}
-      <div className="p-3 flex items-center justify-between gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 p-3 min-w-0">
         <div className="min-w-0">
-          <p className="text-sm font-semibold line-clamp-1 mb-0.5" style={{ color: '#F4F4F2' }}>
+          <p className="text-sm font-semibold mb-0.5 break-words" style={{ color: '#F4F4F2' }}>
             {song.title.replace(/\s*\d+$/, '').trim()}
           </p>
-          <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+          <p className="text-xs break-words" style={{ color: '#747B7F' }}>{song.artist_name}</p>
         </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          {diff && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: diff.bg, color: diff.color }}>
-              {song.difficulty}
-            </span>
-          )}
-          <Link to={`/${song.artist_slug}/${song.slug}`}
-            className="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-80"
-            style={{ backgroundColor: '#FF7200', color: '#fff' }}>
+        <div className="flex flex-col gap-1 min-w-0">
+          {diff && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full self-start sm:self-end" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
+          <Link to={`/${song.artist_slug}/${song.slug}`} className="w-full min-h-12 flex items-center justify-center text-[10px] font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-80" style={{ backgroundColor: '#FF7200', color: '#fff' }}>
             Ver acordes
           </Link>
         </div>
@@ -130,12 +126,12 @@ export default function Home() {
       {topSongs.length > 0 && (
         <section className="px-4 lg:px-8 py-10">
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" style={{ color: '#FF7200' }} />
-                <h2 className="text-xl font-bold" style={{ color: '#F4F4F2' }}>Canciones en tendencia</h2>
+            <div className="flex items-center justify-between gap-3 mb-5 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <TrendingUp className="w-5 h-5 shrink-0" style={{ color: '#FF7200' }} />
+                <h2 className="text-xl font-bold break-words" style={{ color: '#F4F4F2' }}>Canciones en tendencia</h2>
               </div>
-              <Link to="/canciones" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#FF7200' }}>
+              <Link to="/canciones" className="flex shrink-0 items-center gap-1 text-sm font-medium" style={{ color: '#FF7200' }}>
                 Ver todas <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -205,7 +201,7 @@ export default function Home() {
             <div className="space-y-1">
               {easySongs.map((song, i) => (
                 <div key={song.id}
-                  className="flex items-center gap-4 px-4 py-3 rounded-xl"
+                  className="grid grid-cols-[auto_auto_minmax(0,1fr)] sm:flex sm:items-center gap-4 px-4 py-3 rounded-xl min-w-0"
                   style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
                 >
                   <span className="text-sm font-bold w-5 text-right shrink-0" style={{ color: '#303538' }}>{i + 1}</span>
@@ -217,13 +213,13 @@ export default function Home() {
                     <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{song.title}</p>
                     <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="col-span-3 sm:col-auto flex items-center gap-2 min-w-0">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full hidden sm:inline"
                       style={{ backgroundColor: 'rgba(128,185,64,0.15)', color: '#80B940' }}>
                       Fácil
                     </span>
                     <Link to={`/${song.artist_slug}/${song.slug}`}
-                      className="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-80"
+                      className="w-full sm:w-auto min-h-11 flex items-center justify-center text-[10px] font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-80"
                       style={{ backgroundColor: '#FF7200', color: '#fff' }}>
                       Ver acordes
                     </Link>

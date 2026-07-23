@@ -240,7 +240,7 @@ export default function ChordViewer({ song, transposeKey }) {
                     return (
                       <div key={j} className="flex flex-wrap items-end" style={{ gap: '0 2px' }}>
                         {row.segments.map((seg, k) => (
-                          <span key={k} className="inline-flex flex-col" style={{ fontFamily: 'var(--font-mono)' }}>
+                          <span key={k} className="inline-flex min-w-0 flex-col" style={{ fontFamily: 'var(--font-mono)' }}>
                             <span className="text-[#ff7a00] font-bold leading-tight" style={{ minHeight: seg.chord ? undefined : '1.2em' }}>{seg.chord || '\u00A0'}</span>
                             <span className="text-[#f3f4f6] leading-tight" style={{ whiteSpace: 'pre-wrap' }}>{seg.lyric || '\u00A0'}</span>
                           </span>
