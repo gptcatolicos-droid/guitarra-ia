@@ -389,25 +389,25 @@ IMPORTANTE:
       <div className="flex flex-col flex-1 overflow-hidden">
         <div
           className="flex-1 flex flex-col items-center justify-center text-center px-6 relative overflow-hidden"
-          style={{ backgroundColor: '#0B0D0E' }}
+          style={{ backgroundColor: '#FFFFFF' }}
         >
           <div className="absolute inset-0 z-0"
-            style={{ backgroundImage: `url(${HERO_BG})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-          <div className="absolute inset-0 z-0" style={{ backgroundColor: 'rgba(11,13,14,0.82)' }} />
+            style={{ backgroundImage: `url(${HERO_BG})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.97 }} />
+          <div className="absolute inset-0 z-0" style={{ backgroundColor: 'rgba(255,255,255,0.55)' }} />
           <div className="relative z-10 w-full max-w-2xl">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-5"
-              style={{ backgroundColor: 'rgba(255,114,0,0.18)', border: '1px solid rgba(255,114,0,0.4)', color: '#FF7200' }}>
+              style={{ backgroundColor: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.4)', color: '#F97316' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
               Asistente IA activo
             </div>
-            <h1 className="text-2xl lg:text-4xl font-bold mb-3" style={{ color: '#F4F4F2' }}>
-              Tu profe de guitarra con <span style={{ color: '#FF7200' }}>inteligencia artificial</span>
+            <h1 className="text-2xl lg:text-4xl font-bold mb-3" style={{ color: '#1F2937' }}>
+              Aprende y practica Guitarra con <span style={{ color: '#F97316' }}>Inteligencia Artificial</span>
             </h1>
-            <p className="text-sm lg:text-base mb-8" style={{ color: '#A7ACAE' }}>
+            <p className="text-sm lg:text-base mb-8" style={{ color: '#4B5563' }}>
               Pregunta por acordes, tablaturas, tonos, canciones o técnica.
             </p>
             {/* Input bar centered */}
-            <div className="flex items-end gap-2 rounded-2xl p-2 min-w-0" style={{ backgroundColor: '#171A1C', border: '1px solid #444A4E' }}>
+            <div className="flex items-end gap-2 rounded-2xl p-2 min-w-0" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 6px 18px rgba(15,23,42,0.08)' }}>
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -415,11 +415,11 @@ IMPORTANTE:
                 placeholder="Escribe el nombre de una canción o artista..."
                 rows={1}
                 className="flex-1 min-w-0 w-0 resize-none outline-none py-2 text-sm max-h-32"
-                style={{ backgroundColor: 'transparent', color: '#F4F4F2' }}
+                style={{ backgroundColor: 'transparent', color: '#1F2937' }}
               />
               <button onClick={() => handleSend()} disabled={!input.trim() || loading}
                 className="p-2.5 shrink-0 text-white rounded-xl hover:opacity-90 disabled:opacity-30 transition-opacity"
-                style={{ backgroundColor: '#FF7200' }}>
+                style={{ backgroundColor: '#F97316' }}>
                 <Send className="w-5 h-5" />
               </button>
             </div>
@@ -427,8 +427,8 @@ IMPORTANTE:
             <div className="flex flex-wrap justify-center gap-2 mt-4">
               {SUGGESTIONS.map((s, i) => (
                 <button key={i} onClick={() => handleSend(s)}
-                  className="text-xs px-3 py-1.5 rounded-full transition-colors hover:border-orange-500/50"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid #303538', color: '#A7ACAE' }}>
+                  className="text-xs px-3 py-1.5 rounded-full transition-colors hover:border-orange-400"
+                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#4B5563' }}>
                   {s}
                 </button>
               ))}
