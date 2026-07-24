@@ -578,7 +578,7 @@ Tengo la camisa negra...`}</pre>
       )}
 
       {tab === 'sitemap' && (
-        <SitemapPanel allSongs={allSongsList} />
+        <SitemapPanel />
       )}
 
       {tab === 'stats' && (
