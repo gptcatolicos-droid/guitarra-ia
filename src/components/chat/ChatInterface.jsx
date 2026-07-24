@@ -391,9 +391,6 @@ IMPORTANTE:
           className="flex-1 flex flex-col items-center justify-center text-center px-6 relative overflow-hidden"
           style={{ backgroundColor: '#FFFFFF' }}
         >
-          <div className="absolute inset-0 z-0"
-            style={{ backgroundImage: `url(${HERO_BG})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.97 }} />
-          <div className="absolute inset-0 z-0" style={{ backgroundColor: 'rgba(255,255,255,0.55)' }} />
           <div className="relative z-10 w-full max-w-2xl">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-5"
               style={{ backgroundColor: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.4)', color: '#F97316' }}>
