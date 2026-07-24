@@ -412,6 +412,21 @@ export default function AdminPage() {
     loadStats();
   };
 
+  const handleBulkStatus = async (songIds, action) => {
+    if (action === 'publish' || action === 'unpublish') {
+      const status = action === 'publish' ? 'published' : 'unpublished';
+      await Promise.all(songIds.map((id) => base44.entities.Song.update(id, { status })));
+    } else if (action === 'review') {
+      await Promise.all(songIds.map((id) => base44.entities.Song.update(id, { spotify_match_status: 'review_required' })));
+    } else if (action === 'spotify' || action === 'retry') {
+      // Sequential to respect Spotify API limits; skips embeds that already exist server-side.
+      for (const id of songIds) {
+        try { await base44.functions.invoke('syncSpotifyForSong', { songId: id }); } catch (_) {}
+      }
+    }
+    loadStats();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -535,6 +550,7 @@ Tengo la camisa negra...`}</pre>
           onEdit={setEditingSong}
           onDelete={handleDelete}
           onBulkDelete={handleBulkDelete}
+          onBulkStatus={handleBulkStatus}
           deletingId={deletingId}
         />
       )}
