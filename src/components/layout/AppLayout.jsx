@@ -45,7 +45,7 @@ export default function AppLayout() {
           <Menu className="w-6 h-6" />
         </button>
         <Link to="/" className="flex min-w-0 items-center justify-center">
-          <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '56px', maxWidth: '100%', width: 'auto', objectFit: 'contain' }} />
+          <img src={LOGO_URL} alt="Guitarra IA" style={{ height: '36px', maxWidth: '100%', width: 'auto', objectFit: 'contain' }} />
         </Link>
         <div className="w-11 shrink-0" />
       </div>
@@ -68,7 +68,7 @@ export default function AppLayout() {
           }}
         >
           <Link to="/" className="flex items-center justify-center" style={{ height: '104px' }}>
-            <img src={LOGO_URL} alt="Guitarra IA" style={{ width: '210px', height: 'auto', objectFit: 'contain' }} />
+            <img src={LOGO_URL} alt="Guitarra IA" style={{ width: '210px', height: 'auto', maxHeight: '84px', objectFit: 'contain' }} />
           </Link>
         </div>
 

@@ -6,7 +6,6 @@ import { TrendingUp, Music, ChevronRight, Star, BookOpen } from 'lucide-react';
 import HeroSearchChat from '@/components/home/HeroSearchChat';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/e18c18520_logo.png';
-const HERO_BG = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/2fe719569_foto.png';
 
 const QUICK_CHIPS = [
   'Canciones fáciles', 'Cuatro acordes', 'Rock en español', 'Baladas', 'Guitarra acústica', 'Para principiantes',
@@ -96,19 +95,7 @@ export default function Home() {
         className="relative px-4 lg:px-8 py-10 lg:py-24 overflow-hidden"
         style={{ borderBottom: '1px solid #E5E7EB' }}
       >
-        {/* Background photo — desktop/tablet only, light overlay */}
-        <div
-          className="hidden md:block absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(${HERO_BG})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center right',
-          }}
-        />
-        <div className="hidden md:block absolute inset-0 z-0" style={{ backgroundColor: 'rgba(248,249,251,0.90)' }} />
-
-        {/* Mobile: plain light bg */}
-        <div className="md:hidden absolute inset-0 z-0" style={{ backgroundColor: '#F3F4F6' }} />
+        <div className="absolute inset-0 z-0" style={{ backgroundColor: '#F8F9FB' }} />
 
         <div className="relative z-10 max-w-2xl mx-auto text-center w-full">
           <h1 className="text-[28px] leading-[1.15] sm:text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#1F2937' }}>
