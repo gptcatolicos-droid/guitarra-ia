@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle, CheckCircle2, Database, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-const BATCH_SIZE = 500;
+const BATCH_SIZE = 200;
 
 function emptyProgress() {
   return {
@@ -13,7 +13,38 @@ function emptyProgress() {
   };
 }
 
-export default function SongFlagsRepair({ onCompleted }) {
+function hasContent(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function buildUpdates(songs) {
+  const updates = [];
+  let chordsActivated = 0;
+  let tablaturesActivated = 0;
+
+  for (const song of songs) {
+    const update = { id: song.id };
+    let changed = false;
+
+    if (!song.has_chords && hasContent(song.content_raw)) {
+      update.has_chords = true;
+      chordsActivated += 1;
+      changed = true;
+    }
+
+    if (!song.has_tablature && hasContent(song.tablature)) {
+      update.has_tablature = true;
+      tablaturesActivated += 1;
+      changed = true;
+    }
+
+    if (changed) updates.push(update);
+  }
+
+  return { updates, chordsActivated, tablaturesActivated };
+}
+
+export default function SongFlagsRepair({ allSongsList = [], onCompleted }) {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(emptyProgress);
   const [error, setError] = useState('');
@@ -27,38 +58,42 @@ export default function SongFlagsRepair({ onCompleted }) {
     setRunning(true);
     setError('');
     setCompleted(false);
-    setProgress(emptyProgress());
-
-    let offset = 0;
-    const totals = emptyProgress();
 
     try {
-      while (true) {
-        const response = await base44.functions.invoke('repairSongContentFlags', {
-          offset,
-          limit: BATCH_SIZE,
-          dryRun: false,
+      const {
+        updates,
+        chordsActivated,
+        tablaturesActivated,
+      } = buildUpdates(allSongsList);
+
+      setProgress({
+        scanned: allSongsList.length,
+        fixedSongs: 0,
+        chordsActivated,
+        tablaturesActivated,
+      });
+
+      let fixedSongs = 0;
+      for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+        const batch = updates.slice(i, i + BATCH_SIZE);
+        await base44.entities.Song.bulkUpdate(batch);
+        fixedSongs += batch.length;
+        setProgress({
+          scanned: allSongsList.length,
+          fixedSongs,
+          chordsActivated,
+          tablaturesActivated,
         });
-        const batch = response?.data || response;
-
-        if (!batch?.success) {
-          throw new Error(batch?.error || 'La reparación no devolvió una respuesta válida.');
-        }
-
-        totals.scanned += batch.scanned || 0;
-        totals.fixedSongs += batch.fixedSongs || 0;
-        totals.chordsActivated += batch.chordsActivated || 0;
-        totals.tablaturesActivated += batch.tablaturesActivated || 0;
-        setProgress({ ...totals });
-
-        if (batch.done) break;
-        offset = batch.nextOffset;
       }
 
       setCompleted(true);
-      onCompleted?.();
+      await onCompleted?.();
     } catch (err) {
-      setError(err?.response?.data?.error || err?.message || 'No se pudo completar la reparación.');
+      setError(
+        err?.response?.data?.error ||
+        err?.message ||
+        'No se pudo completar la reparación.',
+      );
     } finally {
       setRunning(false);
     }
@@ -105,7 +140,7 @@ export default function SongFlagsRepair({ onCompleted }) {
 
       <button
         onClick={runRepair}
-        disabled={running}
+        disabled={running || allSongsList.length === 0}
         className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {running
