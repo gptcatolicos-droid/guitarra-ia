@@ -49,10 +49,10 @@ export default function RelatedSongs({ song }) {
   if (loading || related.length === 0) return null;
 
   return (
-    <div className="mt-10 pt-6" style={{ borderTop: '1px solid #272C2F' }}>
+    <div className="mt-10 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
       <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="w-4 h-4" style={{ color: '#FF7200' }} />
-        <h3 className="text-sm font-bold" style={{ color: '#F4F4F2' }}>La IA te sugiere...</h3>
+        <Sparkles className="w-4 h-4" style={{ color: '#F97316' }} />
+        <h3 className="text-sm font-bold" style={{ color: '#1F2937' }}>La IA te sugiere...</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {related.map(s => {
@@ -62,23 +62,23 @@ export default function RelatedSongs({ song }) {
             <Link
               key={s.id}
               to={`/${s.artist_slug}/${s.slug}`}
-              className="flex items-center gap-3 rounded-xl p-3 transition-colors group"
-              style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,114,0,0.4)'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = '#272C2F'}
+              className="flex items-center gap-3 rounded-xl p-3 transition-colors group bg-white shadow-sm"
+              style={{ border: '1px solid #E5E7EB' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = '#FDBA74'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = '#E5E7EB'}
             >
               <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                style={{ backgroundColor: 'rgba(255,114,0,0.1)' }}>
+                style={{ backgroundColor: '#FED7AA' }}>
                 {isSameArtist
-                  ? <Music2 className="w-5 h-5" style={{ color: '#FF7200' }} />
-                  : <Users className="w-5 h-5" style={{ color: '#FF7200' }} />
+                  ? <Music2 className="w-5 h-5" style={{ color: '#F97316' }} />
+                  : <Users className="w-5 h-5" style={{ color: '#F97316' }} />
                 }
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold truncate group-hover:text-orange-400 transition-colors" style={{ color: '#F4F4F2' }}>{title}</p>
-                <p className="text-xs truncate" style={{ color: '#747B7F' }}>{s.artist_name}</p>
+                <p className="text-sm font-semibold truncate group-hover:text-orange-500 transition-colors" style={{ color: '#1F2937' }}>{title}</p>
+                <p className="text-xs truncate" style={{ color: '#6B7280' }}>{s.artist_name}</p>
                 {s.difficulty && (
-                  <span className="text-[10px] font-medium" style={{ color: '#A7ACAE' }}>{s.difficulty}</span>
+                  <span className="text-[10px] font-medium" style={{ color: '#9CA3AF' }}>{s.difficulty}</span>
                 )}
               </div>
             </Link>

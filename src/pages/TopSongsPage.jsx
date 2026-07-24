@@ -5,9 +5,9 @@ import { Music } from 'lucide-react';
 import { useSEO } from '@/lib/seo';
 
 const DIFF_COLORS = {
-  'Fácil': { bg: 'rgba(128,185,64,0.15)', color: '#80B940' },
-  'Intermedia': { bg: 'rgba(216,166,42,0.15)', color: '#D8A62A' },
-  'Avanzada': { bg: 'rgba(217,90,50,0.15)', color: '#D95A32' },
+  'Fácil': { bg: 'rgba(76,154,42,0.12)', color: '#4C9A2A' },
+  'Intermedia': { bg: 'rgba(183,121,31,0.12)', color: '#B7791F' },
+  'Avanzada': { bg: 'rgba(194,65,12,0.12)', color: '#C2410C' },
 };
 
 function getSpotifyEmbedUrl(raw) {
@@ -41,49 +41,49 @@ export default function TopSongsPage() {
   const withoutEmbed = songs.filter(s => !s.spotify_embed);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="min-h-screen bg-g-page">
       <div className="max-w-6xl mx-auto px-4 lg:px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-1" style={{ color: '#F4F4F2' }}>
-            Todas las <span style={{ color: '#FF7200' }}>canciones</span>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: '#1F2937' }}>
+            Todas las <span style={{ color: '#F97316' }}>canciones</span>
           </h1>
-          <p className="text-sm" style={{ color: '#747B7F' }}>El catálogo completo de acordes y tablaturas.</p>
+          <p className="text-sm" style={{ color: '#6B7280' }}>El catálogo completo de acordes y tablaturas.</p>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#303538', borderTopColor: '#FF7200' }} />
+            <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#E5E7EB', borderTopColor: '#F97316' }} />
           </div>
         ) : songs.length === 0 ? (
-          <div className="text-center py-16 rounded-2xl" style={{ border: '1px dashed #303538' }}>
-            <p style={{ color: '#747B7F' }}>No hay canciones aún.</p>
+          <div className="text-center py-16 rounded-2xl" style={{ border: '1px dashed #D1D5DB' }}>
+            <p style={{ color: '#6B7280' }}>No hay canciones aún.</p>
           </div>
         ) : (
           <>
             {/* Grid with Spotify embed */}
             {withEmbed.length > 0 && (
               <div className="mb-8">
-                <p className="text-sm font-semibold mb-4" style={{ color: '#A7ACAE' }}>Con reproductor Spotify</p>
+                <p className="text-sm font-semibold mb-4" style={{ color: '#1F2937' }}>Con reproductor Spotify</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {withEmbed.map(song => {
                     const diff = DIFF_COLORS[song.difficulty];
                     const embedUrl = getSpotifyEmbedUrl(song.spotify_embed);
                     return (
-                      <div key={song.id} className="flex flex-col rounded-xl overflow-hidden"
-                        style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+                      <div key={song.id} className="flex flex-col rounded-xl overflow-hidden bg-white shadow-sm"
+                        style={{ border: '1px solid #E5E7EB' }}>
                         <iframe src={embedUrl} width="100%" height="152" frameBorder="0"
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                           loading="lazy" style={{ display: 'block', borderRadius: '10px 10px 0 0' }} />
                         <div className="p-3 flex items-center justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold line-clamp-1 mb-0.5" style={{ color: '#F4F4F2' }}>{cleanTitle(song.title)}</p>
-                            <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+                            <p className="text-sm font-semibold line-clamp-1 mb-0.5" style={{ color: '#1F2937' }}>{cleanTitle(song.title)}</p>
+                            <p className="text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0">
                             {diff && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
                             <Link to={`/${song.artist_slug}/${song.slug}`}
-                              className="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-80"
-                              style={{ backgroundColor: '#FF7200', color: '#fff' }}>
+                              className="text-[10px] font-bold px-2.5 py-1 rounded-lg text-white transition-opacity hover:opacity-80"
+                              style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)' }}>
                               Ver acordes
                             </Link>
                           </div>
@@ -98,27 +98,27 @@ export default function TopSongsPage() {
             {/* List without embed */}
             {withoutEmbed.length > 0 && (
               <div>
-                <p className="text-sm font-semibold mb-3" style={{ color: '#A7ACAE' }}>Más canciones</p>
+                <p className="text-sm font-semibold mb-3" style={{ color: '#1F2937' }}>Más canciones</p>
                 <div className="space-y-1.5">
                   {withoutEmbed.map((song, i) => {
                     const diff = DIFF_COLORS[song.difficulty];
                     return (
-                      <div key={song.id} className="flex items-center gap-4 px-4 py-3 rounded-xl"
-                        style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
-                        <span className="text-sm font-bold w-5 text-right shrink-0" style={{ color: '#303538' }}>{i + 1}</span>
+                      <div key={song.id} className="flex items-center gap-4 px-4 py-3 rounded-xl bg-white shadow-sm"
+                        style={{ border: '1px solid #E5E7EB' }}>
+                        <span className="text-sm font-bold w-5 text-right shrink-0" style={{ color: '#D1D5DB' }}>{i + 1}</span>
                         <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: '#121516', border: '1px solid #272C2F' }}>
-                          <Music className="w-4 h-4" style={{ color: '#444A4E' }} />
+                          style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
+                          <Music className="w-4 h-4" style={{ color: '#9CA3AF' }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{cleanTitle(song.title)}</p>
-                          <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+                          <p className="text-sm font-semibold truncate" style={{ color: '#1F2937' }}>{cleanTitle(song.title)}</p>
+                          <p className="text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {diff && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full hidden sm:inline" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
                           <Link to={`/${song.artist_slug}/${song.slug}`}
-                            className="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-80"
-                            style={{ backgroundColor: '#FF7200', color: '#fff' }}>
+                            className="text-[10px] font-bold px-2.5 py-1 rounded-lg text-white transition-opacity hover:opacity-80"
+                            style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)' }}>
                             Ver acordes
                           </Link>
                         </div>

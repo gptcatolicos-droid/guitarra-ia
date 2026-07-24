@@ -10,7 +10,7 @@ export default function ChatPage() {
   });
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100dvh - 64px)', backgroundColor: '#0B0D0E', overflow: 'hidden' }}>
+    <div className="flex flex-col bg-g-page" style={{ height: 'calc(100dvh - 64px)', overflow: 'hidden' }}>
       <ChatInterface embedded heroMode />
     </div>
   );

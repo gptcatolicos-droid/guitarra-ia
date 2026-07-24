@@ -10,30 +10,30 @@ export default function AboutPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="min-h-screen bg-g-page">
       <div className="max-w-3xl mx-auto px-4 lg:px-8 py-16">
 
         {/* Hero */}
         <div className="mb-12 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6"
-            style={{ backgroundColor: 'rgba(255,114,0,0.12)', color: '#FF7200', border: '1px solid rgba(255,114,0,0.3)' }}>
+            style={{ backgroundColor: '#FED7AA', color: '#EA580C', border: '1px solid rgba(249,115,22,0.3)' }}>
             <Sparkles className="w-3.5 h-3.5" /> Nuestra historia
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#F4F4F2', fontFamily: 'var(--font-heading)' }}>
-            Acerca de <span style={{ color: '#FF7200' }}>GuitarraIA</span>
+          <h1 className="text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#1F2937', fontFamily: 'var(--font-heading)' }}>
+            Acerca de <span style={{ color: '#F97316' }}>GuitarraIA</span>
           </h1>
-          <p className="text-lg leading-relaxed" style={{ color: '#A7ACAE' }}>
+          <p className="text-lg leading-relaxed" style={{ color: '#6B7280' }}>
             La plataforma de acordes, tablaturas e inteligencia artificial para guitarristas que hablan español.
           </p>
         </div>
 
         {/* Content */}
-        <div className="space-y-8 text-base leading-relaxed" style={{ color: '#A7ACAE' }}>
+        <div className="space-y-8 text-base leading-relaxed" style={{ color: '#6B7280' }}>
 
-          <section className="rounded-2xl p-6" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+          <section className="rounded-2xl p-6 bg-white shadow-sm" style={{ border: '1px solid #E5E7EB' }}>
             <div className="flex items-center gap-2 mb-4">
-              <Guitar className="w-5 h-5" style={{ color: '#FF7200' }} />
-              <h2 className="text-lg font-bold" style={{ color: '#F4F4F2' }}>¿Qué es GuitarraIA?</h2>
+              <Guitar className="w-5 h-5" style={{ color: '#F97316' }} />
+              <h2 className="text-lg font-bold" style={{ color: '#1F2937' }}>¿Qué es GuitarraIA?</h2>
             </div>
             <p className="mb-3">
               GuitarraIA es una plataforma web gratuita diseñada para ayudarte a aprender, practicar y disfrutar la guitarra.
@@ -41,7 +41,7 @@ export default function AboutPage() {
               todo en español.
             </p>
             <p className="mb-3">
-              A diferencia de otros sitios, integramos <strong style={{ color: '#FF7200' }}>inteligencia artificial</strong> directamente
+              A diferencia de otros sitios, integramos <strong style={{ color: '#F97316' }}>inteligencia artificial</strong> directamente
               en la experiencia: nuestro asistente GuitarraIA puede responderte preguntas sobre técnica, sugerirte canciones
               según tu nivel, explicarte teoría musical y ayudarte a encontrar la versión correcta de cualquier tema.
             </p>
@@ -51,10 +51,10 @@ export default function AboutPage() {
             </p>
           </section>
 
-          <section className="rounded-2xl p-6" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+          <section className="rounded-2xl p-6 bg-white shadow-sm" style={{ border: '1px solid #E5E7EB' }}>
             <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5" style={{ color: '#FF7200' }} />
-              <h2 className="text-lg font-bold" style={{ color: '#F4F4F2' }}>¿Para quién es?</h2>
+              <Users className="w-5 h-5" style={{ color: '#F97316' }} />
+              <h2 className="text-lg font-bold" style={{ color: '#1F2937' }}>¿Para quién es?</h2>
             </div>
             <p className="mb-3">
               GuitarraIA está pensada para guitarristas de todos los niveles que prefieren contenido en español.
@@ -68,13 +68,13 @@ export default function AboutPage() {
             </p>
           </section>
 
-          <section className="rounded-2xl p-6" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+          <section className="rounded-2xl p-6 bg-white shadow-sm" style={{ border: '1px solid #E5E7EB' }}>
             <div className="flex items-center gap-2 mb-4">
-              <Globe className="w-5 h-5" style={{ color: '#FF7200' }} />
-              <h2 className="text-lg font-bold" style={{ color: '#F4F4F2' }}>¿Quién lo construye?</h2>
+              <Globe className="w-5 h-5" style={{ color: '#F97316' }} />
+              <h2 className="text-lg font-bold" style={{ color: '#1F2937' }}>¿Quién lo construye?</h2>
             </div>
             <p className="mb-3">
-              GuitarraIA es un proyecto independiente construido por un <strong style={{ color: '#F4F4F2' }}>Emprendedor Digital experto en IA</strong>,
+              GuitarraIA es un proyecto independiente construido por un <strong style={{ color: '#1F2937' }}>Emprendedor Digital experto en IA</strong>,
               apasionado por la música y la tecnología. La plataforma nació de la frustración
               de no encontrar un sitio moderno, en español, con buena tecnología y sin anuncios invasivos para aprender guitarra.
             </p>
@@ -89,7 +89,7 @@ export default function AboutPage() {
           <div className="flex flex-wrap gap-3 pt-4">
             <Link to="/chat"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#FF7200' }}>
+              style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)' }}>
               <Sparkles className="w-4 h-4" /> Probar el asistente IA
             </Link>
           </div>

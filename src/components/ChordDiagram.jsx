@@ -4,8 +4,8 @@ export default function ChordDiagram({ chordName, diagram, capo = 0, playable = 
   if (!diagram) {
     return (
       <div className="flex w-[60px] shrink-0 flex-col items-center">
-        <span className="text-[#ff7a00] text-sm font-bold mb-1">{chordName}</span>
-        <div className="w-[60px] h-[76px] flex items-center justify-center text-[#a7afb8] text-[10px] border border-[#2b3138] rounded">
+        <span className="text-[#F97316] text-sm font-bold mb-1">{chordName}</span>
+        <div className="w-[60px] h-[76px] flex items-center justify-center text-[#9CA3AF] text-[10px] border border-[#E5E7EB] rounded">
           N/A
         </div>
       </div>
@@ -27,7 +27,7 @@ export default function ChordDiagram({ chordName, diagram, capo = 0, playable = 
 
   const inner = (
     <div className="flex flex-col items-center">
-      <span className="text-[#ff7a00] text-sm font-bold mb-1">{chordName}</span>
+      <span className="text-[#F97316] text-sm font-bold mb-1">{chordName}</span>
       <svg width={w} height={h} className="overflow-visible">
         {Array.from({ length: numFrets + 1 }).map((_, i) => (
           <line
@@ -36,7 +36,7 @@ export default function ChordDiagram({ chordName, diagram, capo = 0, playable = 
             y1={my + i * fh}
             x2={w - mx}
             y2={my + i * fh}
-            stroke="#3a4048"
+            stroke="#D1D5DB"
             strokeWidth={i === 0 ? 2 : 1}
           />
         ))}
@@ -47,12 +47,12 @@ export default function ChordDiagram({ chordName, diagram, capo = 0, playable = 
             y1={my}
             x2={mx + i * sw}
             y2={h - my}
-            stroke="#3a4048"
+            stroke="#D1D5DB"
             strokeWidth="1"
           />
         ))}
         {startFret > 1 && (
-          <text x={w - mx + 3} y={my + fh / 2 + 3} fill="#a7afb8" fontSize="7">
+          <text x={w - mx + 3} y={my + fh / 2 + 3} fill="#9CA3AF" fontSize="7">
             {startFret}fr
           </text>
         )}
@@ -63,7 +63,7 @@ export default function ChordDiagram({ chordName, diagram, capo = 0, playable = 
             width={sw * (numStrings - 1)}
             height={fh - 4}
             rx="3"
-            fill="#ff7a00"
+            fill="#F97316"
             opacity="0.85"
           />
         )}
@@ -71,18 +71,18 @@ export default function ChordDiagram({ chordName, diagram, capo = 0, playable = 
           const x = mx + i * sw;
           if (fret > 0) {
             const y = my + (fret - startFret + 0.5) * fh;
-            return <circle key={`d-${i}`} cx={x} cy={y} r="3.5" fill="#ff7a00" />;
+            return <circle key={`d-${i}`} cx={x} cy={y} r="3.5" fill="#F97316" />;
           }
           if (fret === 0) {
             return (
-              <text key={`o-${i}`} x={x} y={my - 4} fill="#a7afb8" fontSize="7" textAnchor="middle">
+              <text key={`o-${i}`} x={x} y={my - 4} fill="#9CA3AF" fontSize="7" textAnchor="middle">
                 ○
               </text>
             );
           }
           if (fret === -1) {
             return (
-              <text key={`x-${i}`} x={x} y={my - 4} fill="#a7afb8" fontSize="7" textAnchor="middle">
+              <text key={`x-${i}`} x={x} y={my - 4} fill="#9CA3AF" fontSize="7" textAnchor="middle">
                 ✕
               </text>
             );

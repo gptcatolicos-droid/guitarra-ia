@@ -38,17 +38,17 @@ export default function ArtistPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24" style={{ backgroundColor: '#0B0D0E' }}>
-        <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#303538', borderTopColor: '#FF7200' }} />
+      <div className="flex items-center justify-center py-24 bg-g-page">
+        <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#E5E7EB', borderTopColor: '#F97316' }} />
       </div>
     );
   }
 
   if (!artist) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 px-4" style={{ backgroundColor: '#0B0D0E' }}>
-        <p style={{ color: '#747B7F' }}>Artista no encontrado.</p>
-        <Link to="/" className="mt-4" style={{ color: '#FF7200' }}>Volver al inicio</Link>
+      <div className="flex flex-col items-center justify-center py-24 px-4 bg-g-page">
+        <p style={{ color: '#6B7280' }}>Artista no encontrado.</p>
+        <Link to="/" className="mt-4" style={{ color: '#F97316' }}>Volver al inicio</Link>
       </div>
     );
   }
@@ -69,25 +69,25 @@ export default function ArtistPage() {
   const uniqueSongs = Array.from(seen.values());
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="min-h-screen bg-g-page">
       <div className="artist-page-container">
-        <Link to="/artistas" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#747B7F' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#FF7200'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = '#747B7F'; }}>
+        <Link to="/artistas" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#6B7280' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#6B7280'; }}>
           <ChevronLeft className="w-4 h-4" /> Artistas
         </Link>
 
         {/* Artist header */}
-        <div className="artist-page-header flex items-center gap-5 mb-8 pb-6 min-w-0" style={{ borderBottom: '1px solid #272C2F' }}>
+        <div className="artist-page-header flex items-center gap-5 mb-8 pb-6 min-w-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg, #FF7200, #D95D00)' }}
+            style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)' }}
           >
             <span className="text-white text-2xl font-bold">{artist.name[0]}</span>
           </div>
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold break-words" style={{ color: '#F4F4F2' }}>{artist.name}</h1>
-            <p className="text-sm mt-0.5" style={{ color: '#747B7F' }}>
+            <h1 className="text-2xl font-bold break-words" style={{ color: '#1F2937' }}>{artist.name}</h1>
+            <p className="text-sm mt-0.5" style={{ color: '#6B7280' }}>
               {uniqueSongs.length} {uniqueSongs.length === 1 ? 'canción disponible' : 'canciones disponibles'}
             </p>
           </div>
@@ -98,30 +98,30 @@ export default function ArtistPage() {
           <div className="artist-song-list space-y-1.5">
             {uniqueSongs.map(song => (
               <Link key={song.id} to={`/${artistSlug}/${song.slug}`}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
-                style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF7200'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; }}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all bg-white shadow-sm"
+                style={{ border: '1px solid #E5E7EB' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#F97316'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; }}
               >
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: '#121516', border: '1px solid #272C2F' }}>
-                  <Music className="w-4 h-4" style={{ color: '#444A4E' }} />
+                  style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
+                  <Music className="w-4 h-4" style={{ color: '#9CA3AF' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{song.title}</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: '#1F2937' }}>{song.title}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    {song.original_key && <span className="text-xs" style={{ color: '#747B7F' }}>Tonalidad: {song.original_key}</span>}
-                    {song.difficulty && <span className="text-xs" style={{ color: '#747B7F' }}>· {song.difficulty}</span>}
+                    {song.original_key && <span className="text-xs" style={{ color: '#6B7280' }}>Tonalidad: {song.original_key}</span>}
+                    {song.difficulty && <span className="text-xs" style={{ color: '#6B7280' }}>· {song.difficulty}</span>}
                   </div>
                 </div>
                 <div className="flex flex-wrap justify-end gap-1.5 shrink-0">
                   {song.has_chords && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,114,0,0.12)', color: '#FF7200' }}>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#FED7AA', color: '#EA580C' }}>
                       Acordes
                     </span>
                   )}
                   {song.has_tablature && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(79,158,216,0.12)', color: '#4F9ED8' }}>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(59,130,246,0.12)', color: '#3B82F6' }}>
                       Tab
                     </span>
                   )}
@@ -130,7 +130,7 @@ export default function ArtistPage() {
             ))}
           </div>
         ) : (
-          <p className="text-center py-12" style={{ color: '#747B7F' }}>
+          <p className="text-center py-12" style={{ color: '#6B7280' }}>
             No hay canciones disponibles para este artista.
           </p>
         )}

@@ -12,10 +12,10 @@ export default function SongMeta({ song }) {
       {items.map((item) => (
         <div
           key={item.label}
-          className="song-meta-card bg-[#20242a] border border-[#2b3138] rounded-xl p-3 min-w-0"
+          className="song-meta-card bg-white border border-[#E5E7EB] rounded-xl p-3 min-w-0 shadow-sm"
         >
-          <p className="text-[#a7afb8] text-xs mb-1">{item.label}</p>
-          <p className="text-white text-sm font-medium break-words">{item.value}</p>
+          <p className="text-[#9CA3AF] text-xs mb-1">{item.label}</p>
+          <p className="text-[#1F2937] text-sm font-medium break-words">{item.value}</p>
         </div>
       ))}
     </div>

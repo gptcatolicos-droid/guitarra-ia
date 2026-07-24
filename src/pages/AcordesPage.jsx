@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { Music2, X } from 'lucide-react';
+import { Music2 } from 'lucide-react';
 import PlayableChord from '@/components/audio/PlayableChord';
 import ChordSoundToggle from '@/components/audio/ChordSoundToggle';
 
@@ -66,9 +66,9 @@ function ChordDiagramSVG({ frets, name }) {
     <svg viewBox="0 0 180 220" role="img" aria-label={`Diagrama del acorde ${name}`} className="w-full max-w-[160px] mx-auto block">
       <defs>
         <linearGradient id="chord-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop stopColor="#FF6A00" />
-          <stop offset="0.55" stopColor="#FF2D8D" />
-          <stop offset="1" stopColor="#C026FF" />
+          <stop stopColor="#FDBA74" />
+          <stop offset="0.55" stopColor="#F97316" />
+          <stop offset="1" stopColor="#EA580C" />
         </linearGradient>
       </defs>
       {/* Vertical strings */}
@@ -105,12 +105,12 @@ function SongMiniCard({ song }) {
   const title = song.title.replace(/\s*\d+$/, '').trim();
   return (
     <Link to={`/${song.artist_slug}/${song.slug}`}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
-      style={{ border: '1px solid #272C2F', backgroundColor: '#121516' }}>
-      <Music2 className="w-3.5 h-3.5 shrink-0" style={{ color: '#FF7200' }} />
+      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#F3F4F6] transition-colors"
+      style={{ border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF' }}>
+      <Music2 className="w-3.5 h-3.5 shrink-0" style={{ color: '#F97316' }} />
       <div className="min-w-0">
-        <p className="text-xs font-medium truncate" style={{ color: '#F4F4F2' }}>{title}</p>
-        <p className="text-[10px] truncate" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+        <p className="text-xs font-medium truncate" style={{ color: '#1F2937' }}>{title}</p>
+        <p className="text-[10px] truncate" style={{ color: '#6B7280' }}>{song.artist_name}</p>
       </div>
     </Link>
   );
@@ -141,30 +141,30 @@ function ChordCard({ chord, allSongs }) {
 
   return (
     <div
-      className="relative overflow-hidden rounded-xl p-3 transition-all flex flex-col"
-      style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,114,0,0.45)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; }}
+      className="relative overflow-hidden rounded-xl p-3 transition-all flex flex-col bg-white shadow-sm"
+      style={{ border: '1px solid #E5E7EB' }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = '#FDBA74'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; }}
     >
-      <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: '#FF7200' }} />
+      <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)' }} />
       <div className="flex items-start justify-between gap-1 mb-1">
-        <h2 className="font-bold text-xl leading-none" style={{ color: '#F4F4F2' }}>{chord.name}</h2>
-        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ color: '#FF7200', backgroundColor: 'rgba(255,114,0,0.12)' }}>
+        <h2 className="font-bold text-xl leading-none" style={{ color: '#1F2937' }}>{chord.name}</h2>
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{ color: '#EA580C', backgroundColor: '#FED7AA' }}>
           {QL[chord.quality]}
         </span>
       </div>
       <PlayableChord chord={chord.name} className="w-full !min-h-0">
-        <div style={{ color: '#A7ACAE' }} className="w-full">
+        <div style={{ color: '#6B7280' }} className="w-full">
           <ChordDiagramSVG frets={chord.frets} name={chord.name} />
         </div>
       </PlayableChord>
-      <div className="text-center text-[10px] mt-1 font-mono" style={{ color: '#747B7F' }}>
+      <div className="text-center text-[10px] mt-1 font-mono" style={{ color: '#9CA3AF' }}>
         {chord.frets.map(x => x < 0 ? 'x' : x).join(' · ')}
       </div>
       <Link
         to={`/acordes/${encodeURIComponent(chord.name)}`}
         className="mt-2 w-full text-center text-[11px] font-bold py-1.5 rounded-lg"
-        style={{ border: '1px solid #FF7200', color: '#FF7200' }}
+        style={{ border: '1px solid #F97316', color: '#F97316' }}
       >
         Estudiar acorde
       </Link>
@@ -172,14 +172,16 @@ function ChordCard({ chord, allSongs }) {
         onClick={handleViewSongs}
         disabled={loading}
         className="mt-2 w-full text-[11px] font-bold py-1.5 rounded-lg transition-opacity hover:opacity-80 disabled:opacity-50"
-        style={{ backgroundColor: songs !== null ? '#272C2F' : '#FF7200', color: songs !== null ? '#A7ACAE' : '#fff' }}
+        style={songs !== null
+          ? { backgroundColor: '#F3F4F6', color: '#6B7280' }
+          : { background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)', color: '#fff' }}
       >
         {loading ? '...' : songs !== null ? 'Cerrar' : 'Ver canciones'}
       </button>
       {songs !== null && (
         <div className="mt-2 space-y-1">
           {songs.length === 0
-            ? <p className="text-[10px] text-center py-2" style={{ color: '#747B7F' }}>Sin canciones con este acorde</p>
+            ? <p className="text-[10px] text-center py-2" style={{ color: '#6B7280' }}>Sin canciones con este acorde</p>
             : songs.map(s => <SongMiniCard key={s.id} song={s} />)
           }
         </div>
@@ -215,45 +217,44 @@ export default function AcordesPage() {
   }, [search, rootFilter, qualityFilter]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="min-h-screen bg-g-page">
     <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
       <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold mb-1" style={{ color: '#F4F4F2' }}>
-            Biblioteca de <span style={{ color: '#FF7200' }}>Acordes</span>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: '#1F2937' }}>
+            Biblioteca de <span style={{ color: '#F97316' }}>Acordes</span>
           </h1>
-          <p className="text-sm" style={{ color: '#747B7F' }}>180 acordes comunes con diagramas. Toca un diagrama para escucharlo.</p>
+          <p className="text-sm" style={{ color: '#6B7280' }}>180 acordes comunes con diagramas. Toca un diagrama para escucharlo.</p>
         </div>
         <ChordSoundToggle />
       </div>
 
-      <div className="sticky top-0 z-10 pb-4 pt-1 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6"
-        style={{ backgroundColor: '#0B0D0E' }}>
+      <div className="sticky top-0 z-10 pb-4 pt-1 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 bg-g-page">
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar: C, F#m7, Bbmaj7..."
           className="px-4 py-2.5 rounded-xl text-sm outline-none transition-colors"
-          style={{ backgroundColor: '#171A1C', border: '1px solid #303538', color: '#F4F4F2' }}
-          onFocus={e => { e.target.style.borderColor = '#FF7200'; }}
-          onBlur={e => { e.target.style.borderColor = '#303538'; }}
+          style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#1F2937' }}
+          onFocus={e => { e.target.style.borderColor = '#F97316'; }}
+          onBlur={e => { e.target.style.borderColor = '#E5E7EB'; }}
         />
         <select value={rootFilter} onChange={e => setRootFilter(e.target.value)}
           className="px-4 py-2.5 rounded-xl text-sm outline-none"
-          style={{ backgroundColor: '#171A1C', border: '1px solid #303538', color: '#F4F4F2' }}>
+          style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#1F2937' }}>
           <option value="">Todas las notas</option>
           {ROOTS.map(r => <option key={r} value={r}>{RL[r]}</option>)}
         </select>
         <select value={qualityFilter} onChange={e => setQualityFilter(e.target.value)}
           className="px-4 py-2.5 rounded-xl text-sm outline-none"
-          style={{ backgroundColor: '#171A1C', border: '1px solid #303538', color: '#F4F4F2' }}>
+          style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#1F2937' }}>
           <option value="">Todos los tipos</option>
           {ORDER.map(q => <option key={q} value={q}>{QL[q]}</option>)}
         </select>
       </div>
 
-      <div className="flex justify-between items-center mb-4 text-sm" style={{ color: '#747B7F' }}>
-        <span><strong style={{ color: '#F4F4F2' }}>{filtered.length}</strong> acordes</span>
+      <div className="flex justify-between items-center mb-4 text-sm" style={{ color: '#6B7280' }}>
+        <span><strong style={{ color: '#1F2937' }}>{filtered.length}</strong> acordes</span>
         <span>Diagramas SVG interactivos</span>
       </div>
 
@@ -262,8 +263,8 @@ export default function AcordesPage() {
           {filtered.map((chord, i) => <ChordCard key={i} chord={chord} allSongs={allSongs} />)}
         </div>
       ) : (
-        <div className="text-center py-16 rounded-2xl" style={{ border: '1px dashed #303538' }}>
-          <p style={{ color: '#747B7F' }}>No se encontraron acordes para tu búsqueda.</p>
+        <div className="text-center py-16 rounded-2xl" style={{ border: '1px dashed #D1D5DB' }}>
+          <p style={{ color: '#6B7280' }}>No se encontraron acordes para tu búsqueda.</p>
         </div>
       )}
     </div>

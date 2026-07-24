@@ -352,9 +352,9 @@ IMPORTANTE:
   const hasMessages = messages.length > 0;
 
   const inputBar = (
-    <div className="px-4 py-4" style={{ borderTop: hasMessages ? '1px solid #272C2F' : 'none', backgroundColor: '#0E1112' }}>
+    <div className="px-4 py-4 bg-white" style={{ borderTop: hasMessages ? '1px solid #E5E7EB' : 'none' }}>
       <div className="max-w-3xl mx-auto w-full min-w-0">
-        <div className="flex items-end gap-2 rounded-2xl p-2 transition-colors min-w-0" style={{ backgroundColor: '#171A1C', border: '1px solid #303538' }}>
+        <div className="flex items-end gap-2 rounded-2xl p-2 transition-colors min-w-0 bg-white" style={{ border: '1px solid #E5E7EB' }}>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -366,12 +366,12 @@ IMPORTANTE:
             }}
             placeholder="Escribe el nombre de una canción o artista..."
             rows={1}
-            className="flex-1 min-w-0 w-0 resize-none outline-none py-2 text-sm max-h-32" style={{ backgroundColor: 'transparent', color: '#F4F4F2' }}
+            className="flex-1 min-w-0 w-0 resize-none outline-none py-2 text-sm max-h-32" style={{ backgroundColor: 'transparent', color: '#1F2937' }}
           />
           <button
             onClick={() => handleSend()}
             disabled={!input.trim() || loading}
-            className="p-2.5 shrink-0 text-white rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity" style={{ backgroundColor: '#FF7200' }}
+            className="p-2.5 shrink-0 text-white rounded-xl hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity" style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)' }}
           >
             <Send className="w-5 h-5" />
           </button>
@@ -441,7 +441,7 @@ IMPORTANTE:
 
   const inner = (
     <>
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4" style={{ backgroundColor: '#0B0D0E' }}>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 bg-g-page">
         <div className="max-w-3xl mx-auto w-full min-w-0 space-y-6">
           {messages.map((msg, i) => (
             <ChatMessage key={i} message={msg} onSuggestionClick={handleSend} />
@@ -472,7 +472,7 @@ IMPORTANTE:
   }
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 64px)', backgroundColor: '#0B0D0E' }}>
+    <div className="flex flex-col bg-g-page" style={{ height: 'calc(100vh - 64px)' }}>
       {inner}
     </div>
   );
