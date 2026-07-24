@@ -85,7 +85,8 @@ function pluck(c, freq, startTime, duration, gain) {
   src.buffer = buffer;
 
   const g = c.createGain();
-  g.gain.setValueAtTime(0, startTime);
+  g.__isVoiceGain = true; // tag so stopAll fades only voice gains
+  g.gain.setValueAtTime(0.0001, startTime);
   g.gain.linearRampToValueAtTime(gain, startTime + 0.005);
   g.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
@@ -108,26 +109,27 @@ function pluck(c, freq, startTime, duration, gain) {
   };
 }
 
-// Fade out and disconnect everything currently sounding (previous chord).
+// Fade out and disconnect the currently sounding voices (previous chord).
+// This mutes and detaches the individual pluck voices — it does NOT touch the
+// master gain, so an incoming chord scheduled right after is fully audible.
 export function stopAll(fadeSec = 0.08) {
-  if (!ctx || !masterGain) return;
+  if (!ctx) return;
   const now = ctx.currentTime;
-  try {
-    masterGain.gain.cancelScheduledValues(now);
-    masterGain.gain.setValueAtTime(masterGain.gain.value, now);
-    masterGain.gain.linearRampToValueAtTime(0.0001, now + fadeSec);
-  } catch (_) {}
-  // Restore master gain after the fade so the next chord is audible.
-  setTimeout(() => {
-    if (masterGain && ctx) {
+  activeNodes.forEach((n) => {
+    // Only fade the tagged per-voice gain nodes.
+    if (n && n.__isVoiceGain && n.gain) {
       try {
-        masterGain.gain.cancelScheduledValues(ctx.currentTime);
-        masterGain.gain.setValueAtTime(0.9, ctx.currentTime);
+        n.gain.cancelScheduledValues(now);
+        n.gain.setValueAtTime(Math.max(n.gain.value, 0.0001), now);
+        n.gain.exponentialRampToValueAtTime(0.0001, now + fadeSec);
       } catch (_) {}
     }
-    activeNodes.forEach((n) => { try { n.disconnect(); } catch (_) {} });
-    activeNodes = [];
-  }, fadeSec * 1000 + 20);
+  });
+  const toKill = activeNodes;
+  activeNodes = [];
+  setTimeout(() => {
+    toKill.forEach((n) => { try { n.disconnect(); } catch (_) {} });
+  }, fadeSec * 1000 + 30);
 }
 
 // Play a chord from sounding MIDI notes (low->high).
@@ -136,9 +138,10 @@ export function playNotes(notes, { mode = 'strum' } = {}) {
   const c = ensureContext();
   if (!c || c.state !== 'running' || !notes.length) return;
 
+  // Fade the previous chord's voices (master gain stays at full level).
   stopAll(0.05);
 
-  const start = c.currentTime + 0.07; // after the tiny fade of the previous chord
+  const start = c.currentTime + 0.02;
   const perString = mode === 'arpeggio' ? 0.15 : 0.032; // 32ms strum / 150ms arpeggio
   const duration = mode === 'arpeggio' ? 1.6 : 2.2;
 
