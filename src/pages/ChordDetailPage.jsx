@@ -4,6 +4,7 @@ import { ArrowLeft, BookOpen, Music2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
 import ChordDiagram from '@/components/ChordDiagram';
+import ChordSoundToggle from '@/components/audio/ChordSoundToggle';
 import { getChordDiagram } from '@/lib/musicTheory';
 import { extractChordNames, findSongsStartingWithChord, normalizeChordName } from '@/lib/chordSearch';
 
@@ -48,7 +49,12 @@ export default function ChordDetailPage() {
           <section className="rounded-2xl p-6 text-center" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
             <p className="text-sm mb-2" style={{ color: '#FF7200' }}>Acorde de guitarra</p>
             <h1 className="text-4xl font-bold mb-4" style={{ color: '#F4F4F2' }}>{chord}</h1>
-            <ChordDiagram chordName={chord} diagram={getChordDiagram(chord)} />
+            <div className="flex justify-center mb-4">
+              <ChordDiagram chordName={chord} diagram={getChordDiagram(chord)} />
+            </div>
+            <div className="flex justify-center">
+              <ChordSoundToggle />
+            </div>
           </section>
           <div className="space-y-8">
             <section>

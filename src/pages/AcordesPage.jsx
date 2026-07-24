@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
 import { Music2, X } from 'lucide-react';
+import PlayableChord from '@/components/audio/PlayableChord';
+import ChordSoundToggle from '@/components/audio/ChordSoundToggle';
 
 // ─── Chord data (from ChatGPT design) ────────────────────────────────────────
 const ROOTS = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -151,9 +153,11 @@ function ChordCard({ chord, allSongs }) {
           {QL[chord.quality]}
         </span>
       </div>
-      <div style={{ color: '#A7ACAE' }}>
-        <ChordDiagramSVG frets={chord.frets} name={chord.name} />
-      </div>
+      <PlayableChord chord={chord.name} className="w-full !min-h-0">
+        <div style={{ color: '#A7ACAE' }} className="w-full">
+          <ChordDiagramSVG frets={chord.frets} name={chord.name} />
+        </div>
+      </PlayableChord>
       <div className="text-center text-[10px] mt-1 font-mono" style={{ color: '#747B7F' }}>
         {chord.frets.map(x => x < 0 ? 'x' : x).join(' · ')}
       </div>
@@ -213,11 +217,14 @@ export default function AcordesPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
     <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-1" style={{ color: '#F4F4F2' }}>
-          Biblioteca de <span style={{ color: '#FF7200' }}>Acordes</span>
-        </h1>
-        <p className="text-sm" style={{ color: '#747B7F' }}>180 acordes comunes con diagramas. Filtra por nota o tipo.</p>
+      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: '#F4F4F2' }}>
+            Biblioteca de <span style={{ color: '#FF7200' }}>Acordes</span>
+          </h1>
+          <p className="text-sm" style={{ color: '#747B7F' }}>180 acordes comunes con diagramas. Toca un diagrama para escucharlo.</p>
+        </div>
+        <ChordSoundToggle />
       </div>
 
       <div className="sticky top-0 z-10 pb-4 pt-1 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6"

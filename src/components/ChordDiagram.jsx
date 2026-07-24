@@ -1,4 +1,6 @@
-export default function ChordDiagram({ chordName, diagram }) {
+import PlayableChord from '@/components/audio/PlayableChord';
+
+export default function ChordDiagram({ chordName, diagram, capo = 0, playable = true }) {
   if (!diagram) {
     return (
       <div className="flex w-[60px] shrink-0 flex-col items-center">
@@ -23,7 +25,7 @@ export default function ChordDiagram({ chordName, diagram }) {
   const playedFrets = frets.filter((f) => f > 0);
   const startFret = playedFrets.length > 0 && Math.min(...playedFrets) > 3 ? Math.min(...playedFrets) : 1;
 
-  return (
+  const inner = (
     <div className="flex flex-col items-center">
       <span className="text-[#ff7a00] text-sm font-bold mb-1">{chordName}</span>
       <svg width={w} height={h} className="overflow-visible">
@@ -89,5 +91,13 @@ export default function ChordDiagram({ chordName, diagram }) {
         })}
       </svg>
     </div>
+  );
+
+  if (!playable) return inner;
+
+  return (
+    <PlayableChord chord={chordName} capo={capo} className="!min-h-0 p-1">
+      {inner}
+    </PlayableChord>
   );
 }

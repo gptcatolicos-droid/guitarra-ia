@@ -8,6 +8,7 @@ import {
   calculateTransposeSemitones,
 } from '@/lib/musicTheory';
 import ChordDiagram from '@/components/ChordDiagram';
+import ChordSoundToggle from '@/components/audio/ChordSoundToggle';
 import MobileChordSheet from '@/components/MobileChordSheet';
 import TransposeControls from '@/components/TransposeControls';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -217,7 +218,10 @@ export default function ChordViewer({ song, transposeKey }) {
 
       {showDiagrams && usedChords.length > 0 && (
         <div className="chord-diagrams-card mb-6 bg-[#1a1d21] border border-[#2b3138] rounded-xl p-4">
-          <h3 className="text-white font-semibold mb-3 text-sm">Acordes principales</h3>
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <h3 className="text-white font-semibold text-sm">Acordes principales</h3>
+            <ChordSoundToggle compact />
+          </div>
           <div className="w-full max-w-full overflow-x-auto pb-1">
             <div className="flex w-max min-w-full justify-center gap-3 px-1">
               {usedChords.map((chord) => (
@@ -225,6 +229,7 @@ export default function ChordViewer({ song, transposeKey }) {
                   key={chord}
                   chordName={chord}
                   diagram={getChordDiagram(chord)}
+                  capo={song.capo || 0}
                 />
               ))}
             </div>
