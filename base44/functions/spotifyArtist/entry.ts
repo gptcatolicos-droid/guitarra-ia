@@ -1,12 +1,23 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch (_) {
+      user = null;
+    }
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { artist_name, spotify_url } = await req.json();
+    let payload;
+    try {
+      payload = await req.json();
+    } catch (_) {
+      return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+    const { artist_name, spotify_url } = payload || {};
     if (!artist_name && !spotify_url) return Response.json({ error: 'artist_name or spotify_url required' }, { status: 400 });
 
     const clientId = Deno.env.get('SPOTIFY_CLIENT_ID');
@@ -21,7 +32,13 @@ Deno.serve(async (req) => {
       },
       body: 'grant_type=client_credentials',
     });
-    const tokenData = await tokenRes.json();
+    if (!tokenRes.ok) return Response.json({ image_url: null });
+    let tokenData;
+    try {
+      tokenData = await tokenRes.json();
+    } catch (_) {
+      return Response.json({ image_url: null });
+    }
     const accessToken = tokenData.access_token;
     if (!accessToken) return Response.json({ image_url: null });
 
@@ -33,7 +50,9 @@ Deno.serve(async (req) => {
       const byId = await fetch(`https://api.spotify.com/v1/artists/${idMatch[1]}`, {
         headers: { 'Authorization': `Bearer ${accessToken}` },
       });
-      if (byId.ok) artist = await byId.json();
+      if (byId.ok) {
+        try { artist = await byId.json(); } catch (_) { artist = null; }
+      }
     }
 
     // Otherwise search by name
@@ -42,7 +61,13 @@ Deno.serve(async (req) => {
       const res = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=artist&limit=1`, {
         headers: { 'Authorization': `Bearer ${accessToken}` },
       });
-      const data = await res.json();
+      if (!res.ok) return Response.json({ image_url: null });
+      let data;
+      try {
+        data = await res.json();
+      } catch (_) {
+        return Response.json({ image_url: null });
+      }
       artist = data?.artists?.items?.[0] || null;
     }
 
