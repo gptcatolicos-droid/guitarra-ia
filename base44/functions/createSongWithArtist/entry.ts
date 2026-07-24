@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { hasMeaningfulSongContent } from '../../shared/songContentFlags.js';
 
 // Normalize a name: remove accents, lowercase, trim, collapse spaces
 function normalizeName(s) {
@@ -172,8 +173,9 @@ Deno.serve(async (req) => {
       tuning: tuning || 'Estándar',
       difficulty: difficulty || 'Intermedia',
       language: language || 'Español',
-      has_chords: Boolean(has_chords),
-      has_tablature: Boolean(has_tablature),
+      // Content is authoritative: a stale UI flag must not hide it.
+      has_chords: Boolean(has_chords) || hasMeaningfulSongContent(content_raw),
+      has_tablature: Boolean(has_tablature) || hasMeaningfulSongContent(tablature),
       content_raw: content_raw || '',
       tablature: tablature || '',
       chords_used: chords_used || [],

@@ -44,11 +44,6 @@ function hasTablature(content) {
   return /[eEBGDAd]\|[-\d|]+/.test(content);
 }
 
-function hasChords(content) {
-  const chordLinePattern = /^(\s*[A-G][#b]?(?:sus[24]?|maj7?|m7?|7|9|dim)?(?:\/[A-G][#b]?)?\s*)+$/m;
-  return chordLinePattern.test(content);
-}
-
 async function listFilesInFolder(folderId, accessToken) {
   const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,modifiedTime)&pageSize=1000`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
@@ -120,7 +115,8 @@ async function upsertSong(base44, { title, artistName, artistSlug, content, file
     capo: detectCapo(content),
     difficulty: detectDifficulty(content),
     language: 'Español',
-    has_chords: !isTab && hasChords(content),
+    // Formatting differences must never hide a non-empty cifrado.
+    has_chords: !isTab && content.trim().length > 0,
     has_tablature: isTab || hasTablature(content),
     content_raw: !isTab ? content : null,
     tablature: isTab || hasTablature(content) ? content : null,
