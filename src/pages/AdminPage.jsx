@@ -607,7 +607,7 @@ Tengo la camisa negra...`}</pre>
         </div>
       )}
 
-      {tab === 'repair' && <SongFlagsRepair onCompleted={loadStats} />}
+      {tab === 'repair' && <SongFlagsRepair allSongsList={allSongsList} onCompleted={loadStats} />}
 
       {tab === 'theme' && <ThemeSettings />}
     </div>
