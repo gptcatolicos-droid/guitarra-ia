@@ -461,7 +461,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="min-h-screen bg-g-page">
     <div className="max-w-6xl mx-auto p-4 lg:p-8">
       {editingSong && (
         <SongEditor

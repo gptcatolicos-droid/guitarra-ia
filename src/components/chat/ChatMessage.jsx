@@ -20,7 +20,7 @@ function ChatChordDiagram({ name, frets }) {
       <svg viewBox="0 0 180 220" className="w-32 mx-auto block text-foreground">
         <defs>
           <linearGradient id="cg2" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop stopColor="#FF6A00" /><stop offset="0.55" stopColor="#FF2D8D" /><stop offset="1" stopColor="#C026FF" />
+            <stop stopColor="#FDBA74" /><stop offset="0.55" stopColor="#F97316" /><stop offset="1" stopColor="#EA580C" />
           </linearGradient>
         </defs>
         {Array.from({length:6},(_,i)=>{const x=L+i*SG;return<line key={i} x1={x} y1={T} x2={x} y2={T+5*FG} stroke="currentColor" strokeWidth="1.5" opacity="0.7"/>;})}
