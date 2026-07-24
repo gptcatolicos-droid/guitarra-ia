@@ -7,14 +7,7 @@ const EMPTY = { title: '', description: '', image_url: '', price: '', affiliate_
 
 async function fetchAmazonProduct(url) {
   const response = await base44.functions.invoke('amazonProductLookup', { url });
-  if (response.data?.title && response.data?.image_url && response.data?.price) return response.data;
-
-  return base44.integrations.Core.InvokeLLM({
-    prompt: `Extrae de esta página de Amazon el título completo, precio actual, URL directa de la imagen principal y una descripción corta para guitarristas: ${url}. No inventes datos.`,
-    add_context_from_internet: true,
-    model: 'gemini_3_flash',
-    response_json_schema: { type: 'object', properties: { title: { type: 'string' }, description: { type: 'string' }, price: { type: 'string' }, image_url: { type: 'string' } } },
-  });
+  return response.data || {};
 }
 
 export default function AmazonProductsManager() {
