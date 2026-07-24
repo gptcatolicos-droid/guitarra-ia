@@ -25,7 +25,7 @@ export default function Sidebar({ open, onClose }) {
       {open && (
         <div
           className="lg:hidden fixed inset-0 z-40"
-          style={{ backgroundColor: 'rgba(0,0,0,0.72)' }}
+          style={{ backgroundColor: 'rgba(15,23,42,0.45)' }}
           onClick={onClose}
         />
       )}
@@ -34,26 +34,26 @@ export default function Sidebar({ open, onClose }) {
         className={`fixed top-0 left-0 bottom-0 z-50 flex flex-col transform transition-transform duration-250 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
           width: '240px',
-          backgroundColor: '#0E1112',
-          borderRight: '1px solid #272C2F',
+          backgroundColor: '#FFFFFF',
+          borderRight: '1px solid #E5E7EB',
         }}
       >
         {/* Top close button (mobile only, no logo) */}
         <div
           className="flex items-center justify-end px-4 lg:hidden"
-          style={{ height: '56px', borderBottom: '1px solid #272C2F', flexShrink: 0 }}
+          style={{ height: '56px', borderBottom: '1px solid #E5E7EB', flexShrink: 0 }}
         >
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg"
-            style={{ color: '#747B7F' }}
+            style={{ color: '#9CA3AF' }}
             aria-label="Cerrar menú"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
         {/* Desktop: empty top spacer matching header height */}
-        <div className="hidden lg:block" style={{ height: '64px', borderBottom: '1px solid #272C2F', flexShrink: 0 }} />
+        <div className="hidden lg:block" style={{ height: '64px', borderBottom: '1px solid #E5E7EB', flexShrink: 0 }} />
 
         {/* Chat IA — top prominent button */}
         <div className="px-3 pt-4 pb-2">
@@ -61,7 +61,7 @@ export default function Sidebar({ open, onClose }) {
             to="/chat"
             onClick={onClose}
             className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90 w-full"
-            style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)', color: '#fff' }}
+            style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)', color: '#fff', boxShadow: '0 6px 18px rgba(15,23,42,0.08)' }}
           >
             <MessageCircleMore className="w-5 h-5 shrink-0" />
             <span>Chat IA</span>
@@ -82,24 +82,24 @@ export default function Sidebar({ open, onClose }) {
                 rel={item.newTab ? 'noopener noreferrer' : undefined}
                 className="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
                 style={active ? {
-                  backgroundColor: 'rgba(255,114,0,0.12)',
-                  color: '#FF7200',
+                  backgroundColor: '#FFF1E0',
+                  color: '#C2410C',
                 } : {
-                  color: '#A7ACAE',
+                  color: '#6B7280',
                 }}
-                onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = '#181B1D'; e.currentTarget.style.color = '#F4F4F2'; } }}
-                onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#A7ACAE'; } }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = '#F3F4F6'; e.currentTarget.style.color = '#1F2937'; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#6B7280'; } }}
               >
                 {active && (
                   <span
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
-                    style={{ backgroundColor: '#FF7200' }}
+                    style={{ backgroundColor: '#F97316' }}
                   />
                 )}
                 <item.icon className="w-[18px] h-[18px] shrink-0" />
                 <span className="flex-1">{item.label}</span>
                 {item.badge && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#FF7200', color: '#fff' }}>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#F97316', color: '#fff' }}>
                     {item.badge}
                   </span>
                 )}
@@ -109,12 +109,12 @@ export default function Sidebar({ open, onClose }) {
         </nav>
 
         {/* Chat IA CTA — main action */}
-        <div className="p-3 pb-5" style={{ borderTop: '1px solid #272C2F' }}>
+        <div className="p-3 pb-5" style={{ borderTop: '1px solid #E5E7EB' }}>
           <Link
             to="/chat"
             onClick={onClose}
             className="flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)', color: '#fff' }}
+            style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)', color: '#fff', boxShadow: '0 6px 18px rgba(15,23,42,0.08)' }}
           >
             <MessageCircleMore className="w-5 h-5 shrink-0" />
             <span>Chat IA</span>

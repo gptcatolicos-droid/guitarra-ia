@@ -13,9 +13,9 @@ const QUICK_CHIPS = [
 ];
 
 const DIFF_COLORS = {
-  'Fácil': { bg: 'rgba(128,185,64,0.15)', color: '#80B940' },
-  'Intermedia': { bg: 'rgba(216,166,42,0.15)', color: '#D8A62A' },
-  'Avanzada': { bg: 'rgba(217,90,50,0.15)', color: '#D95A32' },
+  'Fácil': { bg: 'rgba(76,154,42,0.12)', color: '#4C9A2A' },
+  'Intermedia': { bg: 'rgba(183,121,31,0.12)', color: '#B7791F' },
+  'Avanzada': { bg: 'rgba(194,65,12,0.12)', color: '#C2410C' },
 };
 
 function getSpotifyEmbedUrl(raw) {
@@ -30,7 +30,7 @@ function SpotifySongCard({ song }) {
   const embedUrl = getSpotifyEmbedUrl(song.spotify_embed);
 
   return (
-    <div className="spotify-card flex flex-col" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+    <div className="spotify-card flex flex-col" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
       {embedUrl ? (
         <div className="spotify-embed-wrapper">
           <iframe src={embedUrl} width="100%" height="152" frameBorder="0"
@@ -38,20 +38,20 @@ function SpotifySongCard({ song }) {
             loading="lazy" title={`Spotify: ${song.title}`} />
         </div>
       ) : (
-        <div className="flex items-center justify-center" style={{ height: '152px', backgroundColor: '#121516' }}>
-          <Music className="w-8 h-8" style={{ color: '#303538' }} />
+        <div className="flex items-center justify-center" style={{ height: '152px', backgroundColor: '#F3F4F6' }}>
+          <Music className="w-8 h-8" style={{ color: '#D1D5DB' }} />
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 p-3 min-w-0">
         <div className="min-w-0">
-          <p className="text-sm font-semibold mb-0.5 break-words" style={{ color: '#F4F4F2' }}>
+          <p className="text-sm font-semibold mb-0.5 break-words" style={{ color: '#1F2937' }}>
             {song.title.replace(/\s*\d+$/, '').trim()}
           </p>
-          <p className="text-xs break-words" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+          <p className="text-xs break-words" style={{ color: '#6B7280' }}>{song.artist_name}</p>
         </div>
         <div className="flex flex-col gap-1 min-w-0">
           {diff && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full self-start sm:self-end" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
-          <Link to={`/${song.artist_slug}/${song.slug}`} className="w-full min-h-12 flex items-center justify-center text-[10px] font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-80" style={{ backgroundColor: '#FF7200', color: '#fff' }}>
+          <Link to={`/${song.artist_slug}/${song.slug}`} className="w-full min-h-12 flex items-center justify-center text-[10px] font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-80" style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)', color: '#fff' }}>
             Ver acordes
           </Link>
         </div>
@@ -89,14 +89,14 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F8F9FB' }}>
 
       {/* ===== HERO with background photo ===== */}
       <section
         className="relative px-4 lg:px-8 py-10 lg:py-24 overflow-hidden"
-        style={{ borderBottom: '1px solid #272C2F' }}
+        style={{ borderBottom: '1px solid #E5E7EB' }}
       >
-        {/* Background photo — desktop/tablet only, 85% dark overlay */}
+        {/* Background photo — desktop/tablet only, light overlay */}
         <div
           className="hidden md:block absolute inset-0 z-0"
           style={{
@@ -105,17 +105,17 @@ export default function Home() {
             backgroundPosition: 'center right',
           }}
         />
-        <div className="hidden md:block absolute inset-0 z-0" style={{ backgroundColor: 'rgba(11,13,14,0.85)' }} />
+        <div className="hidden md:block absolute inset-0 z-0" style={{ backgroundColor: 'rgba(248,249,251,0.90)' }} />
 
-        {/* Mobile: plain dark bg */}
-        <div className="md:hidden absolute inset-0 z-0" style={{ backgroundColor: '#121516' }} />
+        {/* Mobile: plain light bg */}
+        <div className="md:hidden absolute inset-0 z-0" style={{ backgroundColor: '#F3F4F6' }} />
 
         <div className="relative z-10 max-w-2xl mx-auto text-center w-full">
-          <h1 className="text-[28px] leading-[1.15] sm:text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#F4F4F2' }}>
+          <h1 className="text-[28px] leading-[1.15] sm:text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#1F2937' }}>
             Toca tus canciones{' '}
-            <span style={{ color: '#FF7200' }}>favoritas</span>
+            <span style={{ color: '#F97316' }}>favoritas</span>
           </h1>
-          <p className="text-base lg:text-lg mb-8" style={{ color: '#A7ACAE' }}>
+          <p className="text-base lg:text-lg mb-8" style={{ color: '#6B7280' }}>
             Acordes, tablaturas y herramientas para aprender, practicar y tocar mejor.
           </p>
           <HeroSearchChat quickChips={QUICK_CHIPS} />
@@ -128,10 +128,10 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between gap-3 mb-5 min-w-0">
               <div className="flex items-center gap-2 min-w-0">
-                <TrendingUp className="w-5 h-5 shrink-0" style={{ color: '#FF7200' }} />
-                <h2 className="text-xl font-bold break-words" style={{ color: '#F4F4F2' }}>Canciones en tendencia</h2>
+                <TrendingUp className="w-5 h-5 shrink-0" style={{ color: '#F97316' }} />
+                <h2 className="text-xl font-bold break-words" style={{ color: '#1F2937' }}>Canciones en tendencia</h2>
               </div>
-              <Link to="/canciones" className="flex shrink-0 items-center gap-1 text-sm font-medium" style={{ color: '#FF7200' }}>
+              <Link to="/canciones" className="flex shrink-0 items-center gap-1 text-sm font-medium" style={{ color: '#F97316' }}>
                 Ver todas <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -145,18 +145,18 @@ export default function Home() {
               <div className="flex items-center justify-between mt-3">
                 <button onClick={() => setCarouselIndex(i => (i - 1 + topSongs.length) % topSongs.length)}
                   className="w-9 h-9 flex items-center justify-center rounded-full"
-                  style={{ backgroundColor: '#181B1D', border: '1px solid #303538', color: '#A7ACAE' }}>
+                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}>
                   <ChevronRight className="w-4 h-4 rotate-180" />
                 </button>
                 <div className="flex gap-1.5">
                   {topSongs.map((_, i) => (
                     <span key={i} className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: i === carouselIndex ? '#FF7200' : '#303538' }} />
+                      style={{ backgroundColor: i === carouselIndex ? '#F97316' : '#D1D5DB' }} />
                   ))}
                 </div>
                 <button onClick={() => setCarouselIndex(i => (i + 1) % topSongs.length)}
                   className="w-9 h-9 flex items-center justify-center rounded-full"
-                  style={{ backgroundColor: '#181B1D', border: '1px solid #303538', color: '#A7ACAE' }}>
+                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -167,14 +167,14 @@ export default function Home() {
 
       {/* ===== CANCIONES (all with Spotify embed) ===== */}
       {allSpotifySongs.length > 3 && (
-        <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #272C2F' }}>
+        <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #E5E7EB' }}>
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <Music className="w-5 h-5" style={{ color: '#FF7200' }} />
-                <h2 className="text-xl font-bold" style={{ color: '#F4F4F2' }}>Canciones</h2>
+                <Music className="w-5 h-5" style={{ color: '#F97316' }} />
+                <h2 className="text-xl font-bold" style={{ color: '#1F2937' }}>Canciones</h2>
               </div>
-              <Link to="/canciones" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#FF7200' }}>
+              <Link to="/canciones" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#F97316' }}>
                 Ver todas <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -187,14 +187,14 @@ export default function Home() {
 
       {/* ===== EASY SONGS ===== */}
       {easySongs.length > 0 && (
-        <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #272C2F' }}>
+        <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #E5E7EB' }}>
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <Star className="w-5 h-5" style={{ color: '#80B940' }} />
-                <h2 className="text-xl font-bold" style={{ color: '#F4F4F2' }}>Canciones fáciles para empezar</h2>
+                <Star className="w-5 h-5" style={{ color: '#4C9A2A' }} />
+                <h2 className="text-xl font-bold" style={{ color: '#1F2937' }}>Canciones fáciles para empezar</h2>
               </div>
-              <Link to="/canciones" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#FF7200' }}>
+              <Link to="/canciones" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#F97316' }}>
                 Ver más <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -202,25 +202,25 @@ export default function Home() {
               {easySongs.map((song, i) => (
                 <div key={song.id}
                   className="grid grid-cols-[auto_auto_minmax(0,1fr)] sm:flex sm:items-center gap-4 px-4 py-3 rounded-xl min-w-0"
-                  style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
+                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
                 >
-                  <span className="text-sm font-bold w-5 text-right shrink-0" style={{ color: '#303538' }}>{i + 1}</span>
+                  <span className="text-sm font-bold w-5 text-right shrink-0" style={{ color: '#D1D5DB' }}>{i + 1}</span>
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: '#121516', border: '1px solid #272C2F' }}>
-                    <Music className="w-4 h-4" style={{ color: '#444A4E' }} />
+                    style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
+                    <Music className="w-4 h-4" style={{ color: '#9CA3AF' }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{song.title}</p>
-                    <p className="text-xs" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+                    <p className="text-sm font-semibold truncate" style={{ color: '#1F2937' }}>{song.title}</p>
+                    <p className="text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
                   </div>
                   <div className="col-span-3 sm:col-auto flex items-center gap-2 min-w-0">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full hidden sm:inline"
-                      style={{ backgroundColor: 'rgba(128,185,64,0.15)', color: '#80B940' }}>
+                      style={{ backgroundColor: 'rgba(76,154,42,0.12)', color: '#4C9A2A' }}>
                       Fácil
                     </span>
                     <Link to={`/${song.artist_slug}/${song.slug}`}
                       className="w-full sm:w-auto min-h-11 flex items-center justify-center text-[10px] font-bold px-2.5 py-1 rounded-lg transition-opacity hover:opacity-80"
-                      style={{ backgroundColor: '#FF7200', color: '#fff' }}>
+                      style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)', color: '#fff' }}>
                       Ver acordes
                     </Link>
                   </div>
@@ -234,12 +234,12 @@ export default function Home() {
 
 
       {/* ===== DONATE ===== */}
-      <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #272C2F' }}>
+      <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #E5E7EB' }}>
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl px-6 py-5"
-          style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+          style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
           <div>
-            <p className="font-bold text-sm" style={{ color: '#F4F4F2' }}>¿Te gusta GuitarraIA? 💙</p>
-            <p className="text-xs mt-0.5" style={{ color: '#747B7F' }}>Con 1 USD nos ayudas a mantener el sitio activo y seguir añadiendo canciones.</p>
+            <p className="font-bold text-sm" style={{ color: '#1F2937' }}>¿Te gusta GuitarraIA? 💙</p>
+            <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>Con 1 USD nos ayudas a mantener el sitio activo y seguir añadiendo canciones.</p>
           </div>
           <a href="https://paypal.me/schoolmarketing/1" target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 shrink-0"
@@ -251,14 +251,14 @@ export default function Home() {
 
       {/* ===== BLOG ===== */}
       {blogPosts.length > 0 && (
-        <section className="px-4 lg:px-8 py-8 pb-12" style={{ borderTop: '1px solid #272C2F' }}>
+        <section className="px-4 lg:px-8 py-8 pb-12" style={{ borderTop: '1px solid #E5E7EB' }}>
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5" style={{ color: '#FF7200' }} />
-                <h2 className="text-xl font-bold" style={{ color: '#F4F4F2' }}>Aprende con GuitarraIA</h2>
+                <BookOpen className="w-5 h-5" style={{ color: '#F97316' }} />
+                <h2 className="text-xl font-bold" style={{ color: '#1F2937' }}>Aprende con GuitarraIA</h2>
               </div>
-              <Link to="/blog" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#FF7200' }}>
+              <Link to="/blog" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#F97316' }}>
                 Ver blog <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -266,14 +266,14 @@ export default function Home() {
               {blogPosts.map(art => (
                 <Link key={art.id} to={`/blog/${art.slug}`}
                   className="flex items-start gap-3 p-4 rounded-xl transition-all"
-                  style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#444A4E'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; }}
+                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#FDBA74'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(15,23,42,0.08)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)'; }}
                 >
-                  <BookOpen className="w-5 h-5 mt-0.5 shrink-0" style={{ color: '#FF7200' }} />
+                  <BookOpen className="w-5 h-5 mt-0.5 shrink-0" style={{ color: '#F97316' }} />
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#747B7F' }}>{art.category}</span>
-                    <p className="text-sm font-semibold mt-0.5" style={{ color: '#F4F4F2' }}>{art.title}</p>
+                    <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: '#9CA3AF' }}>{art.category}</span>
+                    <p className="text-sm font-semibold mt-0.5" style={{ color: '#1F2937' }}>{art.title}</p>
                   </div>
                 </Link>
               ))}

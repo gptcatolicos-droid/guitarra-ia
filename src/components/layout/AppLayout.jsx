@@ -11,10 +11,10 @@ export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
-  // Restore dark class always (design system is always dark)
+  // Ensure page background matches the light design system
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-    document.documentElement.style.backgroundColor = '#0B0D0E';
+    document.documentElement.classList.remove('dark');
+    document.documentElement.style.backgroundColor = '#F8F9FB';
   }, []);
 
   // Push AdSense ads
@@ -25,21 +25,21 @@ export default function AppLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E', color: '#F4F4F2' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F8F9FB', color: '#1F2937' }}>
 
       {/* Mobile top bar */}
       <div
         className="lg:hidden fixed top-0 left-0 right-0 z-30 grid grid-cols-[48px_minmax(0,1fr)_48px] items-center px-4"
         style={{
           height: '68px',
-          backgroundColor: '#0E1112',
-          borderBottom: '1px solid #272C2F',
+          backgroundColor: '#FFFFFF',
+          borderBottom: '1px solid #E5E7EB',
         }}
       >
         <button
           onClick={() => setSidebarOpen(true)}
           className="w-11 h-11 flex items-center justify-center rounded-xl shrink-0"
-          style={{ color: '#A7ACAE' }}
+          style={{ color: '#6B7280' }}
           aria-label="Abrir menú"
         >
           <Menu className="w-6 h-6" />
@@ -55,16 +55,16 @@ export default function AppLayout() {
       {/* Main content */}
       <main
         className="main-area lg:ml-[240px] pt-[68px] lg:pt-0 pb-[calc(66px+24px+env(safe-area-inset-bottom))] lg:!pb-0 min-w-0 w-full"
-        style={{ backgroundColor: '#0B0D0E' }}
+        style={{ backgroundColor: '#F8F9FB' }}
       >
         {/* Desktop header */}
         <div
           className="hidden lg:flex items-center justify-center"
           style={{
             height: '104px',
-            backgroundColor: 'rgba(11,13,14,0.92)',
+            backgroundColor: 'rgba(255,255,255,0.85)',
             backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid #272C2F',
+            borderBottom: '1px solid #E5E7EB',
           }}
         >
           <Link to="/" className="flex items-center justify-center" style={{ height: '104px' }}>

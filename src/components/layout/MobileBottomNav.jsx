@@ -24,9 +24,9 @@ export default function MobileBottomNav() {
       style={{
         height: 'calc(66px + env(safe-area-inset-bottom))',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        backgroundColor: '#0E1112',
-        borderTop: '1px solid #272C2F',
-        boxShadow: '0 -8px 30px rgba(0,0,0,0.30)',
+        backgroundColor: '#FFFFFF',
+        borderTop: '1px solid #E5E7EB',
+        boxShadow: '0 -8px 24px rgba(15,23,42,0.06)',
       }}
     >
       {/* Regular items */}
@@ -37,7 +37,7 @@ export default function MobileBottomNav() {
             key={item.path}
             to={item.path}
             className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 transition-colors"
-            style={{ color: active ? '#FF7200' : '#747B7F' }}
+            style={{ color: active ? '#F97316' : '#9CA3AF' }}
             aria-label={item.label}
           >
             <item.icon className="w-5 h-5 shrink-0" />
@@ -50,15 +50,15 @@ export default function MobileBottomNav() {
       <Link
         to="/chat"
         className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0"
-        style={{ color: isChatActive ? '#FF7200' : '#FF7200' }}
+        style={{ color: '#F97316' }}
         aria-label="Chat IA"
       >
         <span
           className="flex items-center justify-center rounded-xl"
           style={{
             width: '34px', height: '30px',
-            background: isChatActive ? 'linear-gradient(135deg, #D95D00 0%, #FF7200 100%)' : 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)',
-            boxShadow: '0 3px 12px rgba(255,114,0,0.4)',
+            background: isChatActive ? 'linear-gradient(135deg, #EA580C 0%, #F97316 100%)' : 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)',
+            boxShadow: '0 3px 10px rgba(249,115,22,0.28)',
           }}
         >
           <Sparkles className="w-4 h-4 text-white" />

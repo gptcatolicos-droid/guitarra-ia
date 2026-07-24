@@ -15,20 +15,20 @@ export default function HeroSearchChat({ quickChips }) {
   return (
     <div className="w-full min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 rounded-xl p-2 mb-4"
-        style={{ backgroundColor: '#171A1C', border: '1px solid #303538' }}>
+        style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
         <input
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
           placeholder="Busca canciones, artistas, acordes o géneros…"
           className="w-full min-w-0 flex-1 py-3 px-3 text-sm outline-none"
-          style={{ backgroundColor: 'transparent', color: '#F4F4F2', WebkitTextFillColor: '#F4F4F2', caretColor: '#FF7200', opacity: 1 }}
+          style={{ backgroundColor: 'transparent', color: '#1F2937', WebkitTextFillColor: '#1F2937', caretColor: '#F97316', opacity: 1 }}
         />
         <button
           onClick={() => handleSearch()}
           disabled={!query.trim()}
           className="flex items-center justify-center gap-2 w-full sm:w-auto min-h-11 px-5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90 disabled:opacity-40 shrink-0"
-          style={{ background: 'linear-gradient(135deg, #FF7200 0%, #FF8D2A 100%)', color: '#fff' }}
+          style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)', color: '#fff', boxShadow: '0 6px 18px rgba(15,23,42,0.08)' }}
         >
           <Send className="w-4 h-4" />
           Pregunta a GuitarraIA
@@ -40,9 +40,9 @@ export default function HeroSearchChat({ quickChips }) {
           <button key={chip}
             onClick={() => handleSearch(chip)}
             className="px-3 py-1.5 rounded-full text-sm font-medium transition-all"
-            style={{ backgroundColor: 'rgba(24,27,29,0.85)', border: '1px solid #303538', color: '#A7ACAE' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF7200'; e.currentTarget.style.color = '#FF7200'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#303538'; e.currentTarget.style.color = '#A7ACAE'; }}
+            style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#F97316'; e.currentTarget.style.color = '#F97316'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; e.currentTarget.style.color = '#6B7280'; }}
           >
             {chip}
           </button>

@@ -154,7 +154,7 @@ export default function ChordViewer({ song, transposeKey }) {
 
   if (!song.content_raw) {
     return (
-      <p className="text-[#a7afb8] text-center py-12">
+      <p className="text-[#9CA3AF] text-center py-12">
         No hay acordes disponibles para esta canción.
       </p>
     );
@@ -185,18 +185,18 @@ export default function ChordViewer({ song, transposeKey }) {
 
       {/* The adaptable renderer is intentionally unavailable on mobile until songs have structured musical segments. */}
       {!isMobile && (
-        <div className="flex items-center gap-1 mb-3 p-1 rounded-lg w-fit" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+        <div className="flex items-center gap-1 mb-3 p-1 rounded-lg w-fit" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
           <button
             onClick={() => setAdaptable(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
-            style={useAdaptable ? { backgroundColor: '#FF7200', color: '#fff' } : { color: '#A7ACAE' }}
+            style={useAdaptable ? { background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)', color: '#fff' } : { color: '#6B7280' }}
           >
             <AlignLeft className="w-3.5 h-3.5" /> Adaptable
           </button>
           <button
             onClick={() => setAdaptable(false)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
-            style={!useAdaptable ? { backgroundColor: '#FF7200', color: '#fff' } : { color: '#A7ACAE' }}
+            style={!useAdaptable ? { background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)', color: '#fff' } : { color: '#6B7280' }}
           >
             <MoveHorizontal className="w-3.5 h-3.5" /> Original
           </button>
@@ -217,9 +217,9 @@ export default function ChordViewer({ song, transposeKey }) {
       </div>
 
       {showDiagrams && usedChords.length > 0 && (
-        <div className="chord-diagrams-card mb-6 bg-[#1a1d21] border border-[#2b3138] rounded-xl p-4">
+        <div className="chord-diagrams-card mb-6 bg-white border border-[#E5E7EB] rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-            <h3 className="text-white font-semibold text-sm">Acordes principales</h3>
+            <h3 className="text-[#1F2937] font-semibold text-sm">Acordes principales</h3>
             <ChordSoundToggle compact />
           </div>
           <div className="w-full max-w-full overflow-x-auto pb-1">
@@ -242,16 +242,16 @@ export default function ChordViewer({ song, transposeKey }) {
       ) : (
         <>
           {!useAdaptable && hasHorizontalOverflow && (
-            <p className="text-[12px] mb-1.5 flex items-center gap-1.5" style={{ color: '#747B7F' }}>
+            <p className="text-[12px] mb-1.5 flex items-center gap-1.5" style={{ color: '#9CA3AF' }}>
               <MoveHorizontal className="w-3 h-3" /> Desliza horizontalmente para ver el cifrado completo →
             </p>
           )}
-          <div className="chord-sheet-card bg-[#1a1d21] border border-[#2b3138] rounded-2xl w-full min-w-0">
+          <div className="chord-sheet-card bg-white border border-[#E5E7EB] rounded-2xl w-full min-w-0 shadow-sm">
             {useAdaptable ? (
               <div ref={scrollRef} className="adaptable-chord-sheet" style={{ maxHeight: '70vh' }}>
                 {sections.map((section, i) => (
                   <div key={i} className="mb-5">
-                    <div className="text-[#ff7a00] font-bold text-sm mb-2">[{section.name}]</div>
+                    <div className="text-[#C2410C] font-bold text-sm mb-2">[{section.name}]</div>
                     <div className="adaptable-chord-content" style={{ fontSize: `${Math.max(fontSize, 14)}px` }}>
                       {buildAdaptableRows(section.lines).map((row, j) => {
                         if (row.type === 'space') return <div key={j} className="h-3" />;
@@ -261,7 +261,7 @@ export default function ChordViewer({ song, transposeKey }) {
                     </div>
                   </div>
                 ))}
-                <div className="mt-4 text-[#555] text-xs font-mono border-t border-[#2b3138] pt-3">{SITE_URL}</div>
+                <div className="mt-4 text-[#9CA3AF] text-xs font-mono border-t border-[#E5E7EB] pt-3">{SITE_URL}</div>
               </div>
             ) : (
               <div ref={scrollRef} className="chord-sheet-scroll">
