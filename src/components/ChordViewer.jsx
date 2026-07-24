@@ -82,6 +82,25 @@ function pairLineToSegments(chordLine, lyricLine) {
   return segments;
 }
 
+// Colorize chord tokens in the original monospace view (chords/notes in orange), preserving spacing.
+function renderColoredOriginal(content) {
+  const lines = content.split('\n');
+  const nodes = [];
+  lines.forEach((line, li) => {
+    if (isChordLine(line) && line.trim()) {
+      line.split(/(\s+)/).forEach((part, pi) => {
+        if (part === '') return;
+        if (/^\s+$/.test(part)) nodes.push(part);
+        else nodes.push(<span key={`${li}-${pi}`} style={{ color: '#F97316', fontWeight: 700 }}>{part}</span>);
+      });
+    } else {
+      nodes.push(line);
+    }
+    if (li < lines.length - 1) nodes.push('\n');
+  });
+  return nodes;
+}
+
 // Build adaptable rows: pair a chord line with the lyric line that follows it.
 function buildAdaptableRows(lines) {
   const rows = [];
@@ -265,7 +284,7 @@ export default function ChordViewer({ song, transposeKey }) {
               </div>
             ) : (
               <div ref={scrollRef} className="chord-sheet-scroll">
-                <pre className="chord-sheet-original" style={{ fontSize: `${fontSize}px` }}>{content}</pre>
+                <pre className="chord-sheet-original" style={{ fontSize: `${fontSize}px` }}>{renderColoredOriginal(content)}</pre>
               </div>
             )}
           </div>

@@ -5,7 +5,7 @@ import Sidebar from './Sidebar';
 import MobileBottomNav from './MobileBottomNav';
 import Footer from './Footer';
 
-const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/e18c18520_logo.png';
+const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/968039181_78E3ED32-6DA5-40A1-96F9-5E53E711C696.png';
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
