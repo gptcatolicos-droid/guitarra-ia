@@ -23,6 +23,7 @@ Tienes acceso al catálogo interno de la plataforma. SOLO puedes responder con c
    - Si la canción no está en el catálogo, di claramente: "No tengo esa canción en mi catálogo aún. Puedes sugerirla para agregarla."
    - Responde en español. Puedes mostrar canciones en cualquier idioma.
    - No muestres rutas, IDs, números de versión ni datos técnicos.
+   - Si el usuario pregunta sobre RASGUEOS, RITMOS, TÉCNICAS, ARPEGIOS o FORMAS DE TOCAR (rock, balada, pop, bolero, etc.), usa la sección "ARTÍCULOS DE CONOCIMIENTO" que se incluye abajo. Responde basándote en ese contenido, explicando el patrón de rasgueo, los acordes y los consejos de práctica. Siempre incluye los patrones en bloques de código. No digas "no tengo esa canción" cuando la pregunta sea sobre técnica o rasgueo.
 
 4. FORMATO OBLIGATORIO para cifrados y tablaturas:
    Usa bloques de código con triple backtick para el contenido musical. Así:
@@ -70,12 +71,16 @@ export default function ChatInterface({ embedded, heroMode }) {
   const [loading, setLoading] = useState(false);
   const [scanningExternal, setScanningExternal] = useState(false);
   const [songsCache, setSongsCache] = useState([]);
+  const [blogPostsCache, setBlogPostsCache] = useState([]);
   const scrollRef = useRef(null);
   const autoQueryFired = useRef(false);
 
   useEffect(() => {
     base44.entities.Song.list('-created_date', 2000)
       .then(setSongsCache)
+      .catch(() => {});
+    base44.entities.BlogPost.filter({ published: true }, '-created_date', 100)
+      .then(setBlogPostsCache)
       .catch(() => {});
   }, []);
 
@@ -127,6 +132,32 @@ export default function ChatInterface({ embedded, heroMode }) {
       if (tokens.some((t) => t.length >= 4 && allText.includes(t))) return true;
       return false;
     });
+  };
+
+  // Find blog posts relevant to a technique/rhythm query
+  const findRelevantBlogPosts = (query, posts, max = 3) => {
+    const q = normalize(query);
+    const tokens = q.split(/\s+/).filter((t) => t.length >= 3);
+    const scored = posts.map((p) => {
+      const title = normalize(p.title);
+      const excerpt = normalize(p.excerpt || '');
+      const tags = (p.tags || []).map(normalize).join(' ');
+      const content = normalize(p.content || '');
+      const allText = `${title} ${excerpt} ${tags}`;
+      let score = 0;
+      if (allText.includes(q)) score += 5;
+      for (const t of tokens) {
+        if (title.includes(t)) score += 3;
+        if (allText.includes(t)) score += 1;
+        if (content.includes(t)) score += 0.5;
+      }
+      return { post: p, score };
+    });
+    return scored
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, max)
+      .map((s) => s.post);
   };
 
   const handleSend = async (text) => {
@@ -215,17 +246,30 @@ export default function ChatInterface({ embedded, heroMode }) {
         return;
       }
 
+      // Find relevant blog posts for technique/rhythm questions
+      const relevantPosts = findRelevantBlogPosts(userMessage, blogPostsCache);
+      const postsForLLM = relevantPosts.map((p) => ({
+        title: p.title,
+        slug: p.slug,
+        excerpt: p.excerpt,
+        content: p.content,
+      }));
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `${SYSTEM_PROMPT}
 
 ${contentForLLM.length > 0 ? `Canciones encontradas en catálogo:
 ${JSON.stringify(contentForLLM)}` : 'No se encontraron canciones en el catálogo para esta consulta.'}
 
+${postsForLLM.length > 0 ? `ARTÍCULOS DE CONOCIMIENTO (usa este contenido para responder sobre rasgueos, ritmos, técnicas y arpegios):
+${JSON.stringify(postsForLLM)}` : ''}
+
 Mensaje del usuario: "${userMessage}"
 
 IMPORTANTE:
 - Si hay canciones arriba, ÚSALAS directamente.
 - SIEMPRE formatea acordes/tablatura en bloques de código triple backtick.
+- Si la pregunta es sobre rasgueos, ritmos o técnicas, responde usando los ARTÍCULOS DE CONOCIMIENTO. Explica el patrón de rasgueo con símbolos D (abajo) y A (arriba), incluye los acordes y consejos de práctica.
 - matched_songs: incluye los IDs de las canciones que encontraste.`,
         add_context_from_internet: false,
         model: 'gemini_3_flash',
