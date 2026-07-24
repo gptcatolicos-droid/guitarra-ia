@@ -42,31 +42,31 @@ export default function BlogPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F8F9FB' }}>
       <div className="blog-page">
 
         {/* Header */}
         <div className="blog-page-header mb-8">
           <div className="flex items-center gap-3 mb-2">
             <BookOpen className="w-6 h-6" style={{ color: '#FF7200' }} />
-            <h1 className="text-2xl lg:text-3xl font-bold" style={{ color: '#F4F4F2' }}>
-              Blog de <span style={{ color: '#FF7200' }}>Guitarra</span>
+            <h1 className="text-2xl lg:text-3xl font-bold" style={{ color: '#1F2937' }}>
+              Blog de <span style={{ color: '#F97316' }}>Guitarra</span>
             </h1>
           </div>
-          <p className="text-sm" style={{ color: '#747B7F' }}>Guías, técnicas, acordes y todo lo que necesitas para aprender guitarra.</p>
+          <p className="text-sm" style={{ color: '#6B7280' }}>Guías, técnicas, acordes y todo lo que necesitas para aprender guitarra.</p>
         </div>
 
         {/* Search */}
         <div className="blog-search relative mb-5">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#747B7F' }} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#9CA3AF' }} />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar artículos..."
             className="w-full pl-11 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
-            style={{ backgroundColor: '#171A1C', border: '1px solid #303538', color: '#F4F4F2' }}
-            onFocus={e => { e.target.style.borderColor = '#FF7200'; }}
-            onBlur={e => { e.target.style.borderColor = '#303538'; }}
+            style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#1F2937' }}
+            onFocus={e => { e.target.style.borderColor = '#F97316'; }}
+            onBlur={e => { e.target.style.borderColor = '#E5E7EB'; }}
           />
         </div>
 
@@ -78,8 +78,8 @@ export default function BlogPage() {
               <button key={cat} onClick={() => setCategory(cat)}
                 className="px-3 py-1.5 rounded-full text-sm font-medium transition-all"
                 style={active
-                  ? { backgroundColor: '#FF7200', color: '#fff' }
-                  : { backgroundColor: '#181B1D', border: '1px solid #303538', color: '#A7ACAE' }
+                  ? { backgroundColor: '#F97316', color: '#fff' }
+                  : { backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }
                 }
               >
                 {cat}
@@ -90,11 +90,11 @@ export default function BlogPage() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#303538', borderTopColor: '#FF7200' }} />
+            <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#E5E7EB', borderTopColor: '#F97316' }} />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 rounded-2xl" style={{ border: '1px dashed #303538' }}>
-            <p style={{ color: '#747B7F' }}>No se encontraron artículos.</p>
+          <div className="text-center py-20 rounded-2xl" style={{ border: '1px dashed #D1D5DB' }}>
+            <p style={{ color: '#6B7280' }}>No se encontraron artículos.</p>
           </div>
         ) : (
           <div className="blog-grid">
@@ -103,21 +103,21 @@ export default function BlogPage() {
               return (
                 <Link key={post.id} to={`/blog/${post.slug}`}
                   className="blog-card"
-                  style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#444A4E'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#FDBA74'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; e.currentTarget.style.transform = 'translateY(0)'; }}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: cc.bg, color: cc.color }}>
                       {post.category}
                     </span>
-                    <span className="text-xs flex items-center gap-1" style={{ color: '#747B7F' }}>
+                    <span className="text-xs flex items-center gap-1" style={{ color: '#6B7280' }}>
                       <Clock className="w-3 h-3" />{post.reading_time_min || 5} min
                     </span>
                   </div>
-                  <h2 className="blog-card-title" style={{ color: '#F4F4F2' }}>{post.title}</h2>
-                  {post.excerpt && <p className="blog-card-description" style={{ color: '#747B7F' }}>{post.excerpt}</p>}
-                  <div className="flex items-center gap-1 text-xs font-semibold mt-auto" style={{ color: '#FF7200' }}>
+                  <h2 className="blog-card-title" style={{ color: '#1F2937' }}>{post.title}</h2>
+                  {post.excerpt && <p className="blog-card-description" style={{ color: '#6B7280' }}>{post.excerpt}</p>}
+                  <div className="flex items-center gap-1 text-xs font-semibold mt-auto" style={{ color: '#F97316' }}>
                     Leer artículo <ChevronRight className="w-3.5 h-3.5" />
                   </div>
                 </Link>

@@ -57,17 +57,17 @@ export default function BlogPostPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-24" style={{ backgroundColor: '#0B0D0E' }}>
-        <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#303538', borderTopColor: '#FF7200' }} />
+      <div className="flex justify-center py-24" style={{ backgroundColor: '#F8F9FB' }}>
+        <div className="w-7 h-7 border-2 rounded-full animate-spin" style={{ borderColor: '#E5E7EB', borderTopColor: '#F97316' }} />
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16 text-center" style={{ backgroundColor: '#0B0D0E' }}>
-        <p style={{ color: '#747B7F' }}>Artículo no encontrado.</p>
-        <Link to="/blog" className="mt-4 inline-block" style={{ color: '#FF7200' }}>← Volver al blog</Link>
+      <div className="max-w-3xl mx-auto px-4 py-16 text-center" style={{ backgroundColor: '#F8F9FB' }}>
+        <p style={{ color: '#6B7280' }}>Artículo no encontrado.</p>
+        <Link to="/blog" className="mt-4 inline-block" style={{ color: '#F97316' }}>← Volver al blog</Link>
       </div>
     );
   }
@@ -77,13 +77,13 @@ export default function BlogPostPage() {
   const chordLinks = practiceChords.length ? practiceChords : ['C', 'G', 'Am', 'F'];
 
   return (
-    <div className="min-h-screen w-full" style={{ backgroundColor: '#0B0D0E' }}>
+    <div className="min-h-screen w-full" style={{ backgroundColor: '#F8F9FB' }}>
       <div className="blog-article min-w-0">
 
         <nav aria-label="Migas de pan">
-        <Link to="/blog" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#747B7F' }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#FF7200'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = '#747B7F'; }}
+        <Link to="/blog" className="flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: '#6B7280' }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#F97316'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#6B7280'; }}
         >
           <ChevronLeft className="w-4 h-4" /> Volver al blog
         </Link>
@@ -95,13 +95,13 @@ export default function BlogPostPage() {
               style={{ backgroundColor: cc.bg, color: cc.color }}>
               {post.category}
             </span>
-            <h1 className="text-2xl lg:text-3xl font-bold leading-tight mb-3 break-words" style={{ color: '#F4F4F2', overflowWrap: 'anywhere' }}>
+            <h1 className="text-2xl lg:text-3xl font-bold leading-tight mb-3 break-words" style={{ color: '#1F2937', overflowWrap: 'anywhere' }}>
               {post.title}
             </h1>
             {post.excerpt && (
-              <p className="text-[17px] leading-relaxed mb-4 break-words" style={{ color: '#A7ACAE', overflowWrap: 'anywhere' }}>{post.excerpt}</p>
+              <p className="text-[17px] leading-relaxed mb-4 break-words" style={{ color: '#4B5563', overflowWrap: 'anywhere' }}>{post.excerpt}</p>
             )}
-            <div className="flex items-center gap-2 text-xs" style={{ color: '#747B7F' }}>
+            <div className="flex items-center gap-2 text-xs" style={{ color: '#6B7280' }}>
               <Clock className="w-3.5 h-3.5" />
               <span>{post.reading_time_min || 5} minutos de lectura</span>
               <span>·</span>
@@ -120,21 +120,21 @@ export default function BlogPostPage() {
                 ul: ({ children }) => <ul>{children}</ul>,
                 ol: ({ children }) => <ol>{children}</ol>,
                 li: ({ children }) => <li>{children}</li>,
-                strong: ({ children }) => <strong className="font-semibold" style={{ color: '#F4F4F2' }}>{children}</strong>,
+                strong: ({ children }) => <strong className="font-semibold" style={{ color: '#1F2937' }}>{children}</strong>,
                 code: ({ children, className }) => className?.includes('language-')
-                  ? <code className="font-mono" style={{ color: '#FF7200', fontFamily: '"IBM Plex Mono", monospace' }}>{children}</code>
-                  : <code className="px-1.5 py-0.5 rounded text-sm font-mono" style={{ backgroundColor: '#121516', color: '#FF7200', fontFamily: '"IBM Plex Mono", monospace' }}>{children}</code>,
+                  ? <code className="font-mono" style={{ color: '#F97316', fontFamily: '"IBM Plex Mono", monospace' }}>{children}</code>
+                  : <code className="px-1.5 py-0.5 rounded text-sm font-mono" style={{ backgroundColor: '#F3F4F6', color: '#F97316', fontFamily: '"IBM Plex Mono", monospace' }}>{children}</code>,
                 pre: ({ children }) => <pre className="blog-code-block">{children}</pre>,
                 blockquote: ({ children }) => (
-                  <blockquote className="pl-4 italic mb-4" style={{ borderLeft: '3px solid #FF7200', color: '#A7ACAE' }}>{children}</blockquote>
+                  <blockquote className="pl-4 italic mb-4" style={{ borderLeft: '3px solid #F97316', color: '#4B5563' }}>{children}</blockquote>
                 ),
                 table: ({ children }) => (
                   <div className="blog-table-wrapper">
                     <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>{children}</table>
                   </div>
                 ),
-                th: ({ children }) => <th className="text-left px-3 py-2 text-xs font-bold uppercase" style={{ color: '#747B7F', borderBottom: '1px solid #272C2F' }}>{children}</th>,
-                td: ({ children }) => <td className="px-3 py-2 text-sm" style={{ color: '#A7ACAE', borderBottom: '1px solid #1a1d1f' }}>{children}</td>,
+                th: ({ children }) => <th className="text-left px-3 py-2 text-xs font-bold uppercase" style={{ color: '#6B7280', borderBottom: '1px solid #E5E7EB' }}>{children}</th>,
+                td: ({ children }) => <td className="px-3 py-2 text-sm" style={{ color: '#4B5563', borderBottom: '1px solid #F3F4F6' }}>{children}</td>,
               }}
             >
               {post.content}
@@ -142,14 +142,14 @@ export default function BlogPostPage() {
           </div>
         </article>
 
-        <section className="mt-8 rounded-2xl p-5" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
-          <h2 className="flex items-center gap-2 text-base font-bold mb-2" style={{ color: '#F4F4F2' }}>
-            <Music2 className="w-4 h-4" style={{ color: '#FF7200' }} /> Acordes para practicar
+        <section className="mt-8 rounded-2xl p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
+          <h2 className="flex items-center gap-2 text-base font-bold mb-2" style={{ color: '#1F2937' }}>
+            <Music2 className="w-4 h-4" style={{ color: '#F97316' }} /> Acordes para practicar
           </h2>
-          <p className="text-sm mb-4" style={{ color: '#A7ACAE' }}>Abre un acorde para ver su posición, canciones y material de estudio.</p>
+          <p className="text-sm mb-4" style={{ color: '#4B5563' }}>Abre un acorde para ver su posición, canciones y material de estudio.</p>
           <div className="flex flex-wrap gap-2">
             {chordLinks.map((chord) => (
-              <Link key={chord} to={`/acordes/${encodeURIComponent(chord)}`} className="px-3 py-1.5 rounded-lg text-sm font-bold" style={{ color: '#FF7200', border: '1px solid rgba(255,114,0,0.45)' }}>
+              <Link key={chord} to={`/acordes/${encodeURIComponent(chord)}`} className="px-3 py-1.5 rounded-lg text-sm font-bold" style={{ color: '#F97316', border: '1px solid rgba(249,115,22,0.4)' }}>
                 {chord}
               </Link>
             ))}
@@ -158,9 +158,9 @@ export default function BlogPostPage() {
 
         {/* Tags */}
         {post.tags?.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-8 pt-6" style={{ borderTop: '1px solid #272C2F' }}>
+          <div className="flex flex-wrap gap-2 mt-8 pt-6" style={{ borderTop: '1px solid #E5E7EB' }}>
             {post.tags.map(tag => (
-              <span key={tag} className="text-xs px-2.5 py-1 rounded-full" style={{ backgroundColor: '#181B1D', color: '#747B7F', border: '1px solid #272C2F' }}>
+              <span key={tag} className="text-xs px-2.5 py-1 rounded-full" style={{ backgroundColor: '#F3F4F6', color: '#6B7280', border: '1px solid #E5E7EB' }}>
                 #{tag}
               </span>
             ))}
@@ -170,19 +170,19 @@ export default function BlogPostPage() {
         {/* Related */}
         {related.length > 0 && (
           <div className="blog-related-posts mt-10">
-            <h2 className="text-base font-bold mb-4 flex items-center gap-2" style={{ color: '#F4F4F2' }}>
-              <BookOpen className="w-4 h-4" style={{ color: '#FF7200' }} /> Artículos relacionados
+            <h2 className="text-base font-bold mb-4 flex items-center gap-2" style={{ color: '#1F2937' }}>
+              <BookOpen className="w-4 h-4" style={{ color: '#F97316' }} /> Artículos relacionados
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {related.map(r => (
                 <Link key={r.id} to={`/blog/${r.slug}`}
                   className="p-4 rounded-xl transition-all"
-                  style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF7200'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#272C2F'; }}
+                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#F97316'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; }}
                 >
-                  <span className="text-[10px] font-bold uppercase" style={{ color: '#747B7F' }}>{r.category}</span>
-                  <p className="text-sm font-semibold mt-1 leading-snug" style={{ color: '#F4F4F2' }}>{r.title}</p>
+                  <span className="text-[10px] font-bold uppercase" style={{ color: '#6B7280' }}>{r.category}</span>
+                  <p className="text-sm font-semibold mt-1 leading-snug" style={{ color: '#1F2937' }}>{r.title}</p>
                 </Link>
               ))}
             </div>
