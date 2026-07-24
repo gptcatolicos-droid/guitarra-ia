@@ -15,6 +15,11 @@ export function buildEmbedUrl(trackId) {
   return `https://open.spotify.com/embed/track/${trackId}?utm_source=generator`;
 }
 
+// A song already has a usable Spotify embed if any of these identifiers is present.
+export function hasValidEmbed(song) {
+  return !!(song?.spotify_embed || song?.spotify_embed_url || song?.spotify_track_id);
+}
+
 export function validateTrackId(id) {
   return /^[A-Za-z0-9]{10,30}$/.test(id || '');
 }

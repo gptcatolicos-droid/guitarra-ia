@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { findBestMatch, validateTrackId, buildUpdatePayload } from '../../shared/spotifySearch.js';
-import { scoreMatch, getMatchStatus } from '../../shared/spotifyMatch.js';
+import { findBestMatch, validateTrackId, buildUpdatePayload, hasValidEmbed } from '../../shared/spotifySearch.js';
+import { analyzeMatch, getVerdict } from '../../shared/spotifyMatch.js';
 
 Deno.serve(async (req) => {
   try {
@@ -19,6 +19,11 @@ Deno.serve(async (req) => {
 
     if (song.spotify_manual_lock && !force) {
       return Response.json({ status: 'skipped', reason: 'manual_lock' });
+    }
+
+    // Never overwrite an existing valid embed unless explicitly forced.
+    if (hasValidEmbed(song) && !force) {
+      return Response.json({ status: 'skipped', reason: 'existing_embed' });
     }
 
     if (!song.title || !song.artist_name) {
@@ -47,11 +52,22 @@ Deno.serve(async (req) => {
     }
 
     const scored = candidates
-      .map(track => ({ track, score: scoreMatch(cleanTitle, artist, track) }))
-      .sort((a, b) => b.score - a.score);
+      .map(track => ({ track, analysis: analyzeMatch(cleanTitle, artist, track) }))
+      .sort((a, b) => b.analysis.score - a.analysis.score);
 
     const best = scored[0];
-    const matchStatus = method === 'isrc' ? 'matched' : getMatchStatus(best.score);
+    const verdict = getVerdict(best.analysis, method);
+    const matchStatus = verdict.status;
+
+    // Discarded matches must not fill the record with a wrong/approximate track.
+    if (matchStatus === 'not_found') {
+      await base44.asServiceRole.entities.Song.update(songId, {
+        spotify_match_status: 'not_found',
+        spotify_sync_error: null,
+        spotify_last_sync: new Date().toISOString(),
+      });
+      return Response.json({ status: 'not_found', reason: verdict.reason, score: best.analysis.score });
+    }
 
     if (!validateTrackId(best.track.id)) {
       await base44.asServiceRole.entities.Song.update(songId, {
@@ -62,12 +78,22 @@ Deno.serve(async (req) => {
       return Response.json({ status: 'error', reason: 'invalid_track_id' });
     }
 
-    const payload = buildUpdatePayload(best.track, method, best.score, matchStatus, song.spotify_isrc);
+    const payload = buildUpdatePayload(best.track, method, best.analysis.score, matchStatus, song.spotify_isrc);
+
+    // Only auto-approved matches write the embed. Review cases store the suggested
+    // track metadata WITHOUT the embed, so an admin can confirm it first.
+    if (matchStatus === 'review_required') {
+      delete payload.spotify_embed;
+      delete payload.spotify_embed_url;
+    }
     await base44.asServiceRole.entities.Song.update(songId, payload);
 
     return Response.json({
       status: matchStatus,
-      score: best.score,
+      reason: verdict.reason,
+      score: best.analysis.score,
+      title_similarity: best.analysis.titleSim,
+      artist_similarity: best.analysis.artistSim,
       track_name: best.track.name,
       artist_name: payload.spotify_artist_name,
       track_id: best.track.id,
