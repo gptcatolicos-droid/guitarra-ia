@@ -112,6 +112,21 @@ function SongEditor({ song, onClose, onSaved }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
 
+  // Always reflect the freshest saved data (the in-memory list may be stale).
+  useEffect(() => {
+    let active = true;
+    base44.entities.Song.filter({ id: song.id }).then((rows) => {
+      const fresh = rows?.[0];
+      if (active && fresh) {
+        setTitle(fresh.title || '');
+        setOriginalKey(fresh.original_key || '');
+        setContent(fresh.content_raw || fresh.tablature || '');
+        setSpotifyEmbed(fresh.spotify_embed || '');
+      }
+    });
+    return () => { active = false; };
+  }, [song.id]);
+
   const handleSave = async () => {
     setSaving(true);
     const isTab = song.has_tablature && !song.has_chords;
