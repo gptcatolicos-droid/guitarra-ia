@@ -47,17 +47,6 @@ function hasTablature(content) {
   return /[eEBGDAd]\|[-\d|hpbr~\s]+/.test(content);
 }
 
-function hasChords(content) {
-  const lines = content.split('\n');
-  return lines.some(line => {
-    const trimmed = line.trim();
-    if (!trimmed) return false;
-    const tokens = trimmed.split(/\s+/);
-    return tokens.length >= 1 && tokens.length <= 8 &&
-      tokens.every(t => /^[A-G][#b]?(?:sus[24]?|maj7?|m7?|7|9|dim|aug)?(?:\/[A-G][#b]?)?$/.test(t));
-  });
-}
-
 export function parseFileName(fileName) {
   const base = fileName.replace(/\.(txt|md)$/i, '');
   // Format: "Artist - Title" or "artist_title" or just "title"
@@ -102,7 +91,8 @@ export function parseFileContent(content, fileName, contentType) {
     capo: detectCapo(content),
     tuning: detectTuning(content),
     difficulty: detectDifficulty(content),
-    hasChords: !isTab && hasChords(content),
+    // Formatting differences must never hide a non-empty cifrado.
+    hasChords: !isTab && content.trim().length > 0,
     hasTablature: isTab,
     contentRaw: !isTab ? content : null,
     tablature: isTab ? content : null,

@@ -9,6 +9,7 @@ import SongMeta from '@/components/SongMeta';
 import SpotifyPlayer from '@/components/SpotifyPlayer';
 import SongSeoContent from '@/components/SongSeoContent';
 import RelatedSongs from '@/components/RelatedSongs';
+import { withResolvedSongContentFlags } from '@/lib/songContentFlags';
 
 export default function SongPage() {
   const { artistSlug, songSlug, view } = useParams();
@@ -100,9 +101,14 @@ export default function SongPage() {
       </div>
     );
 
+  // Protect valid content immediately, even before the database repair runs.
+  const resolvedSong = withResolvedSongContentFlags(song);
+  const hasChords = resolvedSong.has_chords;
+  const hasTablature = resolvedSong.has_tablature;
+
   const isTransposed = view && view.startsWith('tono-');
   const transposeKey = isTransposed ? view.replace('tono-', '') : null;
-  const activeView = view || (song.has_chords ? 'acordes' : 'tablatura');
+  const activeView = view || (hasChords ? 'acordes' : 'tablatura');
 
   return (
     <div className="song-page min-h-[100dvh] w-full max-w-full lg:pb-0 bg-g-page">
@@ -137,18 +143,18 @@ export default function SongPage() {
 
       {/* Mobile player */}
       <div className="lg:hidden mb-6">
-        <SpotifyPlayer song={song} />
+        <SpotifyPlayer song={resolvedSong} />
       </div>
 
       <div className="song-layout grid gap-8">
         {/* Main content */}
         <div className="song-reading-column min-w-0">
-          <SongMeta song={song} />
+          <SongMeta song={resolvedSong} />
 
           {/* Tabs */}
-          {(song.has_chords || song.has_tablature) && (
+          {(hasChords || hasTablature) && (
             <div className="flex items-center gap-1 mb-6" style={{ borderBottom: '1px solid #E5E7EB' }}>
-              {song.has_chords && (
+              {hasChords && (
                 <Link to={`/${artistSlug}/${songSlug}/acordes`}
                   className="px-4 py-3 text-sm font-medium border-b-2 transition-colors"
                   style={activeView === 'acordes' || isTransposed
@@ -158,7 +164,7 @@ export default function SongPage() {
                   Acordes
                 </Link>
               )}
-              {song.has_tablature && (
+              {hasTablature && (
                 <Link to={`/${artistSlug}/${songSlug}/tablatura`}
                   className="px-4 py-3 text-sm font-medium border-b-2 transition-colors"
                   style={activeView === 'tablatura'
@@ -171,14 +177,14 @@ export default function SongPage() {
             </div>
           )}
 
-          {(activeView === 'acordes' || isTransposed) && song.has_chords && (
-            <ChordViewer song={song} transposeKey={transposeKey} />
+          {(activeView === 'acordes' || isTransposed) && hasChords && (
+            <ChordViewer song={resolvedSong} transposeKey={transposeKey} />
           )}
-          {activeView === 'tablatura' && song.has_tablature && <TablatureViewer song={song} />}
-          {activeView === 'acordes' && !song.has_chords && song.has_tablature && <TablatureViewer song={song} />}
+          {activeView === 'tablatura' && hasTablature && <TablatureViewer song={resolvedSong} />}
+          {activeView === 'acordes' && !hasChords && hasTablature && <TablatureViewer song={resolvedSong} />}
 
-          <SongSeoContent song={song} />
-          <RelatedSongs song={song} />
+          <SongSeoContent song={resolvedSong} />
+          <RelatedSongs song={resolvedSong} />
 
           <div className="hidden lg:block xl:hidden mt-8">
             <SpotifyPlayer song={song} />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { Music, Users, FileText, Trash2, Edit2, X, Sparkles, Save, Palette, Type, LogOut } from 'lucide-react';
+import { Music, Users, FileText, X, Sparkles, Save, Palette, Type, LogOut } from 'lucide-react';
 import FileDropZone from '@/components/admin/FileDropZone';
 import { parseFileContent } from '@/lib/fileParser';
 import { useAuth } from '@/lib/AuthContext';
@@ -17,6 +17,7 @@ import SeoManager from '@/components/admin/SeoManager';
 import SitemapPanel from '@/components/admin/SitemapPanel';
 import FacebookPostManager from '@/components/admin/FacebookPostManager';
 import InfographicsManager from '@/components/admin/InfographicsManager';
+import SongFlagsRepair from '@/components/admin/SongFlagsRepair';
 
 const THEME_COLORS = [
   { label: 'Naranja', value: '28 100% 50%' },
@@ -516,7 +517,7 @@ export default function AdminPage() {
           { id: 'import', label: 'Importar' }, { id: 'hero', label: 'Hero Banner' }, { id: 'trending', label: 'Tendencias' },
           { id: 'store', label: 'Guitar Store' }, { id: 'infographics', label: 'Infografías' }, { id: 'spotify', label: 'Spotify Sync' },
           { id: 'seo', label: 'SEO' }, { id: 'sitemap', label: 'Sitemap' }, { id: 'stats', label: 'Estadísticas' },
-          { id: 'facebook', label: 'Facebook' }, { id: 'theme', label: 'Tema' },
+          { id: 'facebook', label: 'Facebook' }, { id: 'repair', label: 'Reparar canciones' }, { id: 'theme', label: 'Tema' },
         ].map((t) => <button key={t.id} onClick={() => setTab(t.id)} className={`min-h-11 py-2 px-3 rounded-xl text-sm font-medium transition-colors ${tab === t.id ? 'bg-card text-foreground border border-border shadow-sm' : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-card'}`}>{t.label}</button>)}
       </div>
 
@@ -605,6 +606,8 @@ Tengo la camisa negra...`}</pre>
           <FacebookPostManager />
         </div>
       )}
+
+      {tab === 'repair' && <SongFlagsRepair onCompleted={loadStats} />}
 
       {tab === 'theme' && <ThemeSettings />}
     </div>
