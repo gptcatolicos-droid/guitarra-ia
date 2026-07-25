@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home, LayoutGrid,
+  Home, LayoutGrid, Radio,
   BookOpen, ShoppingBag, Images, X, MessageCircleMore
 } from 'lucide-react';
 
 const navItems = [
   { icon: Home, label: 'Inicio', path: '/' },
+  { icon: Radio, label: 'Afinador IA', path: '/afinador' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
   { icon: BookOpen, label: 'Blog', path: '/blog' },
   { icon: Images, label: 'Infografías', path: '/infografias' },
@@ -80,7 +81,7 @@ export default function Sidebar({ open, onClose }) {
                 onClick={onClose}
                 target={item.newTab ? '_blank' : undefined}
                 rel={item.newTab ? 'noopener noreferrer' : undefined}
-                className="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
+                className={`nav-orb ${active ? 'nav-orb-active' : ''} relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150`}
                 style={active ? {
                   backgroundColor: '#FFF1E0',
                   color: '#C2410C',
