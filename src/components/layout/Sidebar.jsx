@@ -3,6 +3,7 @@ import {
   Home, LayoutGrid, Radio,
   BookOpen, ShoppingBag, Images, X, MessageCircleMore
 } from 'lucide-react';
+import BrandLogo from './BrandLogo';
 
 const navItems = [
   { icon: Home, label: 'Inicio', path: '/' },
@@ -53,8 +54,9 @@ export default function Sidebar({ open, onClose }) {
             <X className="w-4 h-4" />
           </button>
         </div>
-        {/* Desktop: empty top spacer matching header height */}
-        <div className="hidden lg:block" style={{ height: '64px', borderBottom: '1px solid #E5E7EB', flexShrink: 0 }} />
+        <div className="hidden lg:flex items-center px-6" style={{ height: '112px', borderBottom: '1px solid #F0ECE8', flexShrink: 0 }}>
+          <BrandLogo />
+        </div>
 
         {/* Chat IA — top prominent button */}
         <div className="px-3 pt-4 pb-2">
