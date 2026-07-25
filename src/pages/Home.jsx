@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { TrendingUp, Music, ChevronRight, Star, BookOpen } from 'lucide-react';
+import { TrendingUp, Music, ChevronRight, Star, BookOpen, Radio } from 'lucide-react';
 import HeroSearchChat from '@/components/home/HeroSearchChat';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/e18c18520_logo.png';
@@ -92,20 +92,21 @@ export default function Home() {
 
       {/* ===== HERO with background photo ===== */}
       <section
-        className="relative px-4 lg:px-8 py-10 lg:py-24 overflow-hidden"
+        className="home-wave-hero relative px-4 lg:px-8 py-10 lg:py-24 overflow-hidden"
         style={{ borderBottom: '1px solid #E5E7EB' }}
       >
         <div className="absolute inset-0 z-0" style={{ backgroundColor: '#F8F9FB' }} />
 
         <div className="relative z-10 max-w-2xl mx-auto text-center w-full">
           <h1 className="text-[28px] leading-[1.15] sm:text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#1F2937' }}>
-            Toca tus canciones{' '}
-            <span style={{ color: '#F97316' }}>favoritas</span>
+            Toca lo que{' '}
+            <span style={{ color: '#F97316' }}>te mueve.</span>
           </h1>
           <p className="text-base lg:text-lg mb-8" style={{ color: '#6B7280' }}>
-            Acordes, tablaturas y herramientas para aprender, practicar y tocar mejor.
+            Canciones, acordes y una IA para practicar a tu ritmo.
           </p>
           <HeroSearchChat quickChips={QUICK_CHIPS} />
+          <Link to="/afinador" className="tuner-promo"><span><Radio className="w-5 h-5" /></span><div><b>Afinador IA</b><small>Afinación precisa con IA en tiempo real.</small></div><em>Abrir afinador</em></Link>
         </div>
       </section>
 
