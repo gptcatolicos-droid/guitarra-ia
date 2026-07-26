@@ -118,6 +118,10 @@ export default function CatalogTab({ allSongsList, onEdit, onDelete, onBulkDelet
       if (!confirm(`¿Eliminar permanentemente ${ids.length} canción(es)? Esta acción no se puede deshacer.`)) return;
       setBulkBusy(true);
       await onBulkDelete(ids);
+    } else if (action === 'verify_spotify') {
+      if (!confirm(`Se verificará Spotify para ${ids.length} canción(es). Los embeds manuales permanecerán intactos y solo se reemplazarán coincidencias automáticas de alta confianza.`)) return;
+      setBulkBusy(true);
+      await onBulkStatus(ids, action);
     } else if (onBulkStatus) {
       setBulkBusy(true);
       await onBulkStatus(ids, action);
@@ -183,6 +187,7 @@ export default function CatalogTab({ allSongsList, onEdit, onDelete, onBulkDelet
           <span className="text-xs font-medium text-foreground mr-1">{selected.size} seleccionada(s):</span>
           <BulkBtn disabled={bulkBusy} onClick={() => runBulk('spotify')}>Buscar embed</BulkBtn>
           <BulkBtn disabled={bulkBusy} onClick={() => runBulk('retry')}>Reintentar</BulkBtn>
+          <BulkBtn disabled={bulkBusy} onClick={() => runBulk('verify_spotify')}>Verificar embed</BulkBtn>
           <BulkBtn disabled={bulkBusy} onClick={() => runBulk('review')}>Marcar revisión</BulkBtn>
           <BulkBtn disabled={bulkBusy} onClick={() => runBulk('publish')}>Publicar</BulkBtn>
           <BulkBtn disabled={bulkBusy} onClick={() => runBulk('unpublish')}>Despublicar</BulkBtn>

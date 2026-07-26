@@ -90,9 +90,7 @@ function ManualSearchModal({ song, onSelect, onClose }) {
         title: query,
         artist: '',
       });
-      if (res?.data?.track_id) {
-        setResults([res.data]);
-      }
+      setResults(res?.data?.tracks || (res?.data?.track_id ? [res.data] : []));
     } catch {}
     setLoading(false);
   };
@@ -196,7 +194,11 @@ export default function SpotifySyncAdmin({ allSongs }) {
   };
 
   const approveSong = async (song) => {
+    const embed = song.spotify_track_id
+      ? `https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator`
+      : song.spotify_embed || song.spotify_embed_url || null;
     await base44.entities.Song.update(song.id, {
+      ...(embed ? { spotify_embed: embed, spotify_embed_url: embed } : {}),
       spotify_match_status: 'matched',
       spotify_manual_lock: true,
       spotify_match_method: 'manual',
@@ -208,8 +210,7 @@ export default function SpotifySyncAdmin({ allSongs }) {
     await base44.entities.Song.update(song.id, {
       spotify_match_status: 'not_found',
       spotify_track_id: null,
-      spotify_embed: null,
-      spotify_embed_url: null,
+      spotify_sync_error: 'Propuesta descartada por un administrador. El embed existente, si lo había, se conservó.',
     });
     setReviewSongs(prev => prev.filter(s => s.id !== song.id));
   };
@@ -244,7 +245,7 @@ export default function SpotifySyncAdmin({ allSongs }) {
         <p className="text-sm font-bold" style={{ color: '#F4F4F2' }}>¿Qué hace el Spotify Sync?</p>
         <p className="text-xs leading-relaxed" style={{ color: '#A7ACAE' }}>
           Busca automáticamente cada canción del catálogo en Spotify para mostrar el <strong style={{ color: '#1DB954' }}>player embebido</strong> en la página de cada canción.
-          Compara título y artista con la API de Spotify y guarda el enlace si hay coincidencia.
+          Compara título y artista con la API de Spotify y solo guarda el enlace si la coincidencia es segura. Los embeds manuales quedan protegidos y nunca se sustituyen automáticamente.
         </p>
         <div className="grid grid-cols-2 gap-1.5 text-xs" style={{ color: '#A7ACAE' }}>
           <span>🟢 <strong style={{ color: '#59B879' }}>Con Spotify ✓</strong> — player visible en la canción</span>
@@ -253,7 +254,7 @@ export default function SpotifySyncAdmin({ allSongs }) {
           <span>⚫ <strong style={{ color: '#747B7F' }}>No encontradas</strong> — no existe en Spotify</span>
         </div>
         <p className="text-xs px-3 py-2 rounded-lg" style={{ backgroundColor: 'rgba(255,114,0,0.08)', color: '#FF7200' }}>
-          💡 Pulsa <strong>"Procesar siguiente lote"</strong> varias veces hasta que "Sin sincronizar" llegue a 0. Cada lote procesa ~20 canciones.
+          💡 Pulsa <strong>"Procesar siguiente lote"</strong> varias veces hasta que "Sin sincronizar" llegue a 0. Cada lote procesa ~20 canciones y solo completa los huecos: no reemplaza players existentes.
         </p>
       </div>
 
