@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Music, RefreshCw, Play, Pause, CheckCircle, AlertCircle, XCircle, Clock, ExternalLink, Lock, Unlock } from 'lucide-react';
 
+const BATCH_SIZE = 20;
+const MAX_AUTOMATIC_BATCHES = 250;
+
+function hasPlayer(song) {
+  return Boolean(song?.spotify_embed || song?.spotify_embed_url || song?.spotify_track_id);
+}
+
 function StatusBadge({ status }) {
   const map = {
     matched: { label: 'Encontrada', color: '#59B879', bg: 'rgba(89,184,121,0.15)' },
@@ -139,7 +146,7 @@ function ManualSearchModal({ song, onSelect, onClose }) {
   );
 }
 
-export default function SpotifySyncAdmin({ allSongs }) {
+export default function SpotifySyncAdmin({ allSongs, onRefresh }) {
   const [stats, setStats] = useState(null);
   const [job, setJob] = useState(null);
   const [reviewSongs, setReviewSongs] = useState([]);
@@ -147,6 +154,7 @@ export default function SpotifySyncAdmin({ allSongs }) {
   const [syncing, setSyncing] = useState(false);
   const [manualSearchSong, setManualSearchSong] = useState(null);
   const [singleSongId, setSingleSongId] = useState('');
+  const [autoSyncProgress, setAutoSyncProgress] = useState(null);
 
   const computeStats = (songs) => {
     const total = songs.length;
@@ -169,14 +177,48 @@ export default function SpotifySyncAdmin({ allSongs }) {
     setSyncing(true);
     try {
       const payload = existingJobId
-        ? { jobId: existingJobId, batchSize: 20, action: 'resume' }
-        : { batchSize: 20 };
+        ? { jobId: existingJobId, batchSize: BATCH_SIZE, action: 'resume' }
+        : { batchSize: BATCH_SIZE };
       const res = await base44.functions.invoke('syncSpotifyCatalogBatch', payload);
       setJob(res.data);
     } catch (e) {
       console.error(e);
     }
     setSyncing(false);
+    onRefresh?.();
+  };
+
+  const runAllPending = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    setAutoSyncProgress({ processed: 0, batches: 0, status: 'running' });
+
+    let jobId = job?.jobId || null;
+    let processed = 0;
+    let batches = 0;
+
+    try {
+      while (batches < MAX_AUTOMATIC_BATCHES) {
+        const res = await base44.functions.invoke('syncSpotifyCatalogBatch', {
+          ...(jobId ? { jobId, action: 'resume' } : {}),
+          batchSize: BATCH_SIZE,
+        });
+        const data = res?.data || {};
+        jobId = data.jobId || jobId;
+        processed += data.processed || 0;
+        batches += 1;
+        setJob(data);
+        setAutoSyncProgress({ processed, batches, status: data.status === 'completed' || !data.hasMore ? 'completed' : 'running' });
+
+        if (data.status === 'completed' || !data.hasMore || !data.processed) break;
+      }
+    } catch (error) {
+      setAutoSyncProgress({ processed, batches, status: 'error' });
+      console.error(error);
+    } finally {
+      setSyncing(false);
+      onRefresh?.();
+    }
   };
 
   const pauseJob = async () => {
@@ -191,6 +233,7 @@ export default function SpotifySyncAdmin({ allSongs }) {
     await base44.functions.invoke('syncSpotifyForSong', { songId: singleSongId.trim() });
     setSyncing(false);
     setSingleSongId('');
+    onRefresh?.();
   };
 
   const approveSong = async (song) => {
@@ -229,6 +272,8 @@ export default function SpotifySyncAdmin({ allSongs }) {
   };
 
   const pct = stats ? Math.round((stats.matched / Math.max(stats.total, 1)) * 100) : 0;
+  const missingPlayerSongs = (allSongs || []).filter((song) => !hasPlayer(song));
+  const syncableSongs = missingPlayerSongs.filter((song) => !song.spotify_match_status || song.spotify_match_status === 'pending' || song.spotify_match_status === 'error');
 
   return (
     <div className="space-y-6">
@@ -254,7 +299,7 @@ export default function SpotifySyncAdmin({ allSongs }) {
           <span>⚫ <strong style={{ color: '#747B7F' }}>No encontradas</strong> — no existe en Spotify</span>
         </div>
         <p className="text-xs px-3 py-2 rounded-lg" style={{ backgroundColor: 'rgba(255,114,0,0.08)', color: '#FF7200' }}>
-          💡 Pulsa <strong>"Procesar siguiente lote"</strong> varias veces hasta que "Sin sincronizar" llegue a 0. Cada lote procesa ~20 canciones y solo completa los huecos: no reemplaza players existentes.
+          💡 <strong>"Sincronizar todas las pendientes"</strong> procesa automáticamente los lotes faltantes. Cada lote procesa ~20 canciones y solo completa los huecos: no reemplaza players existentes.
         </p>
       </div>
 
@@ -302,6 +347,14 @@ export default function SpotifySyncAdmin({ allSongs }) {
 
         <div className="flex flex-wrap gap-2">
           <button
+            onClick={runAllPending}
+            disabled={syncing || syncableSongs.length === 0}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg text-white disabled:opacity-40"
+            style={{ backgroundColor: '#FF7200' }}>
+            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Sincronizando catálogo...' : `Sincronizar todas las pendientes (${syncableSongs.length})`}
+          </button>
+          <button
             onClick={() => runBatch(null)}
             disabled={syncing}
             className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg text-white disabled:opacity-40"
@@ -336,6 +389,14 @@ export default function SpotifySyncAdmin({ allSongs }) {
           </div>
         )}
 
+        {autoSyncProgress && (
+          <div className="text-xs rounded-lg p-3" style={{ backgroundColor: '#121516', border: '1px solid #272C2F', color: '#A7ACAE' }}>
+            {autoSyncProgress.status === 'error'
+              ? `La sincronización se detuvo tras ${autoSyncProgress.processed} canciones. Puedes reanudarla.`
+              : `${autoSyncProgress.status === 'running' ? 'Sincronizando' : 'Sincronización finalizada'}: ${autoSyncProgress.processed} canciones en ${autoSyncProgress.batches} lote(s).`}
+          </div>
+        )}
+
         {/* Sync single song */}
         <div className="flex gap-2 pt-2" style={{ borderTop: '1px solid #272C2F' }}>
           <input
@@ -351,6 +412,37 @@ export default function SpotifySyncAdmin({ allSongs }) {
             Sincronizar
           </button>
         </div>
+      </div>
+
+      {/* Missing-player queue */}
+      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F' }}>
+        <div className="flex items-center justify-between gap-3 px-4 py-3" style={{ borderBottom: '1px solid #272C2F' }}>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: '#F4F4F2' }}>Canciones sin player de Spotify</p>
+            <p className="text-xs mt-0.5" style={{ color: '#747B7F' }}>
+              {missingPlayerSongs.length} sin incrustar · {syncableSongs.length} listas para sincronización automática
+            </p>
+          </div>
+          <StatusBadge status={syncableSongs.length ? 'pending' : 'matched'} />
+        </div>
+        {missingPlayerSongs.length > 0 ? (
+          <div className="divide-y" style={{ borderColor: '#272C2F' }}>
+            {missingPlayerSongs.slice(0, 30).map((song) => (
+              <div key={song.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate" style={{ color: '#F4F4F2' }}>{song.title}</p>
+                  <p className="text-xs truncate" style={{ color: '#747B7F' }}>{song.artist_name}</p>
+                </div>
+                <StatusBadge status={song.spotify_match_status} />
+              </div>
+            ))}
+            {missingPlayerSongs.length > 30 && (
+              <p className="px-4 py-3 text-xs" style={{ color: '#747B7F' }}>Mostrando 30 de {missingPlayerSongs.length}. Usa el filtro “Sin embed” del Catálogo para ver el resto.</p>
+            )}
+          </div>
+        ) : (
+          <p className="px-4 py-6 text-sm text-center" style={{ color: '#59B879' }}>Todas las canciones tienen player de Spotify.</p>
+        )}
       </div>
 
       {/* Review queue */}
