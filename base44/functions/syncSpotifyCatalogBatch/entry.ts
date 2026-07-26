@@ -1,11 +1,24 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { findBestMatch, validateTrackId, buildUpdatePayload } from '../../shared/spotifySearch.js';
-import { scoreMatch, getMatchStatus } from '../../shared/spotifyMatch.js';
+import { findBestMatch, validateTrackId, buildUpdatePayload, hasValidEmbed } from '../../shared/spotifySearch.js';
+import { analyzeMatch, getVerdict } from '../../shared/spotifyMatch.js';
 
 const MAX_CONCURRENCY = 2;
 
 async function processSong(song, base44) {
   if (song.spotify_manual_lock) return 'skipped';
+  // A normal batch only fills gaps. It never replaces an existing player,
+  // including embeds added before manual locking was introduced.
+  if (hasValidEmbed(song)) {
+    // Legacy records can have a correct player but still be marked pending or
+    // error. Resolve their status without touching any Spotify identifiers.
+    await base44.asServiceRole.entities.Song.update(song.id, {
+      spotify_match_status: 'matched',
+      spotify_match_method: song.spotify_match_method || 'existing_url',
+      spotify_sync_error: null,
+      spotify_last_sync: new Date().toISOString(),
+    });
+    return 'skipped';
+  }
   if (!song.title || !song.artist_name) {
     await base44.asServiceRole.entities.Song.update(song.id, {
       spotify_match_status: 'review_required',
@@ -26,11 +39,21 @@ async function processSong(song, base44) {
   }
 
   const scored = candidates
-    .map(track => ({ track, score: scoreMatch(cleanTitle, artist, track) }))
-    .sort((a, b) => b.score - a.score);
+    .map(track => ({ track, analysis: analyzeMatch(cleanTitle, artist, track) }))
+    .sort((a, b) => b.analysis.score - a.analysis.score);
 
   const best = scored[0];
-  const matchStatus = method === 'isrc' ? 'matched' : getMatchStatus(best.score);
+  const verdict = getVerdict(best.analysis, method);
+  const matchStatus = verdict.status;
+
+  if (matchStatus === 'not_found') {
+    await base44.asServiceRole.entities.Song.update(song.id, {
+      spotify_match_status: 'not_found',
+      spotify_sync_error: null,
+      spotify_last_sync: new Date().toISOString(),
+    });
+    return 'not_found';
+  }
 
   if (!validateTrackId(best.track.id)) {
     await base44.asServiceRole.entities.Song.update(song.id, {
@@ -41,7 +64,13 @@ async function processSong(song, base44) {
     return 'error';
   }
 
-  const payload = buildUpdatePayload(best.track, method, best.score, matchStatus, song.spotify_isrc);
+  const payload = buildUpdatePayload(best.track, method, best.analysis.score, matchStatus, song.spotify_isrc);
+  // Review candidates retain their metadata but never receive a public embed
+  // until an administrator explicitly accepts one.
+  if (matchStatus === 'review_required') {
+    delete payload.spotify_embed;
+    delete payload.spotify_embed_url;
+  }
   await base44.asServiceRole.entities.Song.update(song.id, payload);
   return matchStatus;
 }
