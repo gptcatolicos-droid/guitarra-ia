@@ -27,11 +27,14 @@ Deno.serve(async (req) => {
 
     const headers = { 'Authorization': `Bearer ${accessToken}` };
 
-    // Search for track
-    const q = encodeURIComponent(`track:${title} artist:${artist}`);
-    const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=1&market=ES`, { headers });
+    // Manual search needs several choices. The first result is also returned
+    // at the top level for backwards compatibility with existing callers.
+    const query = artist ? `track:"${title}" artist:"${artist}"` : title;
+    const q = encodeURIComponent(query);
+    const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${q}&type=track&limit=8&market=ES`, { headers });
     const searchData = await searchRes.json();
-    const track = searchData?.tracks?.items?.[0];
+    const tracks = searchData?.tracks?.items || [];
+    const track = tracks[0];
 
     if (!track) return Response.json({ track_id: null });
 
@@ -45,6 +48,18 @@ Deno.serve(async (req) => {
       artist_image = artistData?.images?.[0]?.url || null;
     }
 
+    const toResult = (item) => ({
+      track_id: item.id,
+      name: item.name,
+      title: item.name,
+      artist: item.artists?.[0]?.name,
+      artist_name: item.artists?.map((a) => a.name).join(', '),
+      album: item.album?.name,
+      album_image: item.album?.images?.[0]?.url || null,
+      duration_ms: item.duration_ms,
+      spotify_url: item.external_urls?.spotify,
+    });
+
     return Response.json({
       track_id: track.id,
       name: track.name,
@@ -53,6 +68,7 @@ Deno.serve(async (req) => {
       album_image: track.album?.images?.[0]?.url || null,
       artist_image,
       preview_url: track.preview_url,
+      tracks: tracks.map(toResult),
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
