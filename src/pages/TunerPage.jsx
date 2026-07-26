@@ -28,38 +28,60 @@ const TUNINGS = {
   ],
 };
 
-function autoCorrelate(buffer, sampleRate) {
+function detectPitch(buffer, sampleRate) {
   let rms = 0;
   for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
   rms = Math.sqrt(rms / buffer.length);
-  if (rms < 0.009) return -1;
+  if (rms < 0.0035) return { frequency: -1, confidence: 0, rms };
 
-  // Normalized difference autocorrelation: stable enough for the low E string
-  // while avoiding false positives from room noise and guitar harmonics.
-  const maxOffset = Math.min(Math.floor(sampleRate / 65), buffer.length - 2);
-  const minOffset = Math.floor(sampleRate / 420);
-  const correlations = [];
-  let bestOffset = -1;
-  let bestCorrelation = 0;
-  for (let offset = minOffset; offset < maxOffset; offset++) {
-    let difference = 0;
-    for (let i = 0; i < buffer.length - offset; i++) {
-      difference += Math.abs(buffer[i] - buffer[i + offset]);
+  // YIN's normalized difference method finds the first credible period instead
+  // of simply the strongest harmonic. This makes low guitar strings and phone
+  // microphones substantially more reliable than a plain peak correlation.
+  const minPeriod = Math.floor(sampleRate / 440);
+  const maxPeriod = Math.min(Math.floor(sampleRate / 60), Math.floor(buffer.length / 2) - 2);
+  const difference = new Float32Array(maxPeriod + 1);
+  const normalized = new Float32Array(maxPeriod + 1);
+  const sampleCount = buffer.length - maxPeriod;
+
+  for (let period = minPeriod; period <= maxPeriod; period++) {
+    let sum = 0;
+    for (let index = 0; index < sampleCount; index++) {
+      const delta = buffer[index] - buffer[index + period];
+      sum += delta * delta;
     }
-    const correlation = 1 - difference / (2 * (buffer.length - offset));
-    correlations[offset] = correlation;
-    if (correlation > bestCorrelation) {
-      bestCorrelation = correlation;
-      bestOffset = offset;
+    difference[period] = sum;
+  }
+
+  let runningSum = 0;
+  normalized[0] = 1;
+  for (let period = 1; period <= maxPeriod; period++) {
+    runningSum += difference[period];
+    normalized[period] = runningSum ? (difference[period] * period) / runningSum : 1;
+  }
+
+  const threshold = 0.13;
+  let bestPeriod = -1;
+  let bestValue = 1;
+  for (let period = minPeriod; period <= maxPeriod; period++) {
+    if (normalized[period] < bestValue) {
+      bestValue = normalized[period];
+      bestPeriod = period;
+    }
+    if (normalized[period] < threshold) {
+      while (period + 1 <= maxPeriod && normalized[period + 1] < normalized[period]) period += 1;
+      bestPeriod = period;
+      bestValue = normalized[period];
+      break;
     }
   }
-  if (bestCorrelation < 0.72 || bestOffset < 0) return -1;
+  if (bestPeriod < 0 || bestValue > 0.28) return { frequency: -1, confidence: 0, rms };
 
-  const before = correlations[bestOffset - 1] || bestCorrelation;
-  const after = correlations[bestOffset + 1] || bestCorrelation;
-  const denominator = 2 * (2 * bestCorrelation - before - after);
-  const offsetAdjustment = denominator ? (after - before) / denominator : 0;
-  return sampleRate / (bestOffset + offsetAdjustment);
+  const before = normalized[bestPeriod - 1] ?? bestValue;
+  const after = normalized[bestPeriod + 1] ?? bestValue;
+  const denominator = before - (2 * bestValue) + after;
+  const adjustment = Math.abs(denominator) > 1e-8 ? 0.5 * (before - after) / denominator : 0;
+  const frequency = sampleRate / (bestPeriod + adjustment);
+  return { frequency, confidence: Math.max(0, Math.min(1, 1 - bestValue)), rms };
 }
 
 export default function TunerPage() {
@@ -69,10 +91,16 @@ export default function TunerPage() {
   const [mode, setMode] = useState('Estándar');
   const [error, setError] = useState('');
   const [tunedStrings, setTunedStrings] = useState(() => new Set());
+  const [signalLevel, setSignalLevel] = useState(0);
+  const [confidence, setConfidence] = useState(0);
   const streamRef = useRef(null), audioRef = useRef(null), rafRef = useRef(null), analyserRef = useRef(null);
   const filteredFrequencyRef = useRef(null);
+  const stringsRef = useRef(TUNINGS['Estándar']);
+  const lastReadingRef = useRef(0);
+  const noSignalSinceRef = useRef(null);
   const referenceToneStopRef = useRef(null);
   const strings = useMemo(() => TUNINGS[mode], [mode]);
+  useEffect(() => { stringsRef.current = strings; }, [strings]);
   const target = strings[selected];
   const cents = frequency ? Math.round(1200 * Math.log2(frequency / target.hz)) : 0;
   const inTune = frequency && Math.abs(cents) <= 5;
@@ -83,7 +111,10 @@ export default function TunerPage() {
     audioRef.current?.close?.();
     streamRef.current = null; audioRef.current = null; analyserRef.current = null;
     filteredFrequencyRef.current = null;
+    lastReadingRef.current = 0;
+    noSignalSinceRef.current = null;
     setListening(false); setFrequency(null);
+    setSignalLevel(0); setConfidence(0);
   }, []);
 
   const start = useCallback(async () => {
@@ -93,28 +124,60 @@ export default function TunerPage() {
     }
     try {
       setError('');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: { ideal: 1 },
+          sampleRate: { ideal: 44100 },
+          latency: { ideal: 'interactive' },
+          echoCancellation: { ideal: false },
+          noiseSuppression: { ideal: false },
+          autoGainControl: { ideal: false },
+        },
+      });
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       const ctx = new AudioContextClass();
       await ctx.resume();
-      const analyser = ctx.createAnalyser(); analyser.fftSize = 4096;
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 4096;
+      analyser.smoothingTimeConstant = 0.1;
+      analyser.minDecibels = -95;
+      analyser.maxDecibels = -10;
       ctx.createMediaStreamSource(stream).connect(analyser);
       streamRef.current = stream; audioRef.current = ctx; analyserRef.current = analyser; setListening(true);
       const samples = new Float32Array(analyser.fftSize);
-      const scan = () => {
+      const scan = (timestamp = 0) => {
         analyser.getFloatTimeDomainData(samples);
-        const hz = autoCorrelate(samples, ctx.sampleRate);
-        if (hz > 55 && hz < 450) {
+        // Twenty readings per second feels immediate, while allowing enough
+        // samples for stable bass-string detection on mobile processors.
+        if (timestamp - lastReadingRef.current < 45) {
+          rafRef.current = requestAnimationFrame(scan);
+          return;
+        }
+        lastReadingRef.current = timestamp;
+        const reading = detectPitch(samples, ctx.sampleRate);
+        setSignalLevel(Math.min(1, reading.rms / 0.055));
+        if (reading.frequency > 55 && reading.frequency < 450 && reading.confidence >= 0.62) {
+          noSignalSinceRef.current = null;
+          setConfidence(reading.confidence);
+          const hz = reading.frequency;
           const filteredHz = filteredFrequencyRef.current
-            ? filteredFrequencyRef.current * 0.72 + hz * 0.28
+            ? filteredFrequencyRef.current * 0.55 + hz * 0.45
             : hz;
           filteredFrequencyRef.current = filteredHz;
           setFrequency(filteredHz);
-          const nearest = strings.reduce((best, item, index) => Math.abs(item.hz - filteredHz) < Math.abs(strings[best].hz - filteredHz) ? index : best, 0);
+          const activeStrings = stringsRef.current;
+          const nearest = activeStrings.reduce((best, item, index) => Math.abs(item.hz - filteredHz) < Math.abs(activeStrings[best].hz - filteredHz) ? index : best, 0);
           setSelected(nearest);
-          const detectedCents = Math.round(1200 * Math.log2(filteredHz / strings[nearest].hz));
+          const detectedCents = Math.round(1200 * Math.log2(filteredHz / activeStrings[nearest].hz));
           if (Math.abs(detectedCents) <= 5) {
             setTunedStrings(previous => new Set(previous).add(nearest));
+          }
+        } else {
+          setConfidence(0);
+          if (!noSignalSinceRef.current) noSignalSinceRef.current = timestamp;
+          if (timestamp - noSignalSinceRef.current > 700) {
+            filteredFrequencyRef.current = null;
+            setFrequency(null);
           }
         }
         rafRef.current = requestAnimationFrame(scan);
@@ -126,7 +189,7 @@ export default function TunerPage() {
         ? 'No recibimos permiso para el micrófono. Actívalo desde los ajustes del navegador y vuelve a intentarlo.'
         : 'No pudimos iniciar el micrófono. Revisa que no esté siendo usado por otra aplicación.');
     }
-  }, [strings]);
+  }, []);
 
   const changeMode = (nextMode) => {
     setMode(nextMode);
@@ -134,6 +197,8 @@ export default function TunerPage() {
     setFrequency(null);
     setTunedStrings(new Set());
     filteredFrequencyRef.current = null;
+    setSignalLevel(0);
+    setConfidence(0);
   };
 
   const playReferenceTone = useCallback(async (string = target) => {
@@ -152,8 +217,11 @@ export default function TunerPage() {
 
       const primary = context.createOscillator();
       const harmonic = context.createOscillator();
+      const presence = context.createOscillator();
       const masterGain = context.createGain();
       const harmonicGain = context.createGain();
+      const presenceGain = context.createGain();
+      const compressor = context.createDynamicsCompressor();
       const now = context.currentTime;
 
       // Triangle keeps the real fundamental while the octave harmonic makes
@@ -162,22 +230,34 @@ export default function TunerPage() {
       primary.frequency.setValueAtTime(string.hz, now);
       harmonic.type = 'sine';
       harmonic.frequency.setValueAtTime(string.hz * 2, now);
-      harmonicGain.gain.setValueAtTime(0.32, now);
+      presence.type = 'sine';
+      presence.frequency.setValueAtTime(string.hz * 3, now);
+      harmonicGain.gain.setValueAtTime(0.48, now);
+      presenceGain.gain.setValueAtTime(0.2, now);
       masterGain.gain.setValueAtTime(0.0001, now);
-      masterGain.gain.exponentialRampToValueAtTime(0.14, now + 0.04);
-      masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.85);
+      masterGain.gain.exponentialRampToValueAtTime(0.3, now + 0.035);
+      masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.7);
+      compressor.threshold.setValueAtTime(-12, now);
+      compressor.knee.setValueAtTime(12, now);
+      compressor.ratio.setValueAtTime(8, now);
+      compressor.attack.setValueAtTime(0.003, now);
+      compressor.release.setValueAtTime(0.15, now);
 
       primary.connect(masterGain);
       harmonic.connect(harmonicGain).connect(masterGain);
-      masterGain.connect(context.destination);
+      presence.connect(presenceGain).connect(masterGain);
+      masterGain.connect(compressor).connect(context.destination);
       primary.start(now);
       harmonic.start(now);
-      primary.stop(now + 1.9);
-      harmonic.stop(now + 1.9);
+      presence.start(now);
+      primary.stop(now + 2.75);
+      harmonic.stop(now + 2.75);
+      presence.stop(now + 2.75);
 
       const stopTone = () => {
         try { primary.stop(); } catch {}
         try { harmonic.stop(); } catch {}
+        try { presence.stop(); } catch {}
         context.close();
       };
       referenceToneStopRef.current = stopTone;
@@ -198,7 +278,9 @@ export default function TunerPage() {
       ? 'Toca una cuerda cerca del micrófono.'
       : inTune
         ? 'Perfecta'
-        : cents < 0 ? 'Súbela un poco' : 'Bájala un poco';
+        : cents < 0 ? 'Está baja · súbela' : 'Está alta · bájala';
+  const meterPosition = frequency ? Math.max(-50, Math.min(50, cents)) : 0;
+  const direction = !frequency ? 'Sin lectura' : inTune ? 'Perfecta' : cents < 0 ? 'Por debajo' : 'Por encima';
 
   useEffect(() => () => stop(), [stop]);
 
@@ -218,6 +300,10 @@ export default function TunerPage() {
       </aside>
       <main className="tuner-core">
         <div className="tuner-scale"><span>-25¢</span><b>0¢</b><span>+25¢</span></div>
+        <div className={`tuner-meter ${inTune ? 'perfect' : ''}`} aria-label={frequency ? `${Math.abs(cents)} cents ${cents < 0 ? 'por debajo' : 'por encima'} del tono` : 'Sin lectura de afinación'}>
+          <span className="tuner-meter-low">BAJA</span><span className="tuner-meter-high">ALTA</span>
+          <i style={{ '--meter-position': `${meterPosition}%` }} />
+        </div>
         <div className={`note-orb ${listening ? 'is-listening' : ''} ${inTune ? 'is-tuned' : ''}`}>
           <span>{target.note}</span><small>{target.octave} · {frequency ? `${frequency.toFixed(1)} Hz` : 'Escucha tu cuerda'}</small>
         </div>
@@ -231,7 +317,7 @@ export default function TunerPage() {
         </div>
         {error && <p className="tuner-error" role="alert"><AlertCircle />{error}</p>}
       </main>
-      <aside className="tuner-advice"><Sparkles /><p>ESTADO DE AFINACIÓN</p><h2>{guidance}</h2><small>{frequency ? `${Math.abs(cents)} cents ${cents < 0 ? 'por debajo' : 'por encima'} del tono objetivo.` : 'Toca una cuerda para detectar su afinación.'}</small></aside>
+      <aside className="tuner-advice"><Sparkles /><p>ESTADO DE AFINACIÓN</p><h2>{guidance}</h2><small>{frequency ? `${direction}: ${Math.abs(cents)} cents ${cents < 0 ? 'por debajo' : 'por encima'} del tono objetivo.` : 'Toca una cuerda, una a la vez, a 10–20 cm del micrófono.'}</small><div className="tuner-signal"><span>SEÑAL</span><i><b style={{ width: `${Math.round(signalLevel * 100)}%` }} /></i><em>{listening ? `${Math.round(confidence * 100)}%` : '—'}</em></div></aside>
       <aside className="tuner-modes"><div><SlidersHorizontal /> Modo de afinación</div>{Object.keys(TUNINGS).map(item => <button className={mode === item ? 'selected' : ''} key={item} onClick={() => changeMode(item)}>{item}</button>)}<p><ShieldCheck size={16} /> Audio procesado de forma local</p></aside>
     </section>
   </div>;
