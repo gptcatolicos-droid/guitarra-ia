@@ -74,7 +74,9 @@ export function analyzeMatch(catalogTitle, catalogArtist, track) {
     normCatalogArtist.includes(a) || normCatalogTitle.includes(a)
   ) ? 0.05 : 0;
 
-  const rawScore = titleSim * 0.5 + artistSim * 0.35 + collabBonus;
+  // Title and primary artist are both mandatory gates below. Their weights
+  // must also allow an exact title + artist recording to reach auto-approval.
+  const rawScore = titleSim * 0.55 + artistSim * 0.4 + collabBonus;
   const score = Math.min(1, Math.max(0, rawScore - versionPenalty - karaokePenalty));
 
   return { score, titleSim, artistSim, isUnwantedVersion };
