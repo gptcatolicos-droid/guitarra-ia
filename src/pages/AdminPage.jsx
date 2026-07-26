@@ -603,7 +603,7 @@ Tengo la camisa negra...`}</pre>
       {tab === 'infographics' && <InfographicsManager />}
 
       {tab === 'spotify' && (
-        <SpotifySyncAdmin allSongs={allSongsList} />
+        <SpotifySyncAdmin allSongs={allSongsList} onRefresh={loadStats} />
       )}
 
       {tab === 'seo' && (
