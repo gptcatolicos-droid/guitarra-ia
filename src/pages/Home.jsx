@@ -24,9 +24,28 @@ function getSpotifyEmbedUrl(raw) {
   return null;
 }
 
+function shuffleSongs(songs) {
+  const shuffled = [...songs];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function orderTrendingSongs(songs, randomMode) {
+  const ordered = [...songs].sort((a, b) => {
+    const aOrder = Number.isFinite(a.trending_order) ? a.trending_order : Number.MAX_SAFE_INTEGER;
+    const bOrder = Number.isFinite(b.trending_order) ? b.trending_order : Number.MAX_SAFE_INTEGER;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return (b.views || 0) - (a.views || 0);
+  });
+  return randomMode ? shuffleSongs(ordered) : ordered;
+}
+
 function SpotifySongCard({ song }) {
   const diff = DIFF_COLORS[song.difficulty];
-  const embedUrl = getSpotifyEmbedUrl(song.spotify_embed);
+  const embedUrl = getSpotifyEmbedUrl(song.spotify_embed || song.spotify_embed_url);
 
   return (
     <div className="spotify-card flex flex-col" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
@@ -60,8 +79,10 @@ function SpotifySongCard({ song }) {
 }
 
 export default function Home() {
-  const [topSongs, setTopSongs] = useState([]);
+  const [heroSongs, setHeroSongs] = useState([]);
+  const [trendingSongs, setTrendingSongs] = useState([]);
   const [allSpotifySongs, setAllSpotifySongs] = useState([]);
+  const [trendingRandom, setTrendingRandom] = useState(false);
   const [easySongs, setEasySongs] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -74,18 +95,40 @@ export default function Home() {
   });
 
   useEffect(() => {
-    base44.entities.Song.list('-views', 200)
-      .then(songs => {
-        const withSpotify = (songs || []).filter(s => s.spotify_embed);
-        setTopSongs(withSpotify.slice(0, 3));
-        setAllSpotifySongs(withSpotify.slice(0, 9));
-      })
-      .catch(() => {});
+    const loadHomeSongs = async () => {
+      try {
+        // Hero and trends have their own admin flags. They must never depend
+        // on global view count, otherwise configured records can disappear.
+        const [hero, trends, popular] = await Promise.all([
+          base44.entities.Song.filter({ is_hero: true }, '-views', 3),
+          base44.entities.Song.filter({ is_trending: true }, '-views', 100),
+          base44.entities.Song.list('-views', 200),
+        ]);
+        const randomMode = localStorage.getItem('trendingRandom') === 'true';
+        const selectedHero = (hero || []).slice(0, 3);
+        const selectedTrends = orderTrendingSongs(trends || [], randomMode);
+        const selectedIds = new Set([...selectedHero, ...selectedTrends].map((song) => song.id));
+        const withSpotify = (popular || [])
+          .filter((song) => (song.spotify_embed || song.spotify_embed_url) && !selectedIds.has(song.id))
+          .slice(0, 9);
+
+        setHeroSongs(selectedHero);
+        setTrendingSongs(selectedTrends);
+        setTrendingRandom(randomMode);
+        setAllSpotifySongs(withSpotify);
+      } catch {}
+    };
+
+    loadHomeSongs();
     base44.entities.Song.filter({ difficulty: 'Fácil' }, '-views', 6)
       .then(setEasySongs).catch(() => {});
     base44.entities.BlogPost.filter({ published: true }, '-created_date', 3)
       .then(setBlogPosts).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setCarouselIndex((index) => Math.min(index, Math.max(trendingSongs.length - 1, 0)));
+  }, [trendingSongs.length]);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F8F9FB' }}>
@@ -110,14 +153,32 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== HERO SELECTION ===== */}
+      {heroSongs.length > 0 && (
+        <section className="px-4 lg:px-8 py-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center gap-2 mb-5 min-w-0">
+              <Star className="w-5 h-5 shrink-0" style={{ color: '#F97316' }} />
+              <h2 className="text-xl font-bold break-words" style={{ color: '#1F2937' }}>Destacadas en el Hero</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {heroSongs.map(song => <SpotifySongCard key={song.id} song={song} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ===== TRENDING ===== */}
-      {topSongs.length > 0 && (
+      {trendingSongs.length > 0 && (
         <section className="px-4 lg:px-8 py-10">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between gap-3 mb-5 min-w-0">
               <div className="flex items-center gap-2 min-w-0">
                 <TrendingUp className="w-5 h-5 shrink-0" style={{ color: '#F97316' }} />
-                <h2 className="text-xl font-bold break-words" style={{ color: '#1F2937' }}>Canciones en tendencia</h2>
+                <div>
+                  <h2 className="text-xl font-bold break-words" style={{ color: '#1F2937' }}>Canciones en tendencia</h2>
+                  {trendingRandom && <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>Selección aleatoria</p>}
+                </div>
               </div>
               <Link to="/canciones" className="flex shrink-0 items-center gap-1 text-sm font-medium" style={{ color: '#F97316' }}>
                 Ver todas <ChevronRight className="w-4 h-4" />
@@ -125,24 +186,24 @@ export default function Home() {
             </div>
             {/* Desktop: 3 col grid */}
             <div className="hidden sm:grid grid-cols-3 gap-4">
-              {topSongs.map(song => <SpotifySongCard key={song.id} song={song} />)}
+              {trendingSongs.slice(0, 3).map(song => <SpotifySongCard key={song.id} song={song} />)}
             </div>
             {/* Mobile: carousel */}
             <div className="sm:hidden">
-              <SpotifySongCard song={topSongs[carouselIndex]} />
+              <SpotifySongCard song={trendingSongs[carouselIndex]} />
               <div className="flex items-center justify-between mt-3">
-                <button onClick={() => setCarouselIndex(i => (i - 1 + topSongs.length) % topSongs.length)}
+                <button onClick={() => setCarouselIndex(i => (i - 1 + trendingSongs.length) % trendingSongs.length)}
                   className="w-9 h-9 flex items-center justify-center rounded-full"
                   style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}>
                   <ChevronRight className="w-4 h-4 rotate-180" />
                 </button>
                 <div className="flex gap-1.5">
-                  {topSongs.map((_, i) => (
+                  {trendingSongs.map((_, i) => (
                     <span key={i} className="w-1.5 h-1.5 rounded-full"
                       style={{ backgroundColor: i === carouselIndex ? '#F97316' : '#D1D5DB' }} />
                   ))}
                 </div>
-                <button onClick={() => setCarouselIndex(i => (i + 1) % topSongs.length)}
+                <button onClick={() => setCarouselIndex(i => (i + 1) % trendingSongs.length)}
                   className="w-9 h-9 flex items-center justify-center rounded-full"
                   style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}>
                   <ChevronRight className="w-4 h-4" />
@@ -153,14 +214,14 @@ export default function Home() {
         </section>
       )}
 
-      {/* ===== CANCIONES (all with Spotify embed) ===== */}
-      {allSpotifySongs.length > 3 && (
+      {/* ===== POPULAR SONGS ===== */}
+      {allSpotifySongs.length > 0 && (
         <section className="px-4 lg:px-8 py-8" style={{ borderTop: '1px solid #E5E7EB' }}>
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <Music className="w-5 h-5" style={{ color: '#F97316' }} />
-                <h2 className="text-xl font-bold" style={{ color: '#1F2937' }}>Canciones</h2>
+                <h2 className="text-xl font-bold" style={{ color: '#1F2937' }}>Más vistas en Guitarra IA</h2>
               </div>
               <Link to="/canciones" className="flex items-center gap-1 text-sm font-medium" style={{ color: '#F97316' }}>
                 Ver todas <ChevronRight className="w-4 h-4" />
