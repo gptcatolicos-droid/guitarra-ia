@@ -138,6 +138,13 @@ function SongEditor({ song, onClose, onSaved }) {
       original_key: originalKey || null,
       ...(isTab ? { tablature: content } : { content_raw: content }),
       spotify_embed: spotifyEmbed || null,
+      // A pasted player is an editorial decision. Protect it from all future
+      // automatic syncs until an administrator deliberately replaces it.
+      spotify_manual_lock: Boolean(spotifyEmbed),
+      ...(spotifyEmbed ? {
+        spotify_match_status: 'matched',
+        spotify_match_method: 'manual',
+      } : {}),
     };
     await base44.entities.Song.update(song.id, updateData);
 
@@ -150,7 +157,12 @@ function SongEditor({ song, onClose, onSaved }) {
         const sBase = s.title.replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '').replace(/\s*\d+$/, '').trim();
         return sBase.toLowerCase() === baseName.toLowerCase();
       });
-      await Promise.all(toSync.map((s) => base44.entities.Song.update(s.id, { spotify_embed: spotifyEmbed })));
+      await Promise.all(toSync.map((s) => base44.entities.Song.update(s.id, {
+        spotify_embed: spotifyEmbed,
+        spotify_match_status: 'matched',
+        spotify_match_method: 'manual',
+        spotify_manual_lock: true,
+      })));
     }
 
     setSaving(false);
@@ -434,10 +446,15 @@ export default function AdminPage() {
       await Promise.all(songIds.map((id) => base44.entities.Song.update(id, { status })));
     } else if (action === 'review') {
       await Promise.all(songIds.map((id) => base44.entities.Song.update(id, { spotify_match_status: 'review_required' })));
-    } else if (action === 'spotify' || action === 'retry') {
+    } else if (action === 'spotify' || action === 'retry' || action === 'verify_spotify') {
       // Sequential to respect Spotify API limits; skips embeds that already exist server-side.
       for (const id of songIds) {
-        try { await base44.functions.invoke('syncSpotifyForSong', { songId: id }); } catch (_) {}
+        try {
+          await base44.functions.invoke('syncSpotifyForSong', {
+            songId: id,
+            revalidate: action === 'verify_spotify',
+          });
+        } catch (_) {}
       }
     }
     loadStats();
