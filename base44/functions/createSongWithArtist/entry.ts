@@ -19,6 +19,15 @@ function slugify(text) {
     .replace(/^-|-$/g, '') || 'unknown';
 }
 
+function spotifyEmbedDetails(value) {
+  const embed = (value || '').trim();
+  if (!embed) return { embed: '', embedUrl: '', trackId: '' };
+  const src = embed.match(/src=["']([^"']+)["']/i)?.[1] || embed;
+  const embedUrl = src.split('?')[0];
+  const trackId = embedUrl.match(/\/track\/([A-Za-z0-9]+)/)?.[1] || '';
+  return { embed, embedUrl, trackId };
+}
+
 // Find existing artist by slug or normalized name match
 async function findExistingArtist(base44, artistName) {
   const slug = slugify(artistName);
@@ -113,6 +122,7 @@ Deno.serve(async (req) => {
       has_chords,
       has_tablature,
       chords_used = [],
+      spotify_embed = '',
       dryRun = false,
     } = body;
 
@@ -162,6 +172,7 @@ Deno.serve(async (req) => {
       : firstChordFromContent(content_raw);
 
     // --- Create song ---
+    const manualSpotify = spotifyEmbedDetails(spotify_embed);
     const songData = {
       title: title.trim(),
       slug: songSlug,
@@ -182,15 +193,24 @@ Deno.serve(async (req) => {
       status: 'published',
       is_demo: false,
       views: 0,
-      spotify_match_status: 'pending',
+      spotify_match_status: manualSpotify.embed ? 'matched' : 'pending',
+      ...(manualSpotify.embed ? {
+        spotify_embed: manualSpotify.embed,
+        spotify_embed_url: manualSpotify.embedUrl,
+        ...(manualSpotify.trackId ? { spotify_track_id: manualSpotify.trackId } : {}),
+        spotify_match_method: 'manual',
+        spotify_manual_lock: true,
+      } : {}),
     };
 
     const song = await base44.asServiceRole.entities.Song.create(songData);
 
     // --- Trigger Spotify sync async (non-blocking) ---
-    try {
-      await base44.asServiceRole.functions.invoke('syncSpotifyForSong', { songId: song.id });
-    } catch (_) { /* Spotify failure doesn't block song creation */ }
+    if (!manualSpotify.embed) {
+      try {
+        await base44.asServiceRole.functions.invoke('syncSpotifyForSong', { songId: song.id });
+      } catch (_) { /* Spotify failure doesn't block song creation */ }
+    }
 
     return Response.json({
       success: true,
