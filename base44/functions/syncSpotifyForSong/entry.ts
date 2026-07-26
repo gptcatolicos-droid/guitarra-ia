@@ -9,7 +9,10 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { songId, force = false } = body;
+    const { songId, revalidate = false, force = false } = body;
+    // `force` is kept for older callers. Revalidation is always explicit and
+    // never overrides an administrator's manual choice.
+    const shouldRevalidate = revalidate || force;
 
     if (!songId) return Response.json({ error: 'songId required' }, { status: 400 });
 
@@ -17,12 +20,14 @@ Deno.serve(async (req) => {
     const song = songs?.[0];
     if (!song) return Response.json({ error: 'Song not found' }, { status: 404 });
 
-    if (song.spotify_manual_lock && !force) {
+    if (song.spotify_manual_lock) {
       return Response.json({ status: 'skipped', reason: 'manual_lock' });
     }
 
-    // Never overwrite an existing valid embed unless explicitly forced.
-    if (hasValidEmbed(song) && !force) {
+    // Existing embeds are preserved during routine sync. An administrator can
+    // explicitly revalidate automatic embeds from the catalog when needed.
+    const hadExistingEmbed = hasValidEmbed(song);
+    if (hadExistingEmbed && !shouldRevalidate) {
       return Response.json({ status: 'skipped', reason: 'existing_embed' });
     }
 
@@ -44,11 +49,11 @@ Deno.serve(async (req) => {
 
     if (!candidates.length) {
       await base44.asServiceRole.entities.Song.update(songId, {
-        spotify_match_status: 'not_found',
-        spotify_sync_error: null,
+        spotify_match_status: hadExistingEmbed ? 'review_required' : 'not_found',
+        spotify_sync_error: hadExistingEmbed ? 'No se encontró una coincidencia automática segura. El embed actual se conservó para revisión.' : null,
         spotify_last_sync: new Date().toISOString(),
       });
-      return Response.json({ status: 'not_found' });
+      return Response.json({ status: hadExistingEmbed ? 'review_required' : 'not_found' });
     }
 
     const scored = candidates
@@ -62,11 +67,11 @@ Deno.serve(async (req) => {
     // Discarded matches must not fill the record with a wrong/approximate track.
     if (matchStatus === 'not_found') {
       await base44.asServiceRole.entities.Song.update(songId, {
-        spotify_match_status: 'not_found',
-        spotify_sync_error: null,
+        spotify_match_status: hadExistingEmbed ? 'review_required' : 'not_found',
+        spotify_sync_error: hadExistingEmbed ? 'La coincidencia automática no fue suficientemente segura. El embed actual se conservó para revisión.' : null,
         spotify_last_sync: new Date().toISOString(),
       });
-      return Response.json({ status: 'not_found', reason: verdict.reason, score: best.analysis.score });
+      return Response.json({ status: hadExistingEmbed ? 'review_required' : 'not_found', reason: verdict.reason, score: best.analysis.score });
     }
 
     if (!validateTrackId(best.track.id)) {
