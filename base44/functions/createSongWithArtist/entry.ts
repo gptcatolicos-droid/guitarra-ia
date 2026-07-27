@@ -146,6 +146,7 @@ Deno.serve(async (req) => {
       spotify_embed = '',
       artist_image_url = '',
       spotify_artist_url = '',
+      is_unplugged = false,
       dryRun = false,
     } = body;
 
@@ -218,6 +219,7 @@ Deno.serve(async (req) => {
       chords_used: chords_used || [],
       status: 'published',
       is_demo: false,
+      is_unplugged: Boolean(is_unplugged),
       views: 0,
       spotify_match_status: manualSpotify.embed ? 'matched' : 'pending',
       ...(manualSpotify.embed ? {
