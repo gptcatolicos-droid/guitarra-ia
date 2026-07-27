@@ -66,12 +66,12 @@ async function upsertArtist(artistName, artistSlug) {
     if (res?.data?.image_url) {
       await base44.entities.Artist.update(created.id, { image_url: res.data.image_url });
     }
-  } catch (_) {}
+  } catch {}
 
   return created;
 }
 
-async function upsertSong(parsed) {
+async function upsertSong(parsed, artist) {
   const existing = await base44.entities.Song.filter({
     slug: parsed.slug,
     artist_slug: parsed.artistSlug,
@@ -79,8 +79,9 @@ async function upsertSong(parsed) {
   const data = {
     title: parsed.title,
     slug: parsed.slug,
-    artist_name: parsed.artistName,
-    artist_slug: parsed.artistSlug,
+    artist_name: artist?.name || parsed.artistName,
+    artist_slug: artist?.slug || parsed.artistSlug,
+    ...(artist?.id ? { artist_id: artist.id } : {}),
     original_key: parsed.originalKey,
     capo: parsed.capo,
     tuning: parsed.tuning,
@@ -157,6 +158,21 @@ function SongEditor({ song, onClose, onSaved }) {
     setSaving(true);
     const isTab = song.has_tablature && !song.has_chords;
 
+    // Some legacy imports predate Artist.artist_id. Do not make an editor
+    // lose the ability to set an image because of that missing link: create
+    // or reuse the central artist identity on save, then repair the song.
+    let resolvedArtist = artistRecord;
+    if (!resolvedArtist) {
+      try {
+        resolvedArtist = await upsertArtist(song.artist_name, song.artist_slug || slugify(song.artist_name));
+        setArtistRecord(resolvedArtist);
+      } catch (error) {
+        setSaving(false);
+        alert(error?.message || 'No se pudo crear el perfil del artista. Intenta guardar nuevamente.');
+        return;
+      }
+    }
+
     // Build update payload
     const updateData = {
       title,
@@ -170,21 +186,24 @@ function SongEditor({ song, onClose, onSaved }) {
         spotify_match_status: 'matched',
         spotify_match_method: 'manual',
       } : {}),
+      artist_id: resolvedArtist.id,
+      artist_name: resolvedArtist.name,
+      artist_slug: resolvedArtist.slug,
     };
     await base44.entities.Song.update(song.id, updateData);
 
     // Artist images are deliberately kept on Artist, not copied into Song.
     // This one update is reflected by every song/card for this artist.
-    if (artistRecord && (
-      artistImageUrl.trim() !== (artistRecord.image_url || '') ||
-      artistSpotifyUrl.trim() !== (artistRecord.spotify_artist_url || '')
+    if (resolvedArtist && (
+      artistImageUrl.trim() !== (resolvedArtist.image_url || '') ||
+      artistSpotifyUrl.trim() !== (resolvedArtist.spotify_artist_url || '')
     )) {
       const artistUpdate = {
         image_url: artistImageUrl.trim() || null,
         spotify_artist_url: artistSpotifyUrl.trim() || null,
       };
-      await base44.entities.Artist.update(artistRecord.id, artistUpdate);
-      invalidateArtistImage({ id: artistRecord.id, slug: artistRecord.slug });
+      await base44.entities.Artist.update(resolvedArtist.id, artistUpdate);
+      invalidateArtistImage({ id: resolvedArtist.id, slug: resolvedArtist.slug });
     }
 
     // If spotify_embed was set, sync it to other parts of the same song (same base title + artist)
@@ -305,7 +324,6 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
               onChange={(e) => setArtistImageUrl(e.target.value)}
               placeholder="https://i.scdn.co/image/..."
               className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary"
-              disabled={!artistRecord}
             />
           </div>
           <div>
@@ -315,10 +333,9 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
               onChange={(e) => setArtistSpotifyUrl(e.target.value)}
               placeholder="https://open.spotify.com/artist/..."
               className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary"
-              disabled={!artistRecord}
             />
           </div>
-          {!artistRecord && <p className="text-xs text-amber-600 sm:col-span-2">No se encontró el perfil de artista vinculado para esta canción.</p>}
+          {!artistRecord && <p className="text-xs text-amber-600 sm:col-span-2">Esta canción aún no tiene un perfil de artista. Puedes pegar la imagen: al guardar se creará o vinculará automáticamente.</p>}
           <p className="text-xs text-muted-foreground sm:col-span-2">Guardar aquí actualiza la identidad del artista para todas sus canciones; no se duplica la imagen en el catálogo.</p>
         </div>
 
@@ -483,8 +500,8 @@ export default function AdminPage() {
     const parsed = parseFileContent(content, fileName, contentType);
     if (!parsed.title || parsed.title.length < 2) throw new Error('No se pudo detectar el título');
     if (!parsed.artistSlug) throw new Error('No se pudo detectar el artista');
-    await upsertArtist(parsed.artistName, parsed.artistSlug);
-    const song = await upsertSong(parsed);
+    const artist = await upsertArtist(parsed.artistName, parsed.artistSlug);
+    const song = await upsertSong(parsed, artist);
     loadStats();
     return { title: parsed.title, artist: parsed.artistName, updated: song.updated };
   };
@@ -518,7 +535,7 @@ export default function AdminPage() {
             songId: id,
             revalidate: action === 'verify_spotify',
           });
-        } catch (_) {}
+        } catch {}
       }
     }
     loadStats();
