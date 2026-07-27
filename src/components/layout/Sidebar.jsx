@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home, LayoutGrid, Radio,
+  Home, LayoutGrid, Radio, Guitar,
   BookOpen, ShoppingBag, Images, X, MessageCircleMore
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
@@ -8,6 +8,7 @@ import BrandLogo from './BrandLogo';
 const navItems = [
   { icon: Home, label: 'Inicio', path: '/' },
   { icon: Radio, label: 'Afinador IA', path: '/afinador' },
+  { icon: Guitar, label: 'Unplugged', path: '/unplugged' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
   { icon: BookOpen, label: 'Blog', path: '/blog' },
   { icon: Images, label: 'Infografías', path: '/infografias' },
