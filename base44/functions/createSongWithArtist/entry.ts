@@ -49,10 +49,23 @@ async function findExistingArtist(base44, artistName) {
 }
 
 // Find or create artist — returns { artist, created, reused }
-async function findOrCreateArtist(base44, artistName) {
+async function findOrCreateArtist(base44, artistName, identity = {}) {
   if (!artistName) throw new Error('artist_name is required');
+  const imageUrl = (identity.imageUrl || '').trim();
+  const spotifyUrl = (identity.spotifyUrl || '').trim();
   const existing = await findExistingArtist(base44, artistName);
-  if (existing) return { artist: existing, created: false, reused: true };
+  if (existing) {
+    // Artists own their identity. Updating it here updates every existing
+    // song dynamically without storing the same image thousands of times.
+    const updates: Record<string, string> = {};
+    if (imageUrl) updates.image_url = imageUrl;
+    if (spotifyUrl) updates.spotify_artist_url = spotifyUrl;
+    if (Object.keys(updates).length > 0) {
+      await base44.asServiceRole.entities.Artist.update(existing.id, updates);
+      return { artist: { ...existing, ...updates }, created: false, reused: true };
+    }
+    return { artist: existing, created: false, reused: true };
+  }
 
   const slug = slugify(artistName);
   const artist = await base44.asServiceRole.entities.Artist.create({
@@ -61,15 +74,23 @@ async function findOrCreateArtist(base44, artistName) {
     normalized_name: normalizeName(artistName),
     is_demo: false,
     is_featured: false,
+    ...(imageUrl ? { image_url: imageUrl } : {}),
+    ...(spotifyUrl ? { spotify_artist_url: spotifyUrl } : {}),
   });
 
-  // Auto-fetch Spotify image async (non-blocking)
-  try {
-    const res = await base44.asServiceRole.functions.invoke('spotifyArtist', { artist_name: artistName });
-    if (res?.data?.image_url) {
-      await base44.asServiceRole.entities.Artist.update(artist.id, { image_url: res.data.image_url });
-    }
-  } catch (_) { /* non-critical */ }
+  // Auto-fetch only when the editor did not provide the official image.
+  if (!imageUrl) {
+    try {
+      const res = await base44.asServiceRole.functions.invoke('spotifyArtist', {
+        artist_name: artistName,
+        ...(spotifyUrl ? { spotify_url: spotifyUrl } : {}),
+      });
+      if (res?.data?.image_url) {
+        await base44.asServiceRole.entities.Artist.update(artist.id, { image_url: res.data.image_url });
+        artist.image_url = res.data.image_url;
+      }
+    } catch (_) { /* non-critical */ }
+  }
 
   return { artist, created: true, reused: false };
 }
@@ -123,6 +144,8 @@ Deno.serve(async (req) => {
       has_tablature,
       chords_used = [],
       spotify_embed = '',
+      artist_image_url = '',
+      spotify_artist_url = '',
       dryRun = false,
     } = body;
 
@@ -164,7 +187,10 @@ Deno.serve(async (req) => {
     }
 
     // --- Find or create artist ---
-    const { artist, created: artistCreated, reused: artistReused } = await findOrCreateArtist(base44, artist_name);
+    const { artist, created: artistCreated, reused: artistReused } = await findOrCreateArtist(base44, artist_name, {
+      imageUrl: artist_image_url,
+      spotifyUrl: spotify_artist_url,
+    });
 
     // --- Auto-detect key from first chord if none provided ---
     const resolvedKey = (original_key && original_key.trim())
