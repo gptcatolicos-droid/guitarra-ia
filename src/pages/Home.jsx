@@ -124,7 +124,9 @@ export default function Home() {
     };
 
     loadHomeSongs();
-    base44.entities.Song.filter({ difficulty: 'Fácil' }, '-views', 6)
+    // This section is editorially curated in Admin; difficulty alone must
+    // never override the administrator's selection.
+    base44.entities.Song.filter({ is_easy_pick: true }, '-views', 6)
       .then(setEasySongs).catch(() => {});
     base44.entities.BlogPost.filter({ published: true }, '-created_date', 3)
       .then(setBlogPosts).catch(() => {});
@@ -260,10 +262,7 @@ export default function Home() {
                   style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
                 >
                   <span className="text-sm font-bold w-5 text-right shrink-0" style={{ color: '#D1D5DB' }}>{i + 1}</span>
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
-                    <Music className="w-4 h-4" style={{ color: '#9CA3AF' }} />
-                  </div>
+                  <ArtistAvatar song={song} className="w-10 h-10" imageClassName="border border-orange-100" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate" style={{ color: '#1F2937' }}>{song.title}</p>
                     <p className="text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>

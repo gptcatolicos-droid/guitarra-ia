@@ -524,6 +524,11 @@ export default function AdminPage() {
     loadStats();
   };
 
+  const handleToggleEasyPick = async (song) => {
+    await base44.entities.Song.update(song.id, { is_easy_pick: !song.is_easy_pick });
+    setAllSongsList((previous) => previous.map((item) => item.id === song.id ? { ...item, is_easy_pick: !song.is_easy_pick } : item));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -648,6 +653,7 @@ Tengo la camisa negra...`}</pre>
           onDelete={handleDelete}
           onBulkDelete={handleBulkDelete}
           onBulkStatus={handleBulkStatus}
+          onToggleEasyPick={handleToggleEasyPick}
           deletingId={deletingId}
         />
       )}

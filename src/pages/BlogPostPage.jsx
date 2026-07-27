@@ -3,8 +3,9 @@ import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
 import ReactMarkdown from 'react-markdown';
-import { Clock, ChevronLeft, BookOpen, Music2 } from 'lucide-react';
+import { Clock, ChevronLeft, BookOpen, Music2, Disc3, ListMusic, Sparkles } from 'lucide-react';
 import { extractChordNames } from '@/lib/chordSearch';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 const CAT_COLORS = {
   'Acordes': { bg: 'rgba(255,114,0,0.12)', color: '#FF7200' },
@@ -18,12 +19,45 @@ const CAT_COLORS = {
   'Compra y Equipamiento': { bg: 'rgba(89,184,121,0.12)', color: '#59B879' },
 };
 
+const BIO_SECTIONS = [
+  'Historia y trayectoria',
+  'Sonido e influencia',
+  'Integrantes o formación',
+  'Álbumes y canciones clave',
+  'Para tocar en guitarra',
+];
+
+// Some first-generation BIOs stored escaped line breaks. Normalizing them at
+// read time repairs existing posts as well as future ones, without changing
+// the original editorial record in the database.
+function normalizeEditorialMarkdown(value = '') {
+  let normalized = String(value);
+  // Legacy rows may have been JSON-escaped more than once (\\n or \\\\n).
+  // Repeating is intentional: it removes every stored escape layer before
+  // ReactMarkdown receives the article.
+  for (let pass = 0; pass < 4 && /\\r?\\n/.test(normalized); pass += 1) {
+    normalized = normalized.replace(/\\r?\\n/g, '\n');
+  }
+  normalized = normalized.replace(/\r\n/g, '\n').trim();
+  return normalized.split('\n').map((line) => {
+    const compact = line.trim().replace(/:$/, '');
+    const section = BIO_SECTIONS.find((heading) => compact.toLowerCase() === heading.toLowerCase());
+    return section ? `## ${section}` : line;
+  }).join('\n');
+}
+
+function artistSlugFromPost(post) {
+  const taggedArtist = (post.tags || []).find((tag) => tag.startsWith('artista:'));
+  return taggedArtist ? taggedArtist.slice('artista:'.length) : null;
+}
+
 export default function BlogPostPage() {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
   const preview = searchParams.get('preview') === '1';
   const [post, setPost] = useState(null);
   const [related, setRelated] = useState([]);
+  const [artistSongs, setArtistSongs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +72,14 @@ export default function BlogPostPage() {
       if (results?.length > 0) {
         const p = results[0];
         setPost(p);
+        const artistSlug = artistSlugFromPost(p);
+        if (artistSlug) {
+          base44.entities.Song.filter({ artist_slug: artistSlug }, '-views', 6)
+            .then(setArtistSongs)
+            .catch(() => setArtistSongs([]));
+        } else {
+          setArtistSongs([]);
+        }
         base44.entities.BlogPost.filter({ category: p.category, published: true }, '-created_date', 5)
           .then(rel => setRelated(rel.filter(r => r.id !== p.id).slice(0, 3)))
           .catch(() => {});
@@ -82,6 +124,8 @@ export default function BlogPostPage() {
   const cc = CAT_COLORS[post.category] || { bg: 'rgba(255,114,0,0.12)', color: '#FF7200' };
   const practiceChords = extractChordNames(`${post.title} ${(post.tags || []).join(' ')} ${post.content || ''}`).slice(0, 8);
   const chordLinks = practiceChords.length ? practiceChords : ['C', 'G', 'Am', 'F'];
+  const editorialContent = normalizeEditorialMarkdown(post.content);
+  const isArtistBio = Boolean(artistSlugFromPost(post));
 
   return (
     <div className="min-h-screen w-full" style={{ backgroundColor: '#F8F9FB' }}>
@@ -116,6 +160,18 @@ export default function BlogPostPage() {
             </div>
           </header>
 
+          {isArtistBio && (
+            <aside className="rounded-2xl p-5 mb-8" style={{ background: 'linear-gradient(135deg, #FFF7F1 0%, #FFFFFF 100%)', border: '1px solid #FED7AA' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-4 h-4" style={{ color: '#F97316' }} />
+                <p className="text-sm font-bold" style={{ color: '#1F2937' }}>En esta BIO</p>
+              </div>
+              <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm" style={{ color: '#4B5563' }}>
+                {BIO_SECTIONS.map((section) => <li key={section} className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: '#F97316' }} />{section}</li>)}
+              </ul>
+            </aside>
+          )}
+
           {/* Content */}
           <div className="blog-article-content blog-content min-w-0">
             <ReactMarkdown
@@ -142,12 +198,37 @@ export default function BlogPostPage() {
                 ),
                 th: ({ children }) => <th className="text-left px-3 py-2 text-xs font-bold uppercase" style={{ color: '#6B7280', borderBottom: '1px solid #E5E7EB' }}>{children}</th>,
                 td: ({ children }) => <td className="px-3 py-2 text-sm" style={{ color: '#4B5563', borderBottom: '1px solid #F3F4F6' }}>{children}</td>,
+                a: ({ href, children }) => <a href={href} target={href?.startsWith('http') ? '_blank' : undefined} rel={href?.startsWith('http') ? 'noreferrer' : undefined} className="font-semibold underline underline-offset-4" style={{ color: '#F97316' }}>{children}</a>,
               }}
             >
-              {post.content}
+              {editorialContent}
             </ReactMarkdown>
           </div>
         </article>
+
+        {isArtistBio && (
+          <section className="mt-8 rounded-2xl p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 8px 24px rgba(15,23,42,0.05)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <ListMusic className="w-5 h-5" style={{ color: '#F97316' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1F2937' }}>Canciones para tocar en GuitarraIA</h2>
+            </div>
+            <p className="text-sm mb-4" style={{ color: '#6B7280' }}>Abre una canción del catálogo para practicar sus acordes o tablatura.</p>
+            {artistSongs.length > 0 ? (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {artistSongs.map((song) => (
+                  <Link key={song.id} to={`/${song.artist_slug}/${song.slug}`} className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:border-orange-300" style={{ border: '1px solid #E5E7EB' }}>
+                    <ArtistAvatar song={song} className="w-10 h-10" imageClassName="border border-orange-100" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold truncate" style={{ color: '#1F2937' }}>{song.title.replace(/\s*\d+$/, '').trim()}</p>
+                      <p className="text-xs" style={{ color: '#6B7280' }}>{song.difficulty || 'Acordes y tablatura'}</p>
+                    </div>
+                    <Disc3 className="w-4 h-4 shrink-0" style={{ color: '#F97316' }} />
+                  </Link>
+                ))}
+              </div>
+            ) : <p className="text-sm" style={{ color: '#6B7280' }}>Pronto agregaremos canciones de este artista al catálogo.</p>}
+          </section>
+        )}
 
         <section className="mt-8 rounded-2xl p-5" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
           <h2 className="flex items-center gap-2 text-base font-bold mb-2" style={{ color: '#1F2937' }}>

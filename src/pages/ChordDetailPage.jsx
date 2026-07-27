@@ -1,12 +1,32 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Music2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Music2, CheckCircle2, Headphones, CirclePlay } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
 import ChordDiagram from '@/components/ChordDiagram';
 import ChordSoundToggle from '@/components/audio/ChordSoundToggle';
 import { getChordDiagram } from '@/lib/musicTheory';
 import { extractChordNames, findSongsStartingWithChord, normalizeChordName } from '@/lib/chordSearch';
+import SpotifyPlayer from '@/components/SpotifyPlayer';
+import ArtistAvatar from '@/components/ArtistAvatar';
+
+function hasConfirmedSpotifyPlayer(song) {
+  return Boolean(song.spotify_embed || song.spotify_embed_url || (song.spotify_match_status === 'matched' && song.spotify_track_id));
+}
+
+function ChordStudySongCard({ song }) {
+  const title = song.title.replace(/\s*\d+$/, '').trim();
+  return (
+    <article className="overflow-hidden rounded-2xl bg-white" style={{ border: '1px solid #E5E7EB', boxShadow: '0 4px 16px rgba(15,23,42,0.06)' }}>
+      <div className="flex items-center gap-3 p-3">
+        <ArtistAvatar song={song} className="w-11 h-11" imageClassName="border border-orange-100" />
+        <div className="min-w-0 flex-1"><p className="text-sm font-bold truncate" style={{ color: '#1F2937' }}>{title}</p><p className="text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p></div>
+        <Link to={`/${song.artist_slug}/${song.slug}`} className="shrink-0 text-xs font-bold px-3 py-2 rounded-lg" style={{ color: '#F97316', border: '1px solid #FDBA74' }}>Ver acordes</Link>
+      </div>
+      <SpotifyPlayer song={song} compact />
+    </article>
+  );
+}
 
 export default function ChordDetailPage() {
   const { chord: chordParam } = useParams();
@@ -17,10 +37,10 @@ export default function ChordDetailPage() {
   useEffect(() => {
     if (!chord) return;
     Promise.all([
-      base44.entities.Song.list('-views', 2000),
+      base44.entities.Song.list('-views', 5000),
       base44.entities.BlogPost.filter({ published: true }, '-created_date', 200),
     ]).then(([catalog, posts]) => {
-      setSongs(findSongsStartingWithChord(catalog || [], chord).slice(0, 12));
+      setSongs(findSongsStartingWithChord(catalog || [], chord).filter(hasConfirmedSpotifyPlayer).slice(0, 5));
       const matching = (posts || []).filter((post) => {
         const text = `${post.title} ${(post.tags || []).join(' ')} ${post.content || ''}`;
         return extractChordNames(text).includes(chord);
@@ -57,17 +77,21 @@ export default function ChordDetailPage() {
             </div>
           </section>
           <div className="space-y-8">
+            <section className="rounded-2xl p-5" style={{ background: 'linear-gradient(135deg, #FFF7F1 0%, #FFFFFF 100%)', border: '1px solid #FED7AA' }}>
+              <div className="flex items-center gap-2 mb-3"><CirclePlay className="w-5 h-5" style={{ color: '#F97316' }} /><h2 className="text-lg font-bold" style={{ color: '#1F2937' }}>Guía para estudiar {chord}</h2></div>
+              <ol className="grid sm:grid-cols-3 gap-3">
+                <li className="rounded-xl p-3 bg-white" style={{ border: '1px solid #FDE7D8' }}><CheckCircle2 className="w-4 h-4 mb-2" style={{ color: '#F97316' }} /><p className="text-sm font-semibold" style={{ color: '#1F2937' }}>1. Mira la postura</p><p className="text-xs mt-1" style={{ color: '#6B7280' }}>Revisa cuerdas abiertas, apagadas y la posición de cada dedo.</p></li>
+                <li className="rounded-xl p-3 bg-white" style={{ border: '1px solid #FDE7D8' }}><Headphones className="w-4 h-4 mb-2" style={{ color: '#F97316' }} /><p className="text-sm font-semibold" style={{ color: '#1F2937' }}>2. Escucha el acorde</p><p className="text-xs mt-1" style={{ color: '#6B7280' }}>Usa el botón Sonido y compara el tono antes de tocar.</p></li>
+                <li className="rounded-xl p-3 bg-white" style={{ border: '1px solid #FDE7D8' }}><Music2 className="w-4 h-4 mb-2" style={{ color: '#F97316' }} /><p className="text-sm font-semibold" style={{ color: '#1F2937' }}>3. Practica en una canción</p><p className="text-xs mt-1" style={{ color: '#6B7280' }}>Escucha el player y toca las canciones que comienzan con {chord}.</p></li>
+              </ol>
+            </section>
             <section>
               <h2 className="flex items-center gap-2 text-xl font-bold mb-4" style={{ color: '#1F2937' }}>
-                <Music2 className="w-5 h-5" style={{ color: '#F97316' }} /> Canciones que comienzan con {chord}
+                <Music2 className="w-5 h-5" style={{ color: '#F97316' }} /> Practica {chord} con estas canciones
               </h2>
-              <div className="space-y-2">
-                {songs.length ? songs.map((song) => (
-                  <Link key={song.id} to={`/${song.artist_slug}/${song.slug}`} className="block rounded-xl px-4 py-3 bg-white shadow-sm" style={{ border: '1px solid #E5E7EB' }}>
-                    <p className="font-semibold" style={{ color: '#1F2937' }}>{song.title.replace(/\s*\d+$/, '').trim()}</p>
-                    <p className="text-sm" style={{ color: '#6B7280' }}>{song.artist_name}</p>
-                  </Link>
-                )) : <p className="text-sm" style={{ color: '#6B7280' }}>Aún no hay canciones del catálogo que inicien con este acorde.</p>}
+              <p className="text-sm mb-4" style={{ color: '#6B7280' }}>Máximo cinco canciones del catálogo que comienzan con {chord} y tienen player Spotify confirmado.</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {songs.length ? songs.map((song) => <ChordStudySongCard key={song.id} song={song} />) : <p className="text-sm" style={{ color: '#6B7280' }}>Aún no hay canciones que comiencen con {chord} y tengan player Spotify confirmado.</p>}
               </div>
             </section>
             <section>
