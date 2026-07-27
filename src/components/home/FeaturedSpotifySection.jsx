@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Music } from 'lucide-react';
+import SpotifyEmbed from '@/components/SpotifyEmbed';
 
 // Extract clean iframe src from spotify_embed field
 function extractSpotifySrc(embed) {
@@ -18,14 +19,7 @@ function FeaturedCard({ song }) {
       {/* Spotify embed */}
       {spotifySrc ? (
         <div className="spotify-embed-wrapper">
-          <iframe
-            src={spotifySrc}
-            width="100%"
-            height={152}
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            title="Spotify"
-          />
+          <SpotifyEmbed source={spotifySrc} height={152} title={`Spotify: ${title}`} />
         </div>
       ) : (
         <div className="h-[152px] bg-gradient-brand flex items-center justify-center">
