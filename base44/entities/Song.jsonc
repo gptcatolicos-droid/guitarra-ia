@@ -80,6 +80,10 @@
       "type": "boolean",
       "default": false
     },
+    "is_easy_pick": {
+      "type": "boolean",
+      "default": false
+    },
     "views": {
       "type": "number",
       "default": 0
