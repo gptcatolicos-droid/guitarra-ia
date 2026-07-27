@@ -27,6 +27,7 @@ import AboutPage from '@/pages/AboutPage';
 import InfographicsPage from '@/pages/InfographicsPage';
 import InfographicPage from '@/pages/InfographicPage';
 import TunerPage from '@/pages/TunerPage';
+import UnpluggedPage from '@/pages/UnpluggedPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -59,6 +60,7 @@ const AuthenticatedApp = () => {
         <Route path="/buscar" element={<SearchPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/afinador" element={<TunerPage />} />
+        <Route path="/unplugged" element={<UnpluggedPage />} />
 
         <Route path="/terminos" element={<TermsPage />} />
         <Route path="/acordes" element={<AcordesPage />} />
