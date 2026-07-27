@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Edit2, Trash2, CheckSquare, Square, Search, X } from 'lucide-react';
+import { Edit2, Trash2, CheckSquare, Square, Search, X, Star, StarOff } from 'lucide-react';
 import ArtistSelect from '@/components/admin/catalog/ArtistSelect';
 import { resolveSpotifyStatus, hasValidEmbed } from '@/components/admin/catalog/spotifyStatus';
 import ArtistAvatar from '@/components/ArtistAvatar';
@@ -29,7 +29,7 @@ function isPublished(song) {
   return song.status !== 'draft' && song.status !== 'unpublished';
 }
 
-export default function CatalogTab({ allSongsList, onEdit, onDelete, onBulkDelete, onBulkStatus, deletingId }) {
+export default function CatalogTab({ allSongsList, onEdit, onDelete, onBulkDelete, onBulkStatus, onToggleEasyPick, deletingId }) {
   const [search, setSearch] = useState('');
   const [artistSlug, setArtistSlug] = useState('');
   const [contentFilter, setContentFilter] = useState('all');
@@ -178,7 +178,8 @@ export default function CatalogTab({ allSongsList, onEdit, onDelete, onBulkDelet
 
         <p className="text-xs text-muted-foreground">
           {filtered.length} de {allSongsList.length} canciones ·{' '}
-          {allSongsList.filter(hasValidEmbed).length} con embed Spotify
+          {allSongsList.filter(hasValidEmbed).length} con embed Spotify ·{' '}
+          <span className="text-primary font-semibold">{allSongsList.filter((song) => song.is_easy_pick).length} seleccionadas para “Fáciles”</span>
         </p>
       </div>
 
@@ -214,6 +215,7 @@ export default function CatalogTab({ allSongsList, onEdit, onDelete, onBulkDelet
               <th className="text-left px-2 py-2.5 font-medium hidden sm:table-cell">Artista</th>
               <th className="text-left px-2 py-2.5 font-medium hidden md:table-cell">Contenido</th>
               <th className="text-left px-2 py-2.5 font-medium">Spotify</th>
+              <th className="text-center px-2 py-2.5 font-medium" title="Canciones fáciles para empezar">Fáciles</th>
               <th className="text-left px-2 py-2.5 font-medium hidden lg:table-cell">Estado</th>
               <th className="w-20 px-2 py-2.5" />
             </tr>
@@ -251,6 +253,11 @@ export default function CatalogTab({ allSongsList, onEdit, onDelete, onBulkDelet
                       style={{ backgroundColor: st.bg, color: st.color }}>
                       {st.label}
                     </span>
+                  </td>
+                  <td className="px-2 py-2.5 text-center">
+                    <button onClick={() => onToggleEasyPick?.(song)} title={song.is_easy_pick ? 'Quitar de Canciones fáciles' : 'Mostrar en Canciones fáciles'} className="p-1.5 transition-colors">
+                      {song.is_easy_pick ? <Star className="w-4 h-4 fill-current text-primary" /> : <StarOff className="w-4 h-4 text-muted-foreground hover:text-primary" />}
+                    </button>
                   </td>
                   <td className="px-2 py-2.5 hidden lg:table-cell">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
