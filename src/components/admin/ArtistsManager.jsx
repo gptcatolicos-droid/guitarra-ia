@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Trash2, RefreshCw, Star, StarOff, Image, Search, Edit2, X, Save } from 'lucide-react';
 import { invalidateArtistImage } from '@/components/ArtistAvatar';
+import ArtistBioManager from '@/components/admin/ArtistBioManager';
 
 export default function ArtistsManager() {
   const [artists, setArtists] = useState([]);
@@ -114,6 +115,8 @@ export default function ArtistsManager() {
 
   return (
     <div className="space-y-5">
+
+      <ArtistBioManager />
 
       {/* Artist identity modal */}
       {editingArtist && (
