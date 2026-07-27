@@ -114,6 +114,7 @@ function SongEditor({ song, onClose, onSaved }) {
   const [artistRecord, setArtistRecord] = useState(null);
   const [artistImageUrl, setArtistImageUrl] = useState('');
   const [artistSpotifyUrl, setArtistSpotifyUrl] = useState('');
+  const [isUnplugged, setIsUnplugged] = useState(Boolean(song.is_unplugged));
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -128,6 +129,7 @@ function SongEditor({ song, onClose, onSaved }) {
         setOriginalKey(fresh.original_key || '');
         setContent(fresh.content_raw || fresh.tablature || '');
         setSpotifyEmbed(fresh.spotify_embed || '');
+        setIsUnplugged(Boolean(fresh.is_unplugged));
       }
     });
     return () => { active = false; };
@@ -189,6 +191,7 @@ function SongEditor({ song, onClose, onSaved }) {
       artist_id: resolvedArtist.id,
       artist_name: resolvedArtist.name,
       artist_slug: resolvedArtist.slug,
+      is_unplugged: isUnplugged,
     };
     await base44.entities.Song.update(song.id, updateData);
 
@@ -338,6 +341,11 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
           {!artistRecord && <p className="text-xs text-amber-600 sm:col-span-2">Esta canción aún no tiene un perfil de artista. Puedes pegar la imagen: al guardar se creará o vinculará automáticamente.</p>}
           <p className="text-xs text-muted-foreground sm:col-span-2">Guardar aquí actualiza la identidad del artista para todas sus canciones; no se duplica la imagen en el catálogo.</p>
         </div>
+
+        <label className="mx-4 my-3 flex items-center gap-2 text-sm text-foreground cursor-pointer">
+          <input type="checkbox" checked={isUnplugged} onChange={(event) => setIsUnplugged(event.target.checked)} className="accent-primary w-4 h-4" />
+          Incluir en la landing Unplugged
+        </label>
 
         <textarea
           value={content}
@@ -546,6 +554,11 @@ export default function AdminPage() {
     setAllSongsList((previous) => previous.map((item) => item.id === song.id ? { ...item, is_easy_pick: !song.is_easy_pick } : item));
   };
 
+  const handleToggleUnplugged = async (song) => {
+    await base44.entities.Song.update(song.id, { is_unplugged: !song.is_unplugged });
+    setAllSongsList((previous) => previous.map((item) => item.id === song.id ? { ...item, is_unplugged: !song.is_unplugged } : item));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -671,6 +684,7 @@ Tengo la camisa negra...`}</pre>
           onBulkDelete={handleBulkDelete}
           onBulkStatus={handleBulkStatus}
           onToggleEasyPick={handleToggleEasyPick}
+          onToggleUnplugged={handleToggleUnplugged}
           deletingId={deletingId}
         />
       )}

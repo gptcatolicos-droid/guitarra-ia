@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { TrendingUp, Music, ChevronRight, Star, BookOpen, Radio } from 'lucide-react';
+import { TrendingUp, Music, ChevronRight, Star, BookOpen, Radio, Guitar } from 'lucide-react';
 import HeroSearchChat from '@/components/home/HeroSearchChat';
 import ArtistAvatar from '@/components/ArtistAvatar';
 import SpotifyEmbed from '@/components/SpotifyEmbed';
@@ -36,6 +36,10 @@ function orderTrendingSongs(songs, randomMode) {
     return (b.views || 0) - (a.views || 0);
   });
   return randomMode ? shuffleSongs(ordered) : ordered;
+}
+
+function hasSpotifyPlayer(song) {
+  return Boolean(song.spotify_embed || song.spotify_embed_url || (song.spotify_match_status === 'matched' && song.spotify_track_id));
 }
 
 function SpotifySongCard({ song }) {
@@ -80,6 +84,7 @@ export default function Home() {
   const [allSpotifySongs, setAllSpotifySongs] = useState([]);
   const [trendingRandom, setTrendingRandom] = useState(false);
   const [easySongs, setEasySongs] = useState([]);
+  const [unpluggedSongs, setUnpluggedSongs] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
 
@@ -120,6 +125,8 @@ export default function Home() {
     // never override the administrator's selection.
     base44.entities.Song.filter({ is_easy_pick: true }, '-views', 6)
       .then(setEasySongs).catch(() => {});
+    base44.entities.Song.filter({ is_unplugged: true }, '-views', 3)
+      .then((items) => setUnpluggedSongs((items || []).filter(hasSpotifyPlayer))).catch(() => {});
     base44.entities.BlogPost.filter({ published: true }, '-created_date', 3)
       .then(setBlogPosts).catch(() => {});
   }, []);
@@ -150,6 +157,30 @@ export default function Home() {
           <Link to="/afinador" className="tuner-promo"><span><Radio className="w-5 h-5" /></span><div><b>Afinador IA</b><small>Afinación precisa con IA en tiempo real.</small></div><em>Abrir afinador</em></Link>
         </div>
       </section>
+
+      {/* ===== UNPLUGGED PLAYLIST ===== */}
+      {unpluggedSongs.length > 0 && (
+        <section className="px-4 lg:px-8 py-10" style={{ background: 'linear-gradient(180deg, #FFF9F5 0%, #F8F9FB 100%)', borderBottom: '1px solid #FDE8D4' }}>
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between gap-4 mb-5">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#FFF1E0', color: '#F97316' }}><Guitar className="w-5 h-5" /></span>
+                <div>
+                  <p className="text-[10px] font-bold tracking-[0.14em]" style={{ color: '#F97316' }}>PLAYLIST GUITARRAIA</p>
+                  <h2 className="text-xl font-bold" style={{ color: '#1F2937' }}>Unplugged</h2>
+                </div>
+              </div>
+              <Link to="/unplugged" className="flex shrink-0 items-center gap-1 text-sm font-medium" style={{ color: '#F97316' }}>
+                Ver playlist <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <p className="text-sm mb-5" style={{ color: '#6B7280' }}>Canciones escogidas para tocar desde la guitarra: cercanas, acústicas y sin adornos.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {unpluggedSongs.map((song) => <SpotifySongCard key={song.id} song={song} />)}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ===== HERO SELECTION ===== */}
       {heroSongs.length > 0 && (
