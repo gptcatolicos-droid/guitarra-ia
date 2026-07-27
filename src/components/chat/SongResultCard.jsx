@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 // Strip trailing numbers and ID-like suffixes: "Soda Stereo - 01 - abc123" → "Soda Stereo"
 // or "De Música Ligera 01" → "De Música Ligera"
@@ -17,12 +18,15 @@ export default function SongResultCard({ song }) {
       className="block bg-card border border-border rounded-xl p-4 hover:border-primary transition-colors"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h4 className="text-foreground font-semibold truncate">{displayTitle}</h4>
-          <p className="text-muted-foreground text-sm truncate">{song.artist_name}</p>
-          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-            {song.original_key && <span>Tonalidad: {song.original_key}</span>}
-            {song.difficulty && <span>· {song.difficulty}</span>}
+        <div className="min-w-0 flex items-center gap-3">
+          <ArtistAvatar song={song} className="w-10 h-10" />
+          <div className="min-w-0">
+            <h4 className="text-foreground font-semibold truncate">{displayTitle}</h4>
+            <p className="text-muted-foreground text-sm truncate">{song.artist_name}</p>
+            <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+              {song.original_key && <span>Tonalidad: {song.original_key}</span>}
+              {song.difficulty && <span>· {song.difficulty}</span>}
+            </div>
           </div>
         </div>
         <div className="flex flex-col gap-1 shrink-0">

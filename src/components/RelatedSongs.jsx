@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Sparkles, Music2, Users } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 export default function RelatedSongs({ song }) {
   const [related, setRelated] = useState([]);
@@ -57,7 +58,6 @@ export default function RelatedSongs({ song }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {related.map(s => {
           const title = s.title.replace(/\s*\d+$/, '').trim();
-          const isSameArtist = s.artist_slug === song.artist_slug;
           return (
             <Link
               key={s.id}
@@ -67,13 +67,7 @@ export default function RelatedSongs({ song }) {
               onMouseEnter={e => e.currentTarget.style.borderColor = '#FDBA74'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#E5E7EB'}
             >
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                style={{ backgroundColor: '#FED7AA' }}>
-                {isSameArtist
-                  ? <Music2 className="w-5 h-5" style={{ color: '#F97316' }} />
-                  : <Users className="w-5 h-5" style={{ color: '#F97316' }} />
-                }
-              </div>
+              <ArtistAvatar song={s} className="w-10 h-10" />
               <div className="min-w-0">
                 <p className="text-sm font-semibold truncate group-hover:text-orange-500 transition-colors" style={{ color: '#1F2937' }}>{title}</p>
                 <p className="text-xs truncate" style={{ color: '#6B7280' }}>{s.artist_name}</p>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Music } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 const DIFF_COLORS = {
   'Fácil': { bg: 'rgba(128,185,64,0.15)', color: '#80B940' },
@@ -77,9 +77,7 @@ export default function SongCard({ song }) {
         </div>
       ) : (
         <div className="flex items-center gap-3 px-4 py-4 min-w-0" style={{ borderBottom: '1px solid #E5E7EB', minHeight: '72px' }}>
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)' }}>
-            <Music className="w-4 h-4 text-white" />
-          </div>
+          <ArtistAvatar song={song} className="w-10 h-10" />
           <div className="song-card-info flex-1">
             <p className="song-card-title text-sm font-bold" style={{ color: '#1F2937' }}>{displayTitle}</p>
             <p className="song-card-artist text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
