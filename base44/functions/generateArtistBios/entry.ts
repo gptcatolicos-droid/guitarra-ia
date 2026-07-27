@@ -19,12 +19,14 @@ function bioPrompt(artist: any, catalogSongs: any[]) {
 
 No uses Spotify como fuente ni menciones Spotify. No copies textos de otras páginas. No incluyas letras de canciones. Solo afirma datos que puedas verificar con alta confianza; si un dato (fecha, miembro, álbum o hecho) no es verificable, omítelo. No inventes integrantes, álbumes, premios, fechas, cifras ni éxitos.
 
-El artículo es para guitarristas y debe tener 650 a 1.000 palabras. Usa Markdown y estas secciones cuando existan datos comprobables:
+El artículo es para guitarristas y debe tener 650 a 1.000 palabras. Usa Markdown REAL: cada encabezado debe empezar con ##, cada párrafo debe tener máximo 3 oraciones y no escribas los caracteres \\n literalmente. Usa estas secciones cuando existan datos comprobables:
 ## Historia y trayectoria
 ## Sonido e influencia
 ## Integrantes o formación
 ## Álbumes y canciones clave
 ## Para tocar en guitarra
+
+En "Integrantes o formación" y "Álbumes y canciones clave" utiliza listas con viñetas (- elemento) en vez de bloques largos. Cierra con una recomendación breve y concreta para un guitarrista.
 
 El catálogo propio de GuitarraIA contiene estas canciones del artista: ${catalogTitles.length ? catalogTitles.join(', ') : 'sin canciones todavía'}. Puedes mencionarlas únicamente como canciones disponibles en GuitarraIA; no las presentes como éxitos universales salvo que puedas verificarlo.
 
@@ -69,7 +71,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user || user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    const { action = 'status', batchSize = 5, postIds = [] } = await req.json().catch(() => ({}));
+    const { action = 'status', batchSize = 5, postIds = [], artistSlug = '' } = await req.json().catch(() => ({}));
     const [artists, bioPosts] = await Promise.all([loadAllArtists(base44), loadBioPosts(base44)]);
     const postsBySlug = new Map(bioPosts.map((post) => [post.slug, post]));
 
@@ -93,7 +95,7 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, published: posts.length });
     }
 
-    if (action !== 'generate') return Response.json({ error: 'Invalid action' }, { status: 400 });
+    if (action !== 'generate' && action !== 'regenerate') return Response.json({ error: 'Invalid action' }, { status: 400 });
 
     // Prioritize artists with the most catalog material, then work through all.
     const allSongs = await base44.asServiceRole.entities.Song.list('-views', 5000);
@@ -105,10 +107,19 @@ Deno.serve(async (req) => {
       songsByArtist.set(song.artist_slug, bucket);
     }
 
-    const pendingArtists = artists
-      .filter((artist) => !postsBySlug.has(bioSlug(artist.slug)))
-      .sort((a, b) => (songsByArtist.get(b.slug)?.length || 0) - (songsByArtist.get(a.slug)?.length || 0))
-      .slice(0, Math.min(Math.max(Number(batchSize) || 5, 1), 10));
+    const artistToRegenerate = action === 'regenerate'
+      ? artists.find((artist) => artist.slug === artistSlug)
+      : null;
+    if (action === 'regenerate' && !artistToRegenerate) {
+      return Response.json({ error: 'Artista no encontrado.' }, { status: 404 });
+    }
+
+    const pendingArtists = action === 'regenerate'
+      ? [artistToRegenerate]
+      : artists
+        .filter((artist) => !postsBySlug.has(bioSlug(artist.slug)))
+        .sort((a, b) => (songsByArtist.get(b.slug)?.length || 0) - (songsByArtist.get(a.slug)?.length || 0))
+        .slice(0, Math.min(Math.max(Number(batchSize) || 5, 1), 10));
 
     const results: any[] = [];
     for (const artist of pendingArtists) {
@@ -139,7 +150,7 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const post = await base44.asServiceRole.entities.BlogPost.create({
+        const postPayload = {
           slug: bioSlug(artist.slug),
           title: generated.title?.trim() || `${artist.name}: biografía y trayectoria`,
           excerpt: generated.excerpt?.trim() || generated.biographyShort?.trim() || '',
@@ -149,13 +160,17 @@ Deno.serve(async (req) => {
           reading_time_min: Math.min(Math.max(Math.round(generated.readingTime || 5), 3), 10),
           // Explicitly draft-only: an editor decides when it becomes public.
           published: false,
-        });
+        };
+        const existingPost = postsBySlug.get(bioSlug(artist.slug));
+        const post = existingPost
+          ? await base44.asServiceRole.entities.BlogPost.update(existingPost.id, postPayload)
+          : await base44.asServiceRole.entities.BlogPost.create(postPayload);
 
         await base44.asServiceRole.entities.Artist.update(artist.id, {
           biography_short: (generated.biographyShort || generated.excerpt || '').slice(0, 280),
           description: (generated.description || generated.excerpt || '').slice(0, 1000),
         });
-        results.push({ artist: artist.name, status: 'draft_created', postId: post.id, warnings: generated.warnings || [] });
+        results.push({ artist: artist.name, status: 'draft_created', postId: post?.id || existingPost?.id, warnings: generated.warnings || [] });
       } catch (error) {
         results.push({ artist: artist.name, status: 'error', error: error.message || 'No se pudo generar la BIO.' });
       }
@@ -164,7 +179,7 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       processed: pendingArtists.length,
-      remaining: Math.max(artists.filter((artist) => !postsBySlug.has(bioSlug(artist.slug))).length - pendingArtists.length, 0),
+      remaining: action === 'regenerate' ? 0 : Math.max(artists.filter((artist) => !postsBySlug.has(bioSlug(artist.slug))).length - pendingArtists.length, 0),
       results,
     });
   } catch (error) {
