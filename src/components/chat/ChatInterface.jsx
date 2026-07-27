@@ -62,8 +62,6 @@ const normalize = (s) =>
     .replace(/\s*\d+$/, '')
     .trim();
 
-const HERO_BG = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/2fe719569_foto.png';
-
 export default function ChatInterface({ embedded, heroMode }) {
   const location = useLocation();
   const [messages, setMessages] = useState([]);
@@ -74,7 +72,6 @@ export default function ChatInterface({ embedded, heroMode }) {
   const [blogPostsCache, setBlogPostsCache] = useState([]);
   const scrollRef = useRef(null);
   const autoQueryFired = useRef(false);
-  const seenArtistBios = useRef(new Set());
 
   useEffect(() => {
     base44.entities.Song.list('-created_date', 2000)
@@ -101,17 +98,6 @@ export default function ChatInterface({ embedded, heroMode }) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, loading]);
-
-  // Group songs by normalized title+artist to detect multiple versions
-  const groupVersions = (songs) => {
-    const groups = {};
-    for (const s of songs) {
-      const key = `${normalize(s.artist_name)}|${normalize(s.title)}`;
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(s);
-    }
-    return groups;
-  };
 
   // Tokenized local search — splits query into words and checks each against title/artist/slug
   const quickLocalSearch = (query, songs) => {
@@ -159,22 +145,6 @@ export default function ChatInterface({ embedded, heroMode }) {
       .sort((a, b) => b.score - a.score)
       .slice(0, max)
       .map((s) => s.post);
-  };
-
-  const findArtistInfoRequest = (query, songs) => {
-    const normalizedQuery = normalize(query);
-    const artists = new Map();
-    songs.forEach((song) => {
-      if (song.artist_slug && song.artist_name) artists.set(song.artist_slug, { slug: song.artist_slug, name: song.artist_name });
-    });
-    const artist = [...artists.values()].find((candidate) => {
-      const name = normalize(candidate.name);
-      const slug = candidate.slug.replace(/-/g, ' ');
-      return normalizedQuery === name || normalizedQuery === slug || normalizedQuery.includes(name);
-    });
-    if (!artist) return null;
-    const asksForInfo = normalizedQuery === normalize(artist.name) || /biografia|historia|trayectoria|integrantes|formacion|album|discografia|exitos|hits|quien es|cuentame/.test(normalizedQuery);
-    return asksForInfo ? artist : null;
   };
 
   const handleSend = async (text) => {
@@ -227,34 +197,6 @@ export default function ChatInterface({ embedded, heroMode }) {
 
       // Sort: with spotify_embed first
       dedupedLocal.sort((a, b) => (b.spotify_embed ? 1 : 0) - (a.spotify_embed ? 1 : 0));
-
-      // A bare artist query should start a conversation, not keep returning
-      // the same catalogue cards. BIOs are our own published editorial pages.
-      const artistInfo = findArtistInfoRequest(userMessage, dedupedLocal);
-      if (artistInfo) {
-        const bioRows = await base44.entities.BlogPost.filter({ slug: `biografia-de-${artistInfo.slug}` }, '-created_date', 1);
-        const bio = bioRows?.find((post) => post.published);
-        if (bio) {
-          const seenKey = artistInfo.slug;
-          const alreadyShown = seenArtistBios.current.has(seenKey);
-          seenArtistBios.current.add(seenKey);
-          setMessages((prev) => [...prev, {
-            role: 'assistant',
-            content: alreadyShown
-              ? `Ya revisamos la BIO de **${artistInfo.name}**. Puedes abrirla de nuevo o continuar con las canciones y la práctica.`
-              : `${bio.excerpt || `Preparé una BIO editorial de ${artistInfo.name}.`}`,
-            article: { title: bio.title, slug: bio.slug },
-            suggestions: [
-              `Muéstrame las canciones de ${artistInfo.name}`,
-              `¿Qué puedo practicar en guitarra con ${artistInfo.name}?`,
-            ],
-          }]);
-          if (scanTimer) clearTimeout(scanTimer);
-          setScanningExternal(false);
-          setLoading(false);
-          return;
-        }
-      }
 
       // Build content for LLM — ONLY matched songs, max 6
       const contentForLLM = dedupedLocal.slice(0, 6).map((s) => ({
