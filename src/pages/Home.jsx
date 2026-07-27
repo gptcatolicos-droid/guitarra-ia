@@ -5,6 +5,7 @@ import { useSEO } from '@/lib/seo';
 import { TrendingUp, Music, ChevronRight, Star, BookOpen, Radio } from 'lucide-react';
 import HeroSearchChat from '@/components/home/HeroSearchChat';
 import ArtistAvatar from '@/components/ArtistAvatar';
+import SpotifyEmbed from '@/components/SpotifyEmbed';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/e18c18520_logo.png';
 
@@ -17,13 +18,6 @@ const DIFF_COLORS = {
   'Intermedia': { bg: 'rgba(183,121,31,0.12)', color: '#B7791F' },
   'Avanzada': { bg: 'rgba(194,65,12,0.12)', color: '#C2410C' },
 };
-
-function getSpotifyEmbedUrl(raw) {
-  if (!raw) return null;
-  const match = raw.match(/track\/([A-Za-z0-9]+)/);
-  if (match) return `https://open.spotify.com/embed/track/${match[1]}?utm_source=generator&theme=0`;
-  return null;
-}
 
 function shuffleSongs(songs) {
   const shuffled = [...songs];
@@ -46,15 +40,13 @@ function orderTrendingSongs(songs, randomMode) {
 
 function SpotifySongCard({ song }) {
   const diff = DIFF_COLORS[song.difficulty];
-  const embedUrl = getSpotifyEmbedUrl(song.spotify_embed || song.spotify_embed_url);
+  const embedSource = song.spotify_embed || song.spotify_embed_url;
 
   return (
     <div className="spotify-card flex flex-col" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-      {embedUrl ? (
+      {embedSource ? (
         <div className="spotify-embed-wrapper">
-          <iframe src={embedUrl} width="100%" height="152" frameBorder="0"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy" title={`Spotify: ${song.title}`} />
+          <SpotifyEmbed source={embedSource} height={152} title={`Spotify: ${song.title}`} />
         </div>
       ) : (
         <div className="flex items-center justify-center" style={{ height: '152px', backgroundColor: '#F3F4F6' }}>
