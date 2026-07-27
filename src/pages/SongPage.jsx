@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { ArrowLeft, Heart, Share2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Heart, Radio, Share2, Sparkles } from 'lucide-react';
 import ChordViewer from '@/components/ChordViewer';
 import TablatureViewer from '@/components/TablatureViewer';
 import SongMeta from '@/components/SongMeta';
@@ -10,6 +10,7 @@ import SpotifyPlayer from '@/components/SpotifyPlayer';
 import SongSeoContent from '@/components/SongSeoContent';
 import RelatedSongs from '@/components/RelatedSongs';
 import { withResolvedSongContentFlags } from '@/lib/songContentFlags';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 export default function SongPage() {
   const { artistSlug, songSlug, view } = useParams();
@@ -124,9 +125,12 @@ export default function SongPage() {
           <ArrowLeft className="w-4 h-4 mr-1" /> {song.artist_name}
         </Link>
         <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-2xl lg:text-3xl font-bold break-words" style={{ color: '#1F2937' }}>{displayTitle}</h1>
-            <p className="mt-1 text-base break-words" style={{ color: '#6B7280' }}>{song.artist_name}</p>
+          <div className="min-w-0 flex items-center gap-3">
+            <ArtistAvatar song={song} className="w-12 h-12 lg:w-14 lg:h-14" imageClassName="border border-orange-100" />
+            <div className="min-w-0">
+              <h1 className="text-2xl lg:text-3xl font-bold break-words" style={{ color: '#1F2937' }}>{displayTitle}</h1>
+              <p className="mt-1 text-base break-words" style={{ color: '#6B7280' }}>{song.artist_name}</p>
+            </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <button onClick={toggleFavorite}
@@ -150,6 +154,12 @@ export default function SongPage() {
         {/* Main content */}
         <div className="song-reading-column min-w-0">
           <SongMeta song={resolvedSong} />
+
+          <Link to="/afinador" className="tune-song-cta">
+            <span><Radio className="w-4 h-4" /></span>
+            <div><b>Afinador IA</b><small>Afinar antes de tocar</small></div>
+            <em>›</em>
+          </Link>
 
           {/* Tabs */}
           {(hasChords || hasTablature) && (

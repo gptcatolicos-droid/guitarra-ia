@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { Music } from 'lucide-react';
 import { useSEO } from '@/lib/seo';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 const DIFF_COLORS = {
   'Fácil': { bg: 'rgba(76,154,42,0.12)', color: '#4C9A2A' },
@@ -75,9 +75,12 @@ export default function TopSongsPage() {
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                           loading="lazy" style={{ display: 'block', borderRadius: '10px 10px 0 0' }} />
                         <div className="p-3 flex items-center justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold line-clamp-1 mb-0.5" style={{ color: '#1F2937' }}>{cleanTitle(song.title)}</p>
-                            <p className="text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
+                          <div className="min-w-0 flex items-center gap-2">
+                            <ArtistAvatar song={song} className="w-8 h-8" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold line-clamp-1 mb-0.5" style={{ color: '#1F2937' }}>{cleanTitle(song.title)}</p>
+                              <p className="text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
+                            </div>
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0">
                             {diff && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
@@ -106,10 +109,7 @@ export default function TopSongsPage() {
                       <div key={song.id} className="flex items-center gap-4 px-4 py-3 rounded-xl bg-white shadow-sm"
                         style={{ border: '1px solid #E5E7EB' }}>
                         <span className="text-sm font-bold w-5 text-right shrink-0" style={{ color: '#D1D5DB' }}>{i + 1}</span>
-                        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
-                          <Music className="w-4 h-4" style={{ color: '#9CA3AF' }} />
-                        </div>
+                        <ArtistAvatar song={song} className="w-9 h-9" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold truncate" style={{ color: '#1F2937' }}>{cleanTitle(song.title)}</p>
                           <p className="text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>

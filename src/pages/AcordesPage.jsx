@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import ArtistAvatar from '@/components/ArtistAvatar';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { Music2 } from 'lucide-react';
 import PlayableChord from '@/components/audio/PlayableChord';
 import ChordSoundToggle from '@/components/audio/ChordSoundToggle';
 
@@ -107,7 +107,7 @@ function SongMiniCard({ song }) {
     <Link to={`/${song.artist_slug}/${song.slug}`}
       className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#F3F4F6] transition-colors"
       style={{ border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF' }}>
-      <Music2 className="w-3.5 h-3.5 shrink-0" style={{ color: '#F97316' }} />
+      <ArtistAvatar song={song} className="w-7 h-7" />
       <div className="min-w-0">
         <p className="text-xs font-medium truncate" style={{ color: '#1F2937' }}>{title}</p>
         <p className="text-[10px] truncate" style={{ color: '#6B7280' }}>{song.artist_name}</p>

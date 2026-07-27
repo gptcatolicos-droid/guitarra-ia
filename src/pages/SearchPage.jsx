@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Music, Users, Search, X } from 'lucide-react';
 import { useSEO } from '@/lib/seo';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 const DIFF_COLORS = {
   'Fácil': { bg: 'rgba(76,154,42,0.12)', color: '#4C9A2A' },
@@ -117,10 +118,7 @@ export default function SearchPage() {
                       onMouseEnter={e => { e.currentTarget.style.borderColor = '#F97316'; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; }}
                     >
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: '#FED7AA' }}>
-                        <span className="text-sm font-bold" style={{ color: '#F97316' }}>{a.name[0]}</span>
-                      </div>
+                      <ArtistAvatar artist={a} className="w-9 h-9" />
                       <span className="min-w-0 break-words text-sm font-medium" style={{ color: '#1F2937' }}>{a.name}</span>
                     </Link>
                   ))}
@@ -158,10 +156,7 @@ export default function SearchPage() {
                         onMouseEnter={e => { e.currentTarget.style.borderColor = '#D1D5DB'; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; }}
                       >
-                        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
-                          <Music className="w-4 h-4" style={{ color: '#9CA3AF' }} />
-                        </div>
+                        <ArtistAvatar song={s} className="w-9 h-9" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold truncate" style={{ color: '#1F2937' }}>{cleanTitle(s.title)}</p>
                           <p className="text-xs" style={{ color: '#6B7280' }}>{s.artist_name}</p>

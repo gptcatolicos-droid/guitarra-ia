@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
 import { TrendingUp, Music, ChevronRight, Star, BookOpen, Radio } from 'lucide-react';
 import HeroSearchChat from '@/components/home/HeroSearchChat';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/e18c18520_logo.png';
 
@@ -61,11 +62,14 @@ function SpotifySongCard({ song }) {
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 p-3 min-w-0">
-        <div className="min-w-0">
+        <div className="min-w-0 flex items-center gap-2">
+          <ArtistAvatar song={song} className="w-8 h-8" />
+          <div className="min-w-0">
           <p className="text-sm font-semibold mb-0.5 break-words" style={{ color: '#1F2937' }}>
             {song.title.replace(/\s*\d+$/, '').trim()}
           </p>
           <p className="text-xs break-words" style={{ color: '#6B7280' }}>{song.artist_name}</p>
+          </div>
         </div>
         <div className="flex flex-col gap-1 min-w-0">
           {diff && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full self-start sm:self-end" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}

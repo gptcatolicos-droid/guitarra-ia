@@ -18,6 +18,7 @@ import SitemapPanel from '@/components/admin/SitemapPanel';
 import FacebookPostManager from '@/components/admin/FacebookPostManager';
 import InfographicsManager from '@/components/admin/InfographicsManager';
 import SongFlagsRepair from '@/components/admin/SongFlagsRepair';
+import { invalidateArtistImage } from '@/components/ArtistAvatar';
 
 const THEME_COLORS = [
   { label: 'Naranja', value: '28 100% 50%' },
@@ -109,6 +110,9 @@ function SongEditor({ song, onClose, onSaved }) {
   const [originalKey, setOriginalKey] = useState(song.original_key || '');
   const [content, setContent] = useState(song.content_raw || song.tablature || '');
   const [spotifyEmbed, setSpotifyEmbed] = useState(song.spotify_embed || '');
+  const [artistRecord, setArtistRecord] = useState(null);
+  const [artistImageUrl, setArtistImageUrl] = useState('');
+  const [artistSpotifyUrl, setArtistSpotifyUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -127,6 +131,27 @@ function SongEditor({ song, onClose, onSaved }) {
     });
     return () => { active = false; };
   }, [song.id]);
+
+  useEffect(() => {
+    let active = true;
+    const loadArtist = async () => {
+      let artist = null;
+      if (song.artist_id) {
+        try { artist = await base44.entities.Artist.get(song.artist_id); } catch {}
+      }
+      if (!artist && song.artist_slug) {
+        const rows = await base44.entities.Artist.filter({ slug: song.artist_slug }, '-created_date', 1);
+        artist = rows?.[0] || null;
+      }
+      if (active) {
+        setArtistRecord(artist);
+        setArtistImageUrl(artist?.image_url || '');
+        setArtistSpotifyUrl(artist?.spotify_artist_url || '');
+      }
+    };
+    loadArtist().catch(() => {});
+    return () => { active = false; };
+  }, [song.id, song.artist_id, song.artist_slug]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -147,6 +172,20 @@ function SongEditor({ song, onClose, onSaved }) {
       } : {}),
     };
     await base44.entities.Song.update(song.id, updateData);
+
+    // Artist images are deliberately kept on Artist, not copied into Song.
+    // This one update is reflected by every song/card for this artist.
+    if (artistRecord && (
+      artistImageUrl.trim() !== (artistRecord.image_url || '') ||
+      artistSpotifyUrl.trim() !== (artistRecord.spotify_artist_url || '')
+    )) {
+      const artistUpdate = {
+        image_url: artistImageUrl.trim() || null,
+        spotify_artist_url: artistSpotifyUrl.trim() || null,
+      };
+      await base44.entities.Artist.update(artistRecord.id, artistUpdate);
+      invalidateArtistImage({ id: artistRecord.id, slug: artistRecord.slug });
+    }
 
     // If spotify_embed was set, sync it to other parts of the same song (same base title + artist)
     if (spotifyEmbed) {
@@ -256,6 +295,31 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
             className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary font-mono"
           />
           <p className="text-xs text-muted-foreground mt-1">En Spotify → compartir canción → Insertar → copia el código iframe.</p>
+        </div>
+
+        <div className="px-4 py-3 border-b border-border bg-secondary/20 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <p className="text-xs text-muted-foreground mb-1.5 font-medium">Imagen de {song.artist_name} (URL Spotify)</p>
+            <input
+              value={artistImageUrl}
+              onChange={(e) => setArtistImageUrl(e.target.value)}
+              placeholder="https://i.scdn.co/image/..."
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary"
+              disabled={!artistRecord}
+            />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-1.5 font-medium">Perfil de artista en Spotify</p>
+            <input
+              value={artistSpotifyUrl}
+              onChange={(e) => setArtistSpotifyUrl(e.target.value)}
+              placeholder="https://open.spotify.com/artist/..."
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary"
+              disabled={!artistRecord}
+            />
+          </div>
+          {!artistRecord && <p className="text-xs text-amber-600 sm:col-span-2">No se encontró el perfil de artista vinculado para esta canción.</p>}
+          <p className="text-xs text-muted-foreground sm:col-span-2">Guardar aquí actualiza la identidad del artista para todas sus canciones; no se duplica la imagen en el catálogo.</p>
         </div>
 
         <textarea

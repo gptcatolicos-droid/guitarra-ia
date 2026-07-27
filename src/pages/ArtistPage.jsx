@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { Music, ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 export default function ArtistPage() {
   const { artistSlug } = useParams();
@@ -79,12 +80,7 @@ export default function ArtistPage() {
 
         {/* Artist header */}
         <div className="artist-page-header flex items-center gap-5 mb-8 pb-6 min-w-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)' }}
-          >
-            <span className="text-white text-2xl font-bold">{artist.name[0]}</span>
-          </div>
+          <ArtistAvatar artist={artist} className="w-16 h-16" imageClassName="border-2 border-orange-100" />
           <div className="min-w-0">
             <h1 className="text-2xl font-bold break-words" style={{ color: '#1F2937' }}>{artist.name}</h1>
             <p className="text-sm mt-0.5" style={{ color: '#6B7280' }}>
@@ -103,10 +99,7 @@ export default function ArtistPage() {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#F97316'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; }}
               >
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: '#F3F4F6', border: '1px solid #E5E7EB' }}>
-                  <Music className="w-4 h-4" style={{ color: '#9CA3AF' }} />
-                </div>
+                <ArtistAvatar artist={artist} className="w-9 h-9" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: '#1F2937' }}>{song.title}</p>
                   <div className="flex items-center gap-2 mt-0.5">
