@@ -74,6 +74,7 @@ export default function ChatInterface({ embedded, heroMode }) {
   const [blogPostsCache, setBlogPostsCache] = useState([]);
   const scrollRef = useRef(null);
   const autoQueryFired = useRef(false);
+  const seenArtistBios = useRef(new Set());
 
   useEffect(() => {
     base44.entities.Song.list('-created_date', 2000)
@@ -160,6 +161,22 @@ export default function ChatInterface({ embedded, heroMode }) {
       .map((s) => s.post);
   };
 
+  const findArtistInfoRequest = (query, songs) => {
+    const normalizedQuery = normalize(query);
+    const artists = new Map();
+    songs.forEach((song) => {
+      if (song.artist_slug && song.artist_name) artists.set(song.artist_slug, { slug: song.artist_slug, name: song.artist_name });
+    });
+    const artist = [...artists.values()].find((candidate) => {
+      const name = normalize(candidate.name);
+      const slug = candidate.slug.replace(/-/g, ' ');
+      return normalizedQuery === name || normalizedQuery === slug || normalizedQuery.includes(name);
+    });
+    if (!artist) return null;
+    const asksForInfo = normalizedQuery === normalize(artist.name) || /biografia|historia|trayectoria|integrantes|formacion|album|discografia|exitos|hits|quien es|cuentame/.test(normalizedQuery);
+    return asksForInfo ? artist : null;
+  };
+
   const handleSend = async (text) => {
     const userMessage = (text || input).trim();
     if (!userMessage || loading) return;
@@ -210,6 +227,34 @@ export default function ChatInterface({ embedded, heroMode }) {
 
       // Sort: with spotify_embed first
       dedupedLocal.sort((a, b) => (b.spotify_embed ? 1 : 0) - (a.spotify_embed ? 1 : 0));
+
+      // A bare artist query should start a conversation, not keep returning
+      // the same catalogue cards. BIOs are our own published editorial pages.
+      const artistInfo = findArtistInfoRequest(userMessage, dedupedLocal);
+      if (artistInfo) {
+        const bioRows = await base44.entities.BlogPost.filter({ slug: `biografia-de-${artistInfo.slug}` }, '-created_date', 1);
+        const bio = bioRows?.find((post) => post.published);
+        if (bio) {
+          const seenKey = artistInfo.slug;
+          const alreadyShown = seenArtistBios.current.has(seenKey);
+          seenArtistBios.current.add(seenKey);
+          setMessages((prev) => [...prev, {
+            role: 'assistant',
+            content: alreadyShown
+              ? `Ya revisamos la BIO de **${artistInfo.name}**. Puedes abrirla de nuevo o continuar con las canciones y la práctica.`
+              : `${bio.excerpt || `Preparé una BIO editorial de ${artistInfo.name}.`}`,
+            article: { title: bio.title, slug: bio.slug },
+            suggestions: [
+              `Muéstrame las canciones de ${artistInfo.name}`,
+              `¿Qué puedo practicar en guitarra con ${artistInfo.name}?`,
+            ],
+          }]);
+          if (scanTimer) clearTimeout(scanTimer);
+          setScanningExternal(false);
+          setLoading(false);
+          return;
+        }
+      }
 
       // Build content for LLM — ONLY matched songs, max 6
       const contentForLLM = dedupedLocal.slice(0, 6).map((s) => ({

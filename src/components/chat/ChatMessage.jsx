@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import { Music } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SongCard from './SongCard';
 
 // Chord diagram SVG inline for chat
@@ -87,6 +88,12 @@ export default function ChatMessage({ message, onSuggestionClick }) {
         {/* Chord diagram */}
         {message.chordRequest && (
           <ChatChordDiagram name={message.chordRequest.name} frets={message.chordRequest.frets} />
+        )}
+
+        {message.article && (
+          <Link to={`/blog/${message.article.slug}`} className="inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold bg-card border border-border text-foreground hover:border-primary hover:text-primary transition-colors">
+            <Music className="w-4 h-4 text-primary" /> Leer: {message.article.title}
+          </Link>
         )}
 
         {/* Song cards — full width, one per row */}
