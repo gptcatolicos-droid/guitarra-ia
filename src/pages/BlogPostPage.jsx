@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
 import ReactMarkdown from 'react-markdown';
@@ -20,24 +20,31 @@ const CAT_COLORS = {
 
 export default function BlogPostPage() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const preview = searchParams.get('preview') === '1';
   const [post, setPost] = useState(null);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.BlogPost.filter({ slug })
-      .then(results => {
-        if (results?.length > 0) {
-          const p = results[0];
-          setPost(p);
-          base44.entities.BlogPost.filter({ category: p.category, published: true }, '-created_date', 5)
-            .then(rel => setRelated(rel.filter(r => r.id !== p.id).slice(0, 3)))
-            .catch(() => {});
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [slug]);
+    const loadPost = async () => {
+      if (preview) {
+        try {
+          const user = await base44.auth.me();
+          if (user?.role !== 'admin') return;
+        } catch { return; }
+      }
+      const results = await base44.entities.BlogPost.filter(preview ? { slug } : { slug, published: true });
+      if (results?.length > 0) {
+        const p = results[0];
+        setPost(p);
+        base44.entities.BlogPost.filter({ category: p.category, published: true }, '-created_date', 5)
+          .then(rel => setRelated(rel.filter(r => r.id !== p.id).slice(0, 3)))
+          .catch(() => {});
+      }
+    };
+    loadPost().catch(() => {}).finally(() => setLoading(false));
+  }, [slug, preview]);
 
   useSEO({
     title: post ? `${post.title} | Guitarra IA` : 'Blog | Guitarra IA',
