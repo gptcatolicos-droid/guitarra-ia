@@ -9,6 +9,7 @@ import BrandLogo from './BrandLogo';
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const isImmersiveChat = location.pathname === '/chat';
 
   // Ensure page background matches the light design system
   useEffect(() => {
@@ -55,16 +56,20 @@ export default function AppLayout() {
         style={{ backgroundColor: '#F8F9FB' }}
       >
         <Outlet />
-        {/* AdSense before footer */}
-        <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
-          <ins className="adsbygoogle"
-            style={{ display: 'block' }}
-            data-ad-client="ca-pub-3924083038235099"
-            data-ad-slot="auto"
-            data-ad-format="auto"
-            data-full-width-responsive="true" />
-        </div>
-        <Footer />
+        {!isImmersiveChat && (
+          <>
+            {/* AdSense before footer */}
+            <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
+              <ins className="adsbygoogle"
+                style={{ display: 'block' }}
+                data-ad-client="ca-pub-3924083038235099"
+                data-ad-slot="auto"
+                data-ad-format="auto"
+                data-full-width-responsive="true" />
+            </div>
+            <Footer />
+          </>
+        )}
       </main>
 
       {/* Mobile bottom nav */}
