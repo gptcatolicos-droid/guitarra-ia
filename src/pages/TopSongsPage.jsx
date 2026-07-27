@@ -3,19 +3,13 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { useSEO } from '@/lib/seo';
 import ArtistAvatar from '@/components/ArtistAvatar';
+import SpotifyEmbed from '@/components/SpotifyEmbed';
 
 const DIFF_COLORS = {
   'Fácil': { bg: 'rgba(76,154,42,0.12)', color: '#4C9A2A' },
   'Intermedia': { bg: 'rgba(183,121,31,0.12)', color: '#B7791F' },
   'Avanzada': { bg: 'rgba(194,65,12,0.12)', color: '#C2410C' },
 };
-
-function getSpotifyEmbedUrl(raw) {
-  if (!raw) return null;
-  const match = raw.match(/track\/([A-Za-z0-9]+)/);
-  if (match) return `https://open.spotify.com/embed/track/${match[1]}?utm_source=generator&theme=0`;
-  return null;
-}
 
 function cleanTitle(t) {
   return (t || '').replace(/\s*\d+$/, '').trim();
@@ -67,13 +61,10 @@ export default function TopSongsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {withEmbed.map(song => {
                     const diff = DIFF_COLORS[song.difficulty];
-                    const embedUrl = getSpotifyEmbedUrl(song.spotify_embed);
                     return (
                       <div key={song.id} className="flex flex-col rounded-xl overflow-hidden bg-white shadow-sm"
                         style={{ border: '1px solid #E5E7EB' }}>
-                        <iframe src={embedUrl} width="100%" height="152" frameBorder="0"
-                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                          loading="lazy" style={{ display: 'block', borderRadius: '10px 10px 0 0' }} />
+                        <SpotifyEmbed source={song.spotify_embed || song.spotify_embed_url} height={152} title={`Spotify: ${cleanTitle(song.title)}`} className="overflow-hidden rounded-t-xl" />
                         <div className="p-3 flex items-center justify-between gap-2">
                           <div className="min-w-0 flex items-center gap-2">
                             <ArtistAvatar song={song} className="w-8 h-8" />
