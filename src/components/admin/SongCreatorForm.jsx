@@ -20,13 +20,13 @@ const EMPTY = {
   spotify_embed: '',
   artist_image_url: '',
   spotify_artist_url: '',
+  is_unplugged: false,
 };
 
 export default function SongCreatorForm({ onCreated }) {
   const [form, setForm] = useState(EMPTY);
   const [status, setStatus] = useState(null); // null | 'loading' | 'success' | 'error' | 'duplicate'
   const [message, setMessage] = useState('');
-  const [result, setResult] = useState(null);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -34,7 +34,6 @@ export default function SongCreatorForm({ onCreated }) {
     e.preventDefault();
     setStatus('loading');
     setMessage('');
-    setResult(null);
 
     try {
       const res = await base44.functions.invoke('createSongWithArtist', {
@@ -42,7 +41,6 @@ export default function SongCreatorForm({ onCreated }) {
         capo: Number(form.capo) || 0,
       });
       const data = res.data;
-      setResult(data);
       setStatus('success');
       setMessage(`Canción creada. Artista ${data.artistCreated ? 'nuevo creado' : 'reutilizado'}.`);
       setForm(EMPTY);
@@ -117,6 +115,11 @@ export default function SongCreatorForm({ onCreated }) {
           <input type="checkbox" checked={form.has_tablature} onChange={e => set('has_tablature', e.target.checked)}
             className="accent-primary w-4 h-4" />
           Tiene tablatura
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground">
+          <input type="checkbox" checked={form.is_unplugged} onChange={e => set('is_unplugged', e.target.checked)}
+            className="accent-primary w-4 h-4" />
+          Incluir en Unplugged
         </label>
       </div>
 
