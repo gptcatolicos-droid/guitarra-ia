@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Edit2, Trash2, CheckSquare, Square, Search, X } from 'lucide-react';
 import ArtistSelect from '@/components/admin/catalog/ArtistSelect';
 import { resolveSpotifyStatus, hasValidEmbed } from '@/components/admin/catalog/spotifyStatus';
+import ArtistAvatar from '@/components/ArtistAvatar';
 
 const CONTENT_FILTERS = [
   { value: 'all', label: 'Todas' },
@@ -234,7 +235,10 @@ export default function CatalogTab({ allSongsList, onEdit, onDelete, onBulkDelet
                     <p className="text-muted-foreground text-xs sm:hidden truncate max-w-[220px]">{song.artist_name}</p>
                   </td>
                   <td className="px-2 py-2.5 text-muted-foreground hidden sm:table-cell">
-                    <span className="truncate block max-w-[160px]">{song.artist_name}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <ArtistAvatar song={song} className="w-7 h-7" />
+                      <span className="truncate block max-w-[132px]">{song.artist_name}</span>
+                    </div>
                   </td>
                   <td className="px-2 py-2.5 text-muted-foreground text-xs hidden md:table-cell whitespace-nowrap">
                     {song.has_chords ? 'Acordes' : ''}

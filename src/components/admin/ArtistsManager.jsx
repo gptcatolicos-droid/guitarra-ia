@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Trash2, RefreshCw, Star, StarOff, Image, Search, Edit2, X, Save } from 'lucide-react';
+import { invalidateArtistImage } from '@/components/ArtistAvatar';
 
 export default function ArtistsManager() {
   const [artists, setArtists] = useState([]);
@@ -8,6 +9,7 @@ export default function ArtistsManager() {
   const [fetchingImage, setFetchingImage] = useState({});
   const [editingArtist, setEditingArtist] = useState(null);
   const [editSpotifyUrl, setEditSpotifyUrl] = useState('');
+  const [editImageUrl, setEditImageUrl] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
 
   const load = async () => {
@@ -40,6 +42,7 @@ export default function ArtistsManager() {
       if (image_url) {
         await base44.entities.Artist.update(artist.id, { image_url });
         setArtists(prev => prev.map(a => a.id === artist.id ? { ...a, image_url } : a));
+        invalidateArtistImage({ id: artist.id, slug: artist.slug });
       }
     } finally {
       setFetchingImage(prev => ({ ...prev, [artist.id]: false }));
@@ -74,15 +77,20 @@ export default function ArtistsManager() {
   const openEdit = (artist) => {
     setEditingArtist(artist);
     setEditSpotifyUrl(artist.spotify_artist_url || '');
+    setEditImageUrl(artist.image_url || '');
   };
 
   const saveEdit = async () => {
     if (!editingArtist) return;
     setSavingEdit(true);
-    const updates = { spotify_artist_url: editSpotifyUrl || null };
+    const directImageUrl = editImageUrl.trim();
+    const updates = { spotify_artist_url: editSpotifyUrl.trim() || null };
 
-    // If a spotify artist URL is provided, fetch the exact artist image from it
-    if (editSpotifyUrl) {
+    // A pasted Spotify image is an explicit editorial choice. If it is empty,
+    // a Spotify profile URL can resolve the official image instead.
+    if (directImageUrl) {
+      updates.image_url = directImageUrl;
+    } else if (editSpotifyUrl) {
       try {
         const res = await base44.functions.invoke('spotifyArtist', { artist_name: editingArtist.name, spotify_url: editSpotifyUrl });
         if (res?.data?.image_url) updates.image_url = res.data.image_url;
@@ -91,6 +99,7 @@ export default function ArtistsManager() {
 
     await base44.entities.Artist.update(editingArtist.id, updates);
     setArtists(prev => prev.map(a => a.id === editingArtist.id ? { ...a, ...updates } : a));
+    invalidateArtistImage({ id: editingArtist.id, slug: editingArtist.slug });
     setSavingEdit(false);
     setEditingArtist(null);
   };
@@ -106,7 +115,7 @@ export default function ArtistsManager() {
   return (
     <div className="space-y-5">
 
-      {/* Edit Spotify URL modal */}
+      {/* Artist identity modal */}
       {editingArtist && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div className="rounded-2xl w-full max-w-md" style={{ backgroundColor: '#181B1D', border: '1px solid #303538' }}>
@@ -116,6 +125,17 @@ export default function ArtistsManager() {
             </div>
             <div className="p-4 space-y-3">
               <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: '#A7ACAE' }}>URL directa de imagen (Spotify)</label>
+                <input
+                  value={editImageUrl}
+                  onChange={e => setEditImageUrl(e.target.value)}
+                  placeholder="https://i.scdn.co/image/..."
+                  className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                  style={{ backgroundColor: '#121516', border: '1px solid #303538', color: '#F4F4F2' }}
+                />
+                <p className="text-xs mt-1" style={{ color: '#555B5E' }}>Es la imagen oficial que verán todas las canciones de este artista.</p>
+              </div>
+              <div>
                 <label className="text-xs font-medium mb-1.5 block" style={{ color: '#A7ACAE' }}>URL del artista en Spotify</label>
                 <input
                   value={editSpotifyUrl}
@@ -124,7 +144,7 @@ export default function ArtistsManager() {
                   className="w-full px-3 py-2 rounded-lg text-sm outline-none"
                   style={{ backgroundColor: '#121516', border: '1px solid #303538', color: '#F4F4F2' }}
                 />
-                <p className="text-xs mt-1" style={{ color: '#555B5E' }}>Si el artista no tiene imagen, se intentará obtener automáticamente desde Spotify.</p>
+                <p className="text-xs mt-1" style={{ color: '#555B5E' }}>Si no pegas una imagen directa, usaremos esta URL para obtenerla desde Spotify.</p>
               </div>
             </div>
             <div className="flex gap-3 p-4" style={{ borderTop: '1px solid #272C2F' }}>

@@ -18,6 +18,8 @@ const EMPTY = {
   content_raw: '',
   tablature: '',
   spotify_embed: '',
+  artist_image_url: '',
+  spotify_artist_url: '',
 };
 
 export default function SongCreatorForm({ onCreated }) {
@@ -125,6 +127,24 @@ export default function SongCreatorForm({ onCreated }) {
           onChange={e => set('spotify_embed', e.target.value)}
           placeholder='<iframe src="https://open.spotify.com/embed/track/...">' />
         <p className="text-xs text-muted-foreground mt-1">En Spotify → compartir → Insertar → copia el iframe.</p>
+      </div>
+
+      {/* Artist identity — stored once in Artist and used by every song card */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-border p-4 bg-secondary/20">
+        <div>
+          <label className={labelCls}>URL de imagen del artista (Spotify)</label>
+          <input className={`${inputCls} text-xs`} value={form.artist_image_url}
+            onChange={e => set('artist_image_url', e.target.value)}
+            placeholder="https://i.scdn.co/image/..." />
+          <p className="text-xs text-muted-foreground mt-1">Se mostrará en todas las canciones y resultados de este artista.</p>
+        </div>
+        <div>
+          <label className={labelCls}>URL del perfil de artista en Spotify</label>
+          <input className={`${inputCls} text-xs`} value={form.spotify_artist_url}
+            onChange={e => set('spotify_artist_url', e.target.value)}
+            placeholder="https://open.spotify.com/artist/..." />
+          <p className="text-xs text-muted-foreground mt-1">Opcional: si no indicas una imagen, la obtenemos desde este perfil.</p>
+        </div>
       </div>
 
       {/* Content */}
