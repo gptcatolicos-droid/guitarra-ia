@@ -84,6 +84,10 @@
       "type": "boolean",
       "default": false
     },
+    "is_unplugged": {
+      "type": "boolean",
+      "default": false
+    },
     "views": {
       "type": "number",
       "default": 0
