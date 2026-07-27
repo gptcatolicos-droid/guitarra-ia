@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistAvatar from '@/components/ArtistAvatar';
+import SpotifyEmbed from '@/components/SpotifyEmbed';
 
 const DIFF_COLORS = {
   'Fácil': { bg: 'rgba(128,185,64,0.15)', color: '#80B940' },
@@ -65,15 +66,7 @@ export default function SongCard({ song }) {
     <div className="song-card spotify-card bg-white shadow-sm" style={{ border: '1px solid #E5E7EB' }}>
       {embedUrl ? (
         <div className="spotify-embed-wrapper">
-          <iframe
-            src={embedUrl}
-            width="100%"
-            height="152"
-            frameBorder="0"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            title={`Spotify: ${displayTitle}`}
-          />
+          <SpotifyEmbed source={embedUrl} height={152} title={`Spotify: ${displayTitle}`} />
         </div>
       ) : (
         <div className="flex items-center gap-3 px-4 py-4 min-w-0" style={{ borderBottom: '1px solid #E5E7EB', minHeight: '72px' }}>
