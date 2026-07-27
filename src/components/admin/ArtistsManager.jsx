@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Trash2, RefreshCw, Star, StarOff, Image, Search, Edit2, X, Save } from 'lucide-react';
+import { Trash2, RefreshCw, Star, StarOff, Image, Search, Edit2, X, Save, Music2, Users, Disc3, ExternalLink } from 'lucide-react';
 import { invalidateArtistImage } from '@/components/ArtistAvatar';
 import ArtistBioManager from '@/components/admin/ArtistBioManager';
 
@@ -12,6 +12,8 @@ export default function ArtistsManager() {
   const [editSpotifyUrl, setEditSpotifyUrl] = useState('');
   const [editImageUrl, setEditImageUrl] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
+  const [spotifyProfile, setSpotifyProfile] = useState(null);
+  const [loadingSpotifyProfile, setLoadingSpotifyProfile] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -81,6 +83,25 @@ export default function ArtistsManager() {
     setEditImageUrl(artist.image_url || '');
   };
 
+  const openSpotifyProfile = async (artist) => {
+    setSpotifyProfile({ artist, profile: null, error: null });
+    setLoadingSpotifyProfile(true);
+    try {
+      const res = await base44.functions.invoke('spotifyArtist', {
+        artist_name: artist.name,
+        spotify_url: artist.spotify_artist_url || undefined,
+        include_profile: true,
+      });
+      const data = res?.data;
+      if (!data?.spotify_id) throw new Error('No se encontró una ficha de Spotify para este artista.');
+      setSpotifyProfile({ artist: { ...artist, image_url: artist.image_url || data.image_url }, profile: data.profile, error: null });
+    } catch (error) {
+      setSpotifyProfile({ artist, profile: null, error: error?.message || 'No se pudo consultar Spotify.' });
+    } finally {
+      setLoadingSpotifyProfile(false);
+    }
+  };
+
   const saveEdit = async () => {
     if (!editingArtist) return;
     setSavingEdit(true);
@@ -117,6 +138,16 @@ export default function ArtistsManager() {
     <div className="space-y-5">
 
       <ArtistBioManager />
+
+      {spotifyProfile && (
+        <SpotifyProfileModal
+          artist={spotifyProfile.artist}
+          profile={spotifyProfile.profile}
+          loading={loadingSpotifyProfile}
+          error={spotifyProfile.error}
+          onClose={() => setSpotifyProfile(null)}
+        />
+      )}
 
       {/* Artist identity modal */}
       {editingArtist && (
@@ -188,7 +219,7 @@ export default function ArtistsManager() {
           </div>
           <div className="divide-y divide-border">
             {featured.map(artist => (
-              <ArtistRow key={artist.id} artist={artist} onToggle={toggleFeatured} onDelete={deleteArtist} onFetchImage={fetchAndSaveImage} fetching={!!fetchingImage[artist.id]} onEdit={openEdit} />
+              <ArtistRow key={artist.id} artist={artist} onToggle={toggleFeatured} onDelete={deleteArtist} onFetchImage={fetchAndSaveImage} fetching={!!fetchingImage[artist.id]} onEdit={openEdit} onSpotifyProfile={openSpotifyProfile} />
             ))}
           </div>
         </div>
@@ -208,7 +239,7 @@ export default function ArtistsManager() {
         </div>
         <div className="max-h-[500px] overflow-y-auto divide-y divide-border">
           {rest.map(artist => (
-            <ArtistRow key={artist.id} artist={artist} onToggle={toggleFeatured} onDelete={deleteArtist} onFetchImage={fetchAndSaveImage} fetching={!!fetchingImage[artist.id]} onEdit={openEdit} />
+            <ArtistRow key={artist.id} artist={artist} onToggle={toggleFeatured} onDelete={deleteArtist} onFetchImage={fetchAndSaveImage} fetching={!!fetchingImage[artist.id]} onEdit={openEdit} onSpotifyProfile={openSpotifyProfile} />
           ))}
           {rest.length === 0 && <p className="text-center text-muted-foreground text-sm py-6">Todos los artistas están destacados.</p>}
         </div>
@@ -217,7 +248,7 @@ export default function ArtistsManager() {
   );
 }
 
-function ArtistRow({ artist, onToggle, onDelete, onFetchImage, fetching, onEdit }) {
+function ArtistRow({ artist, onToggle, onDelete, onFetchImage, fetching, onEdit, onSpotifyProfile }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/30">
       {/* Avatar */}
@@ -246,6 +277,10 @@ function ArtistRow({ artist, onToggle, onDelete, onFetchImage, fetching, onEdit 
           className="p-2 text-muted-foreground hover:text-foreground transition-colors">
           <Edit2 className="w-4 h-4" />
         </button>
+        <button onClick={() => onSpotifyProfile(artist)} title="Ver datos de Spotify"
+          className="p-2 text-muted-foreground hover:text-green-500 transition-colors">
+          <Music2 className="w-4 h-4" />
+        </button>
         <button onClick={() => onToggle(artist)} title={artist.is_featured ? 'Quitar de destacados' : 'Marcar como destacado'}
           className="p-2 transition-colors"
           style={{ color: artist.is_featured ? '#FF7200' : '#444A4E' }}>
@@ -257,4 +292,46 @@ function ArtistRow({ artist, onToggle, onDelete, onFetchImage, fetching, onEdit 
       </div>
     </div>
   );
+}
+
+function SpotifyProfileModal({ artist, profile, loading, error, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+      <div className="rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col" style={{ backgroundColor: '#181B1D', border: '1px solid #303538' }}>
+        <div className="flex items-center justify-between gap-4 p-4" style={{ borderBottom: '1px solid #272C2F' }}>
+          <div className="flex items-center gap-3 min-w-0">
+            {artist.image_url ? <img src={artist.image_url} alt="" className="w-11 h-11 rounded-full object-cover" /> : <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(29,185,84,0.16)', color: '#1DB954' }}><Music2 className="w-5 h-5" /></div>}
+            <div className="min-w-0"><p className="font-bold truncate" style={{ color: '#F4F4F2' }}>{artist.name}</p><p className="text-xs" style={{ color: '#A7ACAE' }}>Datos consultados en Spotify al abrir esta ficha</p></div>
+          </div>
+          <button onClick={onClose} className="p-2" style={{ color: '#A7ACAE' }} aria-label="Cerrar"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="overflow-y-auto p-4 space-y-5">
+          {loading && <div className="py-12 flex justify-center"><RefreshCw className="w-6 h-6 animate-spin" style={{ color: '#1DB954' }} /></div>}
+          {!loading && error && <p className="rounded-lg p-3 text-sm" style={{ backgroundColor: 'rgba(224,100,100,0.12)', color: '#FCA5A5' }}>{error}</p>}
+          {!loading && profile && <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <Metric icon={<Users className="w-4 h-4" />} label="Seguidores" value={new Intl.NumberFormat('es-CO').format(profile.followers || 0)} />
+              <Metric icon={<Music2 className="w-4 h-4" />} label="Popularidad" value={profile.popularity == null ? '—' : `${profile.popularity}/100`} />
+              <a href={profile.spotify_url || '#'} target="_blank" rel="noreferrer" className="rounded-xl p-3 flex flex-col justify-between hover:opacity-80" style={{ backgroundColor: '#121516', color: '#1DB954' }}><span className="text-xs font-semibold">Perfil oficial</span><span className="flex items-center gap-1 text-sm font-bold">Abrir Spotify <ExternalLink className="w-3.5 h-3.5" /></span></a>
+            </div>
+            {profile.genres?.length > 0 && <div><p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: '#747B7F' }}>Géneros</p><div className="flex flex-wrap gap-2">{profile.genres.map((genre) => <span key={genre} className="text-xs px-2.5 py-1 rounded-full" style={{ backgroundColor: 'rgba(29,185,84,0.14)', color: '#8FE3AD' }}>{genre}</span>)}</div></div>}
+            <SpotifyCollection title="Álbumes y sencillos" items={profile.albums} />
+            <SpotifyCollection title="Temas principales" items={profile.top_tracks} tracks />
+          </>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Metric({ icon, label, value }) {
+  return <div className="rounded-xl p-3" style={{ backgroundColor: '#121516' }}><span className="flex items-center gap-1.5 text-xs" style={{ color: '#747B7F' }}>{icon}{label}</span><p className="font-bold mt-2" style={{ color: '#F4F4F2' }}>{value}</p></div>;
+}
+
+function SpotifyCollection({ title, items = [], tracks = false }) {
+  if (!items.length) return null;
+  return <div><p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: '#747B7F' }}>{title}</p><div className="grid sm:grid-cols-2 gap-2">{items.map((item) => <a key={item.id} href={item.spotify_url || '#'} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-2.5 rounded-xl hover:opacity-80" style={{ backgroundColor: '#121516' }}>
+    {item.image_url ? <img src={item.image_url} alt="" className="w-10 h-10 rounded-md object-cover" /> : <Disc3 className="w-10 h-10 p-2 rounded-md" style={{ color: '#1DB954', backgroundColor: 'rgba(29,185,84,0.12)' }} />}
+    <div className="min-w-0"><p className="text-sm font-semibold truncate" style={{ color: '#F4F4F2' }}>{item.name}</p><p className="text-xs truncate" style={{ color: '#747B7F' }}>{tracks ? item.album_name || 'Spotify' : [item.type, item.release_date].filter(Boolean).join(' · ')}</p></div><ExternalLink className="w-3.5 h-3.5 shrink-0 ml-auto" style={{ color: '#1DB954' }} />
+  </a>)}</div></div>;
 }

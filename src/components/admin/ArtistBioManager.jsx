@@ -40,6 +40,18 @@ export default function ArtistBioManager() {
     } finally { setBusy(false); }
   };
 
+  const regenerate = async (post) => {
+    if (!confirm(`¿Crear una nueva versión de la BIO de “${post.title}”? Volverá a borrador para que la revises antes de publicarla.`)) return;
+    setBusy(true); setMessage('');
+    try {
+      const result = await base44.functions.invoke('generateArtistBios', { action: 'regenerate', artistSlug: post.slug.replace(/^biografia-de-/, '') });
+      setMessage(result.data?.success ? 'Nueva versión creada como borrador. Revísala antes de publicar.' : 'No se pudo regenerar la BIO.');
+      await load();
+    } catch (error) {
+      setMessage(error?.message || 'No se pudo regenerar la BIO.');
+    } finally { setBusy(false); }
+  };
+
   if (!stats) return <div className="flex justify-center py-5"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>;
 
   return (
@@ -76,7 +88,10 @@ export default function ArtistBioManager() {
           {stats.recent.map((post) => (
             <div key={post.id} className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm">
               <a href={`/blog/${post.slug}${post.published ? '' : '?preview=1'}`} target="_blank" rel="noreferrer" className="text-foreground font-medium hover:text-primary truncate">{post.title}</a>
-              <span className={`text-xs shrink-0 ${post.published ? 'text-green-600' : 'text-amber-600'}`}>{post.published ? 'Publicada' : 'Borrador'}</span>
+              <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => regenerate(post)} disabled={busy} className="text-xs text-muted-foreground hover:text-primary disabled:opacity-40">Recrear</button>
+                <span className={`text-xs ${post.published ? 'text-green-600' : 'text-amber-600'}`}>{post.published ? 'Publicada' : 'Borrador'}</span>
+              </div>
             </div>
           ))}
         </div>
