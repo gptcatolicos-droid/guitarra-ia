@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ExternalLink, PlayCircle, Youtube } from 'lucide-react';
-import { extractChordsFromContent } from '@/lib/musicTheory';
+import { ExternalLink, PauseCircle, PlayCircle, Youtube } from 'lucide-react';
 
 const normalize = (value = '') => value
   .toString()
@@ -26,6 +25,25 @@ function getYouTubePracticeForSong(song) {
       { time: 123, label: 'Verso' },
       { time: 181, label: 'Puente' },
       { time: 228, label: 'Coro final' },
+    ],
+    // Mapa de demostración para validar la experiencia visual antes de escalarlo.
+    chordCues: [
+      { time: 0, chord: 'G' },
+      { time: 7, chord: 'G9' },
+      { time: 14, chord: 'Em' },
+      { time: 21, chord: 'Em7/B' },
+      { time: 27, chord: 'C' },
+      { time: 31, chord: 'C9' },
+      { time: 36, chord: 'Am' },
+      { time: 42, chord: 'Am9' },
+      { time: 48, chord: 'G' },
+      { time: 55, chord: 'G9' },
+      { time: 62, chord: 'Em' },
+      { time: 69, chord: 'C' },
+      { time: 74, chord: 'G' },
+      { time: 81, chord: 'D' },
+      { time: 88, chord: 'Em' },
+      { time: 95, chord: 'C' },
     ],
   };
 }
@@ -75,11 +93,6 @@ export default function YouTubePracticePlayer({ song }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [error, setError] = useState('');
 
-  const songChords = useMemo(
-    () => extractChordsFromContent(song?.content_raw || '').slice(0, 8),
-    [song?.content_raw],
-  );
-
   const activeSection = useMemo(() => {
     if (!practice) return null;
     return practice.sections.reduce(
@@ -87,6 +100,20 @@ export default function YouTubePracticePlayer({ song }) {
       practice.sections[0],
     );
   }, [currentTime, practice]);
+
+  const activeCue = useMemo(() => {
+    if (!practice) return null;
+    return practice.chordCues.reduce(
+      (current, cue) => (cue.time <= currentTime ? cue : current),
+      practice.chordCues[0],
+    );
+  }, [currentTime, practice]);
+
+  const upcomingCues = useMemo(() => {
+    if (!practice || !activeCue) return [];
+    const activeIndex = practice.chordCues.findIndex((cue) => cue === activeCue);
+    return practice.chordCues.slice(activeIndex + 1, activeIndex + 5);
+  }, [activeCue, practice]);
 
   useEffect(() => {
     if (!practice || !targetRef.current) return undefined;
@@ -102,10 +129,14 @@ export default function YouTubePracticePlayer({ song }) {
           playerVars: {
             playsinline: 1,
             rel: 0,
+            enablejsapi: 1,
             origin: window.location.origin,
           },
           events: {
-            onReady: () => setIsReady(true),
+            onReady: () => {
+              setIsReady(true);
+              setCurrentTime(playerRef.current?.getCurrentTime?.() || 0);
+            },
             onStateChange: (event) => {
               const playing = event.data === YT.PlayerState.PLAYING;
               setIsPlaying(playing);
@@ -143,6 +174,12 @@ export default function YouTubePracticePlayer({ song }) {
     setCurrentTime(section.time);
   };
 
+  const togglePlayback = () => {
+    if (!isReady || !playerRef.current) return;
+    if (isPlaying) playerRef.current.pauseVideo();
+    else playerRef.current.playVideo();
+  };
+
   return (
     <section
       className="mt-6 overflow-hidden rounded-3xl border bg-white shadow-sm"
@@ -177,6 +214,21 @@ export default function YouTubePracticePlayer({ song }) {
           <div ref={targetRef} className="h-full w-full" title={practice.title} />
         </div>
         {error && <p className="mt-3 text-sm font-medium" style={{ color: '#DC2626' }}>{error}</p>}
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={togglePlayback}
+            disabled={!isReady || Boolean(error)}
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+            style={{ background: '#F97316' }}
+          >
+            {isPlaying ? <PauseCircle className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
+            {isPlaying ? 'Pausar práctica' : (isReady ? 'Iniciar práctica' : 'Cargando video...')}
+          </button>
+          <p className="text-xs" style={{ color: '#9CA3AF' }}>
+            YouTube exige una acción del usuario antes de reproducir.
+          </p>
+        </div>
       </div>
 
       <div className="border-t px-5 py-5" style={{ borderColor: '#FFEDD5' }}>
@@ -207,20 +259,26 @@ export default function YouTubePracticePlayer({ song }) {
             );
           })}
         </div>
-        {songChords.length > 0 && (
-          <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#9CA3AF' }}>Acordes de la canción</p>
+        <div className="mt-5 grid gap-3 rounded-2xl border p-4 sm:grid-cols-[minmax(150px,0.7fr)_1fr]" style={{ borderColor: '#FED7AA', background: '#FFFDFB' }}>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#9CA3AF' }}>Acorde ahora</p>
+            <div className="mt-2 inline-flex min-w-24 items-center justify-center rounded-xl px-5 py-3 text-3xl font-black" style={{ color: '#fff', background: '#F97316' }}>
+              {activeCue?.chord || '—'}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#9CA3AF' }}>Próximos cambios</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {songChords.map((chord) => (
-                <span key={chord} className="rounded-lg px-2.5 py-1 text-sm font-bold" style={{ background: '#FFF7ED', color: '#EA580C' }}>
-                  {chord}
+              {upcomingCues.map((cue) => (
+                <span key={`${cue.time}-${cue.chord}`} className="rounded-lg border px-2.5 py-1.5 text-sm font-bold" style={{ borderColor: '#FDBA74', color: '#C2410C' }}>
+                  {cue.chord} <small className="font-medium opacity-70">{formatTime(cue.time)}</small>
                 </span>
               ))}
             </div>
           </div>
-        )}
+        </div>
         <p className="mt-4 text-xs leading-relaxed" style={{ color: '#9CA3AF' }}>
-          Esta prueba sincroniza secciones, no cambios de acorde individuales. El video y sus controles son los oficiales de YouTube.
+          Mapa de acordes de demostración: sirve para validar la experiencia de práctica antes de automatizar y revisar los cambios de cada canción. El video y sus controles son los oficiales de YouTube.
         </p>
       </div>
     </section>
