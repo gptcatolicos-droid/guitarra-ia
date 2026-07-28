@@ -1,11 +1,15 @@
-# Hotfix de práctica con IA
+# Corrección móvil: canción y práctica
 
-Si ya subiste la actualización anterior, sube solamente estos dos archivos y
-sobrescribe los existentes:
+Sube y sobrescribe únicamente:
 
-- `src/components/chat/SongCard.jsx`
+- `src/index.css`
 - `src/pages/SongPage.jsx`
 
-No reemplaces ni borres carpetas. Esta corrección detecta correctamente la ruta
-`/practicar`: allí se muestra YouTube y se oculta Spotify. La vista normal
-mantiene Spotify y acordes.
+Esta actualización:
+
+1. Evita que el título de la canción se parta por letras.
+2. Fuerza una sola columna estable al volver de YouTube a Spotify.
+3. En móvil deja el acorde activo debajo del video y los cortes de secciones
+   después de los acordes.
+
+No borres ni reemplaces carpetas.
