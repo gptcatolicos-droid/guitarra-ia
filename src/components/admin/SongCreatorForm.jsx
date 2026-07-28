@@ -138,7 +138,7 @@ export default function SongCreatorForm({ onCreated }) {
         <input className={`${inputCls} font-mono text-xs`} value={form.youtube_embed}
           onChange={e => set('youtube_embed', e.target.value)}
           placeholder='https://www.youtube.com/watch?v=... o iframe de YouTube' />
-        <p className="text-xs text-muted-foreground mt-1">Al guardar se activa “Practicar con IA - YouTube” únicamente para esta canción.</p>
+        <p className="text-xs text-muted-foreground mt-1">Pega solo el enlace normal del video. Al guardar se activa “Practicar IA + YouTube” para esta canción.</p>
       </div>
 
       {/* Artist identity — stored once in Artist and used by every song card */}
