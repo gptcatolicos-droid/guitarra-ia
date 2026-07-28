@@ -19,6 +19,7 @@ const EMPTY = {
   tablature: '',
   spotify_embed: '',
   youtube_embed: '',
+  youtube_practice_map: '',
   artist_image_url: '',
   spotify_artist_url: '',
   is_unplugged: false,
@@ -137,8 +138,13 @@ export default function SongCreatorForm({ onCreated }) {
         <label className={labelCls}>Video de práctica de YouTube (opcional)</label>
         <input className={`${inputCls} font-mono text-xs`} value={form.youtube_embed}
           onChange={e => set('youtube_embed', e.target.value)}
-          placeholder='https://www.youtube.com/watch?v=... o iframe de YouTube' />
+          placeholder='https://www.youtube.com/watch?v=...' />
         <p className="text-xs text-muted-foreground mt-1">Pega solo el enlace normal del video. Al guardar se activa “Practicar IA + YouTube” para esta canción.</p>
+        <label className={`${labelCls} mt-3`}>Mapa de acordes y tiempos (opcional, para sincronización exacta)</label>
+        <textarea className={`${inputCls} font-mono text-xs`} rows={6} value={form.youtube_practice_map}
+          onChange={e => set('youtube_practice_map', e.target.value)}
+          placeholder={'0:00 [Intro] D\n0:04 G\n0:08 Em\n0:12 G\n0:16 D\n0:31 [Verso] D'} />
+        <p className="text-xs text-muted-foreground mt-1">El cifrado ya aporta los acordes. Aquí solo relacionas cada acorde con el segundo exacto del video.</p>
       </div>
 
       {/* Artist identity — stored once in Artist and used by every song card */}
