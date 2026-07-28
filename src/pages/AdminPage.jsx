@@ -113,6 +113,7 @@ function SongEditor({ song, onClose, onSaved }) {
   const [content, setContent] = useState(song.content_raw || song.tablature || '');
   const [spotifyEmbed, setSpotifyEmbed] = useState(song.spotify_embed || '');
   const [youtubeUrl, setYoutubeUrl] = useState(song.youtube_embed || (song.youtube_video_id ? `https://www.youtube.com/watch?v=${song.youtube_video_id}` : ''));
+  const [practiceMap, setPracticeMap] = useState(song.youtube_practice_map || '');
   const [artistRecord, setArtistRecord] = useState(null);
   const [artistImageUrl, setArtistImageUrl] = useState('');
   const [artistSpotifyUrl, setArtistSpotifyUrl] = useState('');
@@ -132,6 +133,7 @@ function SongEditor({ song, onClose, onSaved }) {
         setContent(fresh.content_raw || fresh.tablature || '');
         setSpotifyEmbed(fresh.spotify_embed || '');
         setYoutubeUrl(fresh.youtube_embed || (fresh.youtube_video_id ? `https://www.youtube.com/watch?v=${fresh.youtube_video_id}` : ''));
+        setPracticeMap(fresh.youtube_practice_map || '');
         setIsUnplugged(Boolean(fresh.is_unplugged));
       }
     });
@@ -193,6 +195,7 @@ function SongEditor({ song, onClose, onSaved }) {
       spotify_embed: spotifyEmbed || null,
       youtube_embed: trimmedYoutubeUrl || null,
       youtube_video_id: youtubeVideoId || null,
+      youtube_practice_map: practiceMap.trim() || null,
       // A pasted player is an editorial decision. Protect it from all future
       // automatic syncs until an administrator deliberately replaces it.
       spotify_manual_lock: Boolean(spotifyEmbed),
@@ -341,6 +344,17 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
             className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-red-500"
           />
           <p className="text-xs text-muted-foreground mt-1">Solo pega la URL normal del video. Al guardar se activa automáticamente “Practicar IA + YouTube” para esta canción.</p>
+          <div className="mt-3 border-t border-red-100 pt-3">
+            <p className="text-xs text-muted-foreground mb-1.5 font-medium">⏱ Mapa de acordes y tiempos (opcional, para sincronización exacta)</p>
+            <textarea
+              value={practiceMap}
+              onChange={(e) => setPracticeMap(e.target.value)}
+              placeholder={'0:00 [Intro] D\n0:04 G\n0:08 Em\n0:12 G\n0:16 D\n0:31 [Verso] D'}
+              rows={6}
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-red-500 font-mono"
+            />
+            <p className="text-xs text-muted-foreground mt-1">El cifrado aporta los acordes. Este mapa solo relaciona cada acorde con el segundo exacto del video: <code>0:00 [Intro] D</code>, <code>0:04 G</code>.</p>
+          </div>
         </div>
 
         <div className="px-4 py-3 border-b border-border bg-secondary/20 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -756,3 +770,4 @@ Tengo la camisa negra...`}</pre>
     </div>
   );
 }
+
