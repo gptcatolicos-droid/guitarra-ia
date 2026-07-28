@@ -18,6 +18,7 @@ const EMPTY = {
   content_raw: '',
   tablature: '',
   spotify_embed: '',
+  youtube_embed: '',
   artist_image_url: '',
   spotify_artist_url: '',
   is_unplugged: false,
@@ -132,6 +133,14 @@ export default function SongCreatorForm({ onCreated }) {
         <p className="text-xs text-muted-foreground mt-1">En Spotify → compartir → Insertar → copia el iframe.</p>
       </div>
 
+      <div>
+        <label className={labelCls}>Video de práctica de YouTube (opcional)</label>
+        <input className={`${inputCls} font-mono text-xs`} value={form.youtube_embed}
+          onChange={e => set('youtube_embed', e.target.value)}
+          placeholder='https://www.youtube.com/watch?v=... o iframe de YouTube' />
+        <p className="text-xs text-muted-foreground mt-1">Al guardar se activa “Practicar con IA - YouTube” únicamente para esta canción.</p>
+      </div>
+
       {/* Artist identity — stored once in Artist and used by every song card */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-border p-4 bg-secondary/20">
         <div>
@@ -194,3 +203,4 @@ export default function SongCreatorForm({ onCreated }) {
     </form>
   );
 }
+
