@@ -99,6 +99,16 @@
     "spotify_embed": {
       "type": "string"
     },
+    "youtube_embed": {
+      "type": "string"
+    },
+    "youtube_video_id": {
+      "type": "string"
+    },
+    "youtube_practice_enabled": {
+      "type": "boolean",
+      "default": false
+    },
     "spotify_track_id": {
       "type": "string"
     },
@@ -286,3 +296,4 @@
     }
   }
 }
+
