@@ -1,15 +1,18 @@
-# Corrección móvil: canción y práctica
+# Video de práctica desde Admin
 
-Sube y sobrescribe únicamente:
+Sube y sobrescribe estos archivos:
 
-- `src/index.css`
-- `src/pages/SongPage.jsx`
+- `src/pages/AdminPage.jsx`
+- `src/components/admin/SongCreatorForm.jsx`
 
-Esta actualización:
+En el editor de una canción existente aparecerá el campo:
 
-1. Evita que el título de la canción se parta por letras.
-2. Fuerza una sola columna estable al volver de YouTube a Spotify.
-3. En móvil deja el acorde activo debajo del video y los cortes de secciones
-   después de los acordes.
+**▶ Video para Práctica IA + YouTube (opcional)**
 
-No borres ni reemplaces carpetas.
+Pega únicamente una URL normal de YouTube, por ejemplo:
+
+`https://www.youtube.com/watch?v=jhat-xUQ6dw`
+
+Al guardar, el sistema valida el enlace, guarda el ID del video y activa
+automáticamente el botón de práctica para esa canción. No se crean registros
+duplicados ni se modifican otras canciones.
