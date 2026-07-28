@@ -7,6 +7,8 @@ const OUTPUT_DIR = resolve('public');
 
 const STATIC_PATHS = [
   '/',
+  '/afinador',
+  '/unplugged',
   '/acordes',
   '/artistas',
   '/canciones',
