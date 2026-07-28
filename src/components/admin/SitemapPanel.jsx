@@ -1,247 +1,190 @@
 import { useState } from 'react';
-import { Globe, RefreshCw, ExternalLink, Copy, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Copy, ExternalLink, Globe, RefreshCw, XCircle } from 'lucide-react';
 
-// Public function endpoint (reachable without auth, server-rendered XML).
-const FN_BASE = 'https://api.base44.com/api/apps/6a5e15eda090e739a1eebc94/functions/sitemap';
 const CANONICAL = 'https://www.guitarraia.com';
+const SITEMAP_URL = `${CANONICAL}/sitemap.xml`;
+const ROBOTS_URL = `${CANONICAL}/robots.txt`;
 
-function analyzeXml(text) {
-  const urlTags = (text.match(/<url>/g) || []).length;
-  const locTags = (text.match(/<loc>[\s\S]*?<\/loc>/g) || []);
-  const sitemapTags = (text.match(/<sitemap>/g) || []).length;
-  const locs = locTags.map((l) => l.replace(/<\/?loc>/g, '').trim());
+function analyzeSitemap(text, status, contentType) {
+  const locs = [...text.matchAll(/<loc>([\s\S]*?)<\/loc>/g)].map((match) => match[1].trim());
   const unique = new Set(locs);
-  const duplicates = locs.length - unique.size;
-
-  // Detection of the failure modes the audit must catch.
-  const isSpaFallback = /<div id="root"|<!DOCTYPE html>|domain-not-connected/i.test(text);
-  const hasXmlDecl = /^<\?xml/.test(text.trim());
-  const hasUrlset = /<urlset|<sitemapindex/.test(text);
-  const nonWww = /https?:\/\/guitarraia\.com/.test(text);
-  const hasHttp = /http:\/\//.test(text);
-  const hasAdmin = /\/admin(<|\/|")/.test(text);
-  const hasBase44 = /base44\.app|\.base44\.com\/api/.test(text.replace(FN_BASE, ''));
-
-  const firstUrl = locs[0] || null;
-  const lastUrl = locs[locs.length - 1] || null;
-
-  const valid = hasXmlDecl && hasUrlset && !isSpaFallback;
+  const invalidUrls = locs.filter((loc) => !loc.startsWith(`${CANONICAL}/`));
+  const privateUrls = locs.filter((loc) => /\/(admin|buscar|chat)(?:[/?#]|$)/.test(loc));
+  const isHtml = /<!doctype html|<html|<div id="root"/i.test(text);
+  const hasXmlDeclaration = /^\s*<\?xml/i.test(text);
+  const hasUrlset = /<urlset\b/i.test(text);
+  const isValid = status === 200
+    && hasXmlDeclaration
+    && hasUrlset
+    && locs.length > 0
+    && !isHtml
+    && invalidUrls.length === 0
+    && privateUrls.length === 0;
 
   return {
-    urlTags, locCount: locs.length, sitemapTags, uniqueCount: unique.size, duplicates,
-    firstUrl, lastUrl, valid, isSpaFallback, hasXmlDecl, hasUrlset,
-    nonWww, hasHttp, hasAdmin, hasBase44,
+    isValid,
+    isHtml,
+    hasXmlDeclaration,
+    hasUrlset,
+    locCount: locs.length,
+    duplicateCount: locs.length - unique.size,
+    invalidUrls,
+    privateUrls,
+    contentType,
+    firstUrl: locs[0] || '—',
+    lastUrl: locs.at(-1) || '—',
   };
 }
 
-async function auditUrl(url) {
-  const start = performance.now();
-  const res = await fetch(url, { headers: { 'Accept': 'application/xml' } });
-  const text = await res.text();
-  const ms = Math.round(performance.now() - start);
-  const bytes = new Blob([text]).size;
+async function request(url) {
+  const response = await fetch(`${url}?audit=${Date.now()}`, {
+    headers: { Accept: 'application/xml,text/plain;q=0.9,*/*;q=0.1' },
+    cache: 'no-store',
+  });
+  const text = await response.text();
   return {
-    httpStatus: res.status,
-    contentType: res.headers.get('content-type') || '(sin cabecera)',
-    bytes, ms, text,
-    ...analyzeXml(text),
+    status: response.status,
+    contentType: response.headers.get('content-type') || 'sin cabecera',
+    text,
   };
 }
 
-function StatusPill({ ok, label }) {
+function Status({ ok, children }) {
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${ok ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-      {ok ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}{label}
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${ok ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+      {ok ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+      {children}
     </span>
   );
 }
 
-function Row({ label, value, mono }) {
+function DataRow({ label, value, mono = false }) {
   return (
-    <div className="flex items-start justify-between gap-3 py-1.5 border-b border-[#272C2F] last:border-0">
-      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
-      <span className={`text-xs text-foreground text-right break-all ${mono ? 'font-mono' : ''}`}>{value}</span>
+    <div className="flex items-start justify-between gap-4 border-b border-border py-2 last:border-0">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className={`max-w-[68%] break-all text-right text-xs text-foreground ${mono ? 'font-mono' : ''}`}>{value}</span>
     </div>
   );
 }
 
-const SUB_SITEMAPS = [
-  { key: 'index', label: 'Índice principal', url: `${FN_BASE}`, publicUrl: `${CANONICAL}/sitemap.xml` },
-  { key: 'pages', label: 'Páginas', url: `${FN_BASE}?type=pages`, publicUrl: `${CANONICAL}/sitemap.xml?type=pages` },
-  { key: 'artists', label: 'Artistas', url: `${FN_BASE}?type=artists`, publicUrl: `${CANONICAL}/sitemap.xml?type=artists` },
-  { key: 'songs', label: 'Canciones', url: `${FN_BASE}?type=songs`, publicUrl: `${CANONICAL}/sitemap.xml?type=songs` },
-  { key: 'blog', label: 'Blog + Infografías', url: `${FN_BASE}?type=blog`, publicUrl: `${CANONICAL}/sitemap.xml?type=blog` },
-];
-
 export default function SitemapPanel() {
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState({});
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
   const [copied, setCopied] = useState('');
 
-  const copy = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(text);
-    setTimeout(() => setCopied(''), 2000);
+  const copy = async (value) => {
+    await navigator.clipboard.writeText(value);
+    setCopied(value);
+    window.setTimeout(() => setCopied(''), 1800);
   };
 
-  const runAudit = async () => {
+  const audit = async () => {
     setLoading(true);
-    const out = {};
-    for (const sm of SUB_SITEMAPS) {
-      try {
-        out[sm.key] = await auditUrl(sm.url);
-      } catch (e) {
-        out[sm.key] = { error: e.message };
-      }
-    }
-    // Googlebot comparison — same URL, spoofed UA (best-effort; browser may strip UA header).
+    setError('');
     try {
-      const res = await fetch(SUB_SITEMAPS[0].url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' },
+      const [sitemap, robots] = await Promise.all([request(SITEMAP_URL), request(ROBOTS_URL)]);
+      const report = analyzeSitemap(sitemap.text, sitemap.status, sitemap.contentType);
+      setResult({
+        ...report,
+        robotsStatus: robots.status,
+        robotsHasSitemap: robots.text.includes(`Sitemap: ${SITEMAP_URL}`),
+        auditedAt: new Date().toLocaleString('es-CO'),
       });
-      const text = await res.text();
-      out.googlebot = { httpStatus: res.status, text, identical: text === out.index?.text };
-    } catch (e) {
-      out.googlebot = { error: e.message };
+    } catch (auditError) {
+      setResult(null);
+      setError('No fue posible leer el sitemap público. Comprueba que la versión publicada ya terminó de sincronizarse e inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
     }
-    setResults(out);
-    setLoading(false);
   };
-
-  const index = results.index;
 
   return (
     <div className="space-y-4">
-      {/* Platform routing warning */}
-      <div className="rounded-xl p-4 flex gap-3" style={{ backgroundColor: 'rgba(227,168,59,0.08)', border: '1px solid rgba(227,168,59,0.35)' }}>
-        <AlertTriangle className="w-5 h-5 shrink-0" style={{ color: '#E3A83B' }} />
-        <div className="text-xs text-muted-foreground leading-relaxed">
-          <strong className="text-foreground">Enrutamiento de dominio.</strong> Esta auditoría consulta la función backend directamente.
-          Para que Google la use, la ruta pública <code className="text-primary">{CANONICAL}/sitemap.xml</code> debe apuntar a esta función.
-          Si sigue devolviendo un XML estático de 12 URLs, es enrutamiento del hosting — contacta a soporte de Base44.
+      <div className="flex gap-3 rounded-xl border p-4" style={{ backgroundColor: 'rgba(249,115,22,0.07)', borderColor: 'rgba(249,115,22,0.32)' }}>
+        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+        <div className="text-xs leading-relaxed text-muted-foreground">
+          <strong className="text-foreground">Fuente de verdad SEO.</strong> Google solo ve el archivo público{' '}
+          <code className="text-primary">{SITEMAP_URL}</code>. Esta auditoría revisa exactamente esa URL, no una función interna de Base44.
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+      <section className="space-y-4 rounded-xl border border-border bg-card p-5">
         <div className="flex items-center gap-2">
-          <Globe className="w-4 h-4 text-primary" />
-          <h3 className="text-foreground font-semibold text-sm">Auditoría del XML público real</h3>
+          <Globe className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground">Verificar sitemap antes de enviarlo</h3>
         </div>
         <p className="text-xs text-muted-foreground">
-          No cuenta registros de la base de datos: descarga la respuesta HTTP real de cada sitemap y analiza su contenido.
+          Comprueba el HTTP, el XML, las URLs canónicas y que no haya rutas privadas. Solo muestra el resultado que recibe Google.
         </p>
         <button
-          onClick={runAudit}
+          type="button"
+          onClick={audit}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium disabled:opacity-40 hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: '#FF7200' }}
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Auditando respuestas HTTP...' : 'Ejecutar auditoría'}
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          {loading ? 'Verificando sitemap público…' : 'Verificar sitemap público'}
         </button>
-      </div>
+      </section>
 
-      {/* Main index audit result */}
-      {index && !index.error && (
-        <div className="bg-card border border-border rounded-xl p-5 space-y-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <h3 className="text-foreground font-semibold text-sm">Índice principal — resultado</h3>
-            <div className="flex gap-1.5 flex-wrap">
-              <StatusPill ok={index.httpStatus === 200} label={`HTTP ${index.httpStatus}`} />
-              <StatusPill ok={index.valid} label={index.valid ? 'XML válido' : 'XML inválido'} />
-              <StatusPill ok={!index.isSpaFallback} label={index.isSpaFallback ? 'Fallback SPA/HTML' : 'No es HTML'} />
-              <StatusPill ok={!index.nonWww} label={index.nonWww ? 'Mezcla no-www' : 'Solo www'} />
-              <StatusPill ok={!index.hasAdmin} label={index.hasAdmin ? 'Incluye /admin' : 'Sin /admin'} />
-              <StatusPill ok={!index.hasBase44} label={index.hasBase44 ? 'URLs Base44' : 'Sin URLs Base44'} />
+      {error && <div className="rounded-lg bg-red-500/10 p-3 text-xs text-red-500">{error}</div>}
+
+      {result && (
+        <section className="space-y-3 rounded-xl border border-border bg-card p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-foreground">Resultado de la verificación</h3>
+            <div className="flex flex-wrap gap-1.5">
+              <Status ok={result.status === 200}>HTTP {result.status}</Status>
+              <Status ok={result.isValid}>{result.isValid ? 'Listo para enviar' : 'Requiere corrección'}</Status>
+              <Status ok={!result.isHtml}>{result.isHtml ? 'Devuelve HTML' : 'Devuelve XML'}</Status>
             </div>
           </div>
           <div>
-            <Row label="Código HTTP" value={index.httpStatus} />
-            <Row label="Content-Type" value={index.contentType} mono />
-            <Row label="Peso del XML" value={`${(index.bytes / 1024).toFixed(1)} KB (${index.bytes} bytes)`} />
-            <Row label="Tiempo respuesta" value={`${index.ms} ms`} />
-            <Row label="Etiquetas <sitemap>" value={index.sitemapTags} />
-            <Row label="Etiquetas <url>" value={index.urlTags} />
-            <Row label="Etiquetas <loc>" value={index.locCount} />
-            <Row label="URLs únicas" value={index.uniqueCount} />
-            <Row label="Duplicados" value={index.duplicates} />
-            <Row label="Generado" value={new Date().toLocaleString('es-CO')} />
-            <Row label="Primera URL" value={index.firstUrl || '—'} mono />
-            <Row label="Última URL" value={index.lastUrl || '—'} mono />
-            <Row label="Validación XML" value={index.valid ? '✓ Válido' : '✗ Inválido'} />
-            {results.googlebot && !results.googlebot.error && (
-              <Row label="Googlebot idéntico" value={results.googlebot.identical ? '✓ Sí' : '✗ No'} />
-            )}
+            <DataRow label="Content-Type" value={result.contentType} mono />
+            <DataRow label="URLs encontradas" value={result.locCount} />
+            <DataRow label="URLs duplicadas" value={result.duplicateCount} />
+            <DataRow label="URLs fuera de www.guitarraia.com" value={result.invalidUrls.length} />
+            <DataRow label="Rutas privadas incluidas" value={result.privateUrls.length} />
+            <DataRow label="robots.txt" value={`HTTP ${result.robotsStatus} · ${result.robotsHasSitemap ? 'declara el sitemap correcto' : 'no declara el sitemap correcto'}`} />
+            <DataRow label="Primera URL" value={result.firstUrl} mono />
+            <DataRow label="Última URL" value={result.lastUrl} mono />
+            <DataRow label="Verificado" value={result.auditedAt} />
           </div>
-        </div>
-      )}
-
-      {index?.error && (
-        <div className="bg-red-500/10 text-red-400 text-xs rounded-lg p-3">Error auditando el índice: {index.error}</div>
-      )}
-
-      {/* Sub-sitemaps table */}
-      <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="text-foreground font-semibold text-sm mb-3">Sub-sitemaps</h3>
-        <div className="space-y-2">
-          {SUB_SITEMAPS.map((sm) => {
-            const r = results[sm.key];
-            return (
-              <div key={sm.key} className="p-3 rounded-lg" style={{ backgroundColor: '#121516', border: '1px solid #272C2F' }}>
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-foreground">{sm.label}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">{sm.publicUrl}</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {r && !r.error && (
-                      <>
-                        <span className="text-[11px] text-muted-foreground">{sm.key === 'index' ? `${r.sitemapTags} sitemaps` : `${r.locCount} URLs`}</span>
-                        <StatusPill ok={r.httpStatus === 200} label={`${r.httpStatus}`} />
-                        <StatusPill ok={r.valid} label={r.valid ? 'OK' : 'ERR'} />
-                      </>
-                    )}
-                    {r?.error && <span className="text-[11px] text-red-400">Error</span>}
-                    <a href={sm.url} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" title="Abrir">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                    <button onClick={() => copy(sm.publicUrl)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" title="Copiar">
-                      {copied === sm.publicUrl ? <CheckCircle className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Robots + GSC */}
-      <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="text-foreground font-semibold text-sm mb-3">robots.txt y Google Search Console</h3>
-        <div className="space-y-2">
-          {[
-            { label: 'robots.txt (función)', url: `${FN_BASE}?robots=1` },
-            { label: 'Sitemap público', url: `${CANONICAL}/sitemap.xml` },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center gap-2 p-3 rounded-lg" style={{ backgroundColor: '#121516', border: '1px solid #272C2F' }}>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-foreground">{item.label}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{item.url}</p>
-              </div>
-              <a href={item.url} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-              <button onClick={() => copy(item.url)} className="p-1.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
-                {copied === item.url ? <CheckCircle className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
+          {!result.isValid && (
+            <div className="rounded-lg bg-red-500/10 p-3 text-xs leading-relaxed text-red-500">
+              No lo envíes todavía: debe responder HTTP 200 como XML, contener URLs y usar únicamente el dominio canónico sin rutas privadas.
             </div>
-          ))}
-          <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 mt-1 rounded-lg text-sm font-medium transition-colors w-fit" style={{ backgroundColor: '#181B1D', border: '1px solid #272C2F', color: '#A7ACAE' }}>
-            <ExternalLink className="w-4 h-4" /> Google Search Console
-          </a>
-        </div>
-      </div>
+          )}
+        </section>
+      )}
+
+      <section className="space-y-3 rounded-xl border border-border bg-card p-5">
+        <h3 className="text-sm font-semibold text-foreground">Enviar a Google Search Console</h3>
+        <ol className="list-decimal space-y-1 pl-5 text-xs leading-relaxed text-muted-foreground">
+          <li>Publica primero estos cambios y espera a que Base44 termine la sincronización.</li>
+          <li>Abre el sitemap en una ventana privada y ejecuta la verificación anterior.</li>
+          <li>En Search Console, envía <strong className="text-foreground">sitemap.xml</strong> para la propiedad <strong className="text-foreground">https://www.guitarraia.com/</strong>.</li>
+        </ol>
+        {[{ label: 'Sitemap público', url: SITEMAP_URL }, { label: 'robots.txt público', url: ROBOTS_URL }].map((item) => (
+          <div key={item.url} className="flex items-center gap-2 rounded-lg border border-border p-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-foreground">{item.label}</p>
+              <p className="truncate text-[11px] text-muted-foreground">{item.url}</p>
+            </div>
+            <a href={item.url} target="_blank" rel="noreferrer" className="rounded p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground" title="Abrir">
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+            <button type="button" onClick={() => copy(item.url)} className="rounded p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground" title="Copiar">
+              {copied === item.url ? <CheckCircle className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+            </button>
+          </div>
+        ))}
+        <a href="https://search.google.com/search-console" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+          <ExternalLink className="h-4 w-4" /> Abrir Google Search Console
+        </a>
+      </section>
     </div>
   );
 }
