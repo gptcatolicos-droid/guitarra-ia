@@ -7,6 +7,7 @@ import ChordViewer from '@/components/ChordViewer';
 import TablatureViewer from '@/components/TablatureViewer';
 import SongMeta from '@/components/SongMeta';
 import SpotifyPlayer from '@/components/SpotifyPlayer';
+import YouTubePracticePlayer from '@/components/YouTubePracticePlayer';
 import SongSeoContent from '@/components/SongSeoContent';
 import RelatedSongs from '@/components/RelatedSongs';
 import { withResolvedSongContentFlags } from '@/lib/songContentFlags';
@@ -154,6 +155,8 @@ export default function SongPage() {
         {/* Main content */}
         <div className="song-reading-column min-w-0">
           <SongMeta song={resolvedSong} />
+
+          <YouTubePracticePlayer song={resolvedSong} />
 
           <Link to="/afinador" className="tune-song-cta">
             <span><Radio className="w-4 h-4" /></span>
