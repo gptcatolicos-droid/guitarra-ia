@@ -81,7 +81,7 @@ export default function SongPage() {
         <div className="song-header mb-5">
           <Link to={`/${artistSlug}`} className="inline-flex items-center text-sm mb-4 transition-colors" style={{ color: '#6B7280' }} onMouseEnter={(event) => { event.currentTarget.style.color = '#F97316'; }} onMouseLeave={(event) => { event.currentTarget.style.color = '#6B7280'; }}><ArrowLeft className="w-4 h-4 mr-1" /> {song.artist_name}</Link>
           <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 flex items-center gap-3"><ArtistAvatar song={song} className="w-12 h-12 lg:w-14 lg:h-14" imageClassName="border border-orange-100" /><div className="min-w-0"><h1 className="text-2xl lg:text-3xl font-bold break-words" style={{ color: '#1F2937' }}>{displayTitle}</h1><p className="mt-1 text-base break-words" style={{ color: '#6B7280' }}>{song.artist_name}</p></div></div>
+            <div className="min-w-0 flex flex-1 items-center gap-3"><ArtistAvatar song={song} className="w-12 h-12 lg:w-14 lg:h-14" imageClassName="border border-orange-100" /><div className="min-w-0"><h1 className="text-2xl lg:text-3xl font-bold break-words" style={{ color: '#1F2937' }}>{displayTitle}</h1><p className="mt-1 text-base break-words" style={{ color: '#6B7280' }}>{song.artist_name}</p></div></div>
             <div className="flex items-center gap-1 shrink-0"><button onClick={toggleFavorite} className="p-2 rounded-xl transition-colors" style={{ color: isFav ? '#F97316' : '#9CA3AF' }}><Heart className={`w-5 h-5 ${isFav ? 'fill-current' : ''}`} /></button><button className="p-2 rounded-xl transition-colors" style={{ color: '#9CA3AF' }}><Share2 className="w-5 h-5" /></button></div>
           </div>
         </div>
