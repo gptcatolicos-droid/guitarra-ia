@@ -19,6 +19,7 @@ import FacebookPostManager from '@/components/admin/FacebookPostManager';
 import InfographicsManager from '@/components/admin/InfographicsManager';
 import SongFlagsRepair from '@/components/admin/SongFlagsRepair';
 import { invalidateArtistImage } from '@/components/ArtistAvatar';
+import { getYouTubeVideoId } from '@/lib/youtubePractice';
 
 const THEME_COLORS = [
   { label: 'Naranja', value: '28 100% 50%' },
@@ -111,6 +112,7 @@ function SongEditor({ song, onClose, onSaved }) {
   const [originalKey, setOriginalKey] = useState(song.original_key || '');
   const [content, setContent] = useState(song.content_raw || song.tablature || '');
   const [spotifyEmbed, setSpotifyEmbed] = useState(song.spotify_embed || '');
+  const [youtubeUrl, setYoutubeUrl] = useState(song.youtube_embed || (song.youtube_video_id ? `https://www.youtube.com/watch?v=${song.youtube_video_id}` : ''));
   const [artistRecord, setArtistRecord] = useState(null);
   const [artistImageUrl, setArtistImageUrl] = useState('');
   const [artistSpotifyUrl, setArtistSpotifyUrl] = useState('');
@@ -129,6 +131,7 @@ function SongEditor({ song, onClose, onSaved }) {
         setOriginalKey(fresh.original_key || '');
         setContent(fresh.content_raw || fresh.tablature || '');
         setSpotifyEmbed(fresh.spotify_embed || '');
+        setYoutubeUrl(fresh.youtube_embed || (fresh.youtube_video_id ? `https://www.youtube.com/watch?v=${fresh.youtube_video_id}` : ''));
         setIsUnplugged(Boolean(fresh.is_unplugged));
       }
     });
@@ -159,6 +162,13 @@ function SongEditor({ song, onClose, onSaved }) {
   const handleSave = async () => {
     setSaving(true);
     const isTab = song.has_tablature && !song.has_chords;
+    const trimmedYoutubeUrl = youtubeUrl.trim();
+    const youtubeVideoId = getYouTubeVideoId(trimmedYoutubeUrl);
+    if (trimmedYoutubeUrl && !youtubeVideoId) {
+      setSaving(false);
+      alert('Pega un enlace válido de YouTube, por ejemplo https://www.youtube.com/watch?v=...');
+      return;
+    }
 
     // Some legacy imports predate Artist.artist_id. Do not make an editor
     // lose the ability to set an image because of that missing link: create
@@ -181,6 +191,8 @@ function SongEditor({ song, onClose, onSaved }) {
       original_key: originalKey || null,
       ...(isTab ? { tablature: content } : { content_raw: content }),
       spotify_embed: spotifyEmbed || null,
+      youtube_embed: trimmedYoutubeUrl || null,
+      youtube_video_id: youtubeVideoId || null,
       // A pasted player is an editorial decision. Protect it from all future
       // automatic syncs until an administrator deliberately replaces it.
       spotify_manual_lock: Boolean(spotifyEmbed),
@@ -317,6 +329,18 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
             className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-primary font-mono"
           />
           <p className="text-xs text-muted-foreground mt-1">En Spotify → compartir canción → Insertar → copia el código iframe.</p>
+        </div>
+
+        {/* Practice video — a normal YouTube link is enough */}
+        <div className="px-4 py-3 border-b border-border bg-red-50/30">
+          <p className="text-xs text-muted-foreground mb-1.5 font-medium">▶ Video para Práctica IA + YouTube (opcional)</p>
+          <input
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+            placeholder="Pega el enlace: https://www.youtube.com/watch?v=..."
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-red-500"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Solo pega la URL normal del video. Al guardar se activa automáticamente “Practicar IA + YouTube” para esta canción.</p>
         </div>
 
         <div className="px-4 py-3 border-b border-border bg-secondary/20 grid grid-cols-1 sm:grid-cols-2 gap-3">
