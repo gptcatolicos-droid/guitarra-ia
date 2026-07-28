@@ -28,6 +28,14 @@ function spotifyEmbedDetails(value) {
   return { embed, embedUrl, trackId };
 }
 
+function youtubeEmbedDetails(value) {
+  const embed = (value || '').trim();
+  if (!embed) return { embed: '', videoId: '' };
+  const source = embed.match(/src=["']([^"']+)["']/i)?.[1] || embed;
+  const videoId = source.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?[^#]*v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/i)?.[1] || '';
+  return { embed, videoId };
+}
+
 // Find existing artist by slug or normalized name match
 async function findExistingArtist(base44, artistName) {
   const slug = slugify(artistName);
@@ -144,6 +152,7 @@ Deno.serve(async (req) => {
       has_tablature,
       chords_used = [],
       spotify_embed = '',
+      youtube_embed = '',
       artist_image_url = '',
       spotify_artist_url = '',
       is_unplugged = false,
@@ -200,6 +209,7 @@ Deno.serve(async (req) => {
 
     // --- Create song ---
     const manualSpotify = spotifyEmbedDetails(spotify_embed);
+    const manualYouTube = youtubeEmbedDetails(youtube_embed);
     const songData = {
       title: title.trim(),
       slug: songSlug,
@@ -222,6 +232,11 @@ Deno.serve(async (req) => {
       is_unplugged: Boolean(is_unplugged),
       views: 0,
       spotify_match_status: manualSpotify.embed ? 'matched' : 'pending',
+      ...(manualYouTube.embed ? {
+        youtube_embed: manualYouTube.embed,
+        youtube_video_id: manualYouTube.videoId,
+        youtube_practice_enabled: Boolean(manualYouTube.videoId),
+      } : {}),
       ...(manualSpotify.embed ? {
         spotify_embed: manualSpotify.embed,
         spotify_embed_url: manualSpotify.embedUrl,
@@ -253,3 +268,4 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
+
