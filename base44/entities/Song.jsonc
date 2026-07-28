@@ -36,7 +36,7 @@
     "difficulty": {
       "type": "string",
       "enum": [
-        "F\u00e1cil",
+        "Fácil",
         "Intermedia",
         "Avanzada"
       ]
@@ -269,6 +269,33 @@
     },
     "seo_quality_score": {
       "type": "number"
+    },
+    "youtube_practice_map": {
+      "type": "string",
+      "description": "Mapa de acordes y segundos generado automáticamente desde el video de práctica."
+    },
+    "youtube_analysis_status": {
+      "type": "string",
+      "enum": [
+        "not_requested",
+        "queued",
+        "processing",
+        "ready",
+        "error"
+      ],
+      "default": "not_requested"
+    },
+    "youtube_analysis_error": {
+      "type": "string"
+    },
+    "youtube_analysis_confidence": {
+      "type": "number"
+    },
+    "youtube_analysis_provider": {
+      "type": "string"
+    },
+    "youtube_analysis_updated_at": {
+      "type": "string"
     }
   },
   "required": [
@@ -296,4 +323,3 @@
     }
   }
 }
-
