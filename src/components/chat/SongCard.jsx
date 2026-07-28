@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ArtistAvatar from '@/components/ArtistAvatar';
 import SpotifyEmbed from '@/components/SpotifyEmbed';
+import { hasYouTubePractice } from '@/lib/youtubePractice';
 
 const DIFF_COLORS = {
   'Fácil': { bg: 'rgba(128,185,64,0.15)', color: '#80B940' },
@@ -88,8 +89,10 @@ export default function SongCard({ song }) {
           <Link to={actionLink} className="flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-80" style={{ backgroundColor: '#F97316' }}>
             {actionLabel}
           </Link>
+          {hasYouTubePractice(song) && <Link to={`/${song.artist_slug}/${song.slug}/practicar`} className="flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-white text-center transition-opacity hover:opacity-80" style={{ backgroundColor: '#FF0000' }}>Practicar con IA - YouTube</Link>}
         </div>
       </div>
     </div>
   );
 }
+
