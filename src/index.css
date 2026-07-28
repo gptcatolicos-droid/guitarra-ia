@@ -949,3 +949,72 @@ body { background: #fcfbfa; }
 
 @media (max-width: 900px) { .tuner-grid { grid-template-columns: minmax(0, 1fr) minmax(220px, .65fr); grid-template-areas: 'core advice' 'core insight' 'modes modes'; }.tuner-core { min-height: 510px; } }
 @media (max-width: 767px) { .home-wave-hero { padding-top: 3.4rem !important; }.home-wave-hero h1, .home-wave-hero p { text-align: left !important; }.home-wave-hero h1 { font-size: 3.18rem !important; }.quick-chips { display: none !important; }.tuner-promo { padding: 14px; }.tuner-promo em { padding: 9px 12px; font-size: 0; }.tuner-promo em::after { content: '›'; font-size: 20px; }.song-header h1 { font-size: 2.6rem !important; }.tuner-page { padding: 23px 16px 115px; }.tuner-status { float: none; margin-left: auto; }.tuner-intro { margin-bottom: 25px; padding-top: 29px; text-align: left; }.tuner-intro h1 { font-size: clamp(2.65rem, 14vw, 4rem); }.tuner-intro > p:last-child { margin-left: 0; font-size: 14px; }.tuner-grid { display: flex; flex-direction: column; gap: 13px; }.tuner-core { order: 1; min-height: 0; padding: 26px 16px 23px; border-radius: 28px; }.tuner-advice { order: 2; padding: 18px; }.tuner-insight { order: 3; }.tuner-modes { order: 4; }.tuner-advice > svg { margin-bottom: 16px; }.tuner-advice h2 { font-size: 22px; }.tuner-insight { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 14px; }.tuner-insight p { grid-column: 1 / -1; margin-bottom: 3px; }.tuner-insight hr { display: none; }.tuner-insight small { display: none; }.tuner-insight b { grid-column: 2; grid-row: 2; margin: 0; font-size: 16px; }.note-orb { width: min(266px, 72vw); }.bottom-navigation { width: calc(100% - 22px); bottom: 10px !important; }.tune-song-cta { margin-top: -2px; } }
+
+/* Mobile song view: prevent narrow title columns and preserve a single column
+   when returning from the YouTube practice route. */
+@media (max-width: 767px) {
+  .song-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: clip;
+  }
+
+  .song-page .mobile-page-container,
+  .song-page .song-layout,
+  .song-page .song-reading-column,
+  .song-page .song-header,
+  .song-page .song-header > div {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0 !important;
+  }
+
+  .song-page .song-layout {
+    display: block !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .song-page .song-header > .flex > :first-child {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+
+  .song-page .song-header h1 {
+    font-size: clamp(2rem, 10vw, 2.5rem) !important;
+    line-height: 1.04;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none;
+  }
+
+  .song-page .song-header p {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  /* En práctica: primero el acorde que se toca y luego los cortes de sección. */
+  .song-page [aria-labelledby="youtube-practice-title"] > .border-t {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .song-page [aria-labelledby="youtube-practice-title"] > .border-t > div:nth-child(3) {
+    order: 1;
+    margin-top: 0;
+  }
+
+  .song-page [aria-labelledby="youtube-practice-title"] > .border-t > div:nth-child(1) {
+    order: 2;
+    margin-top: 1.5rem;
+  }
+
+  .song-page [aria-labelledby="youtube-practice-title"] > .border-t > div:nth-child(2) {
+    order: 3;
+  }
+
+  .song-page [aria-labelledby="youtube-practice-title"] > .border-t > p {
+    order: 4;
+  }
+}
+
