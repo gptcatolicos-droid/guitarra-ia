@@ -1,133 +1,34 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ExternalLink, PauseCircle, PlayCircle, Youtube } from 'lucide-react';
-import { getYouTubeVideoId, isYouTubePracticePilot } from '@/lib/youtubePractice';
-
-const PILOT_GUIDE = {
-  videoId: 'jhat-xUQ6dw',
-  title: 'Silent Lucidity — Queensrÿche',
-  sections: [
-    { time: 0, label: 'Intro' }, { time: 31, label: 'Verso' },
-    { time: 73, label: 'Coro' }, { time: 123, label: 'Verso' },
-    { time: 181, label: 'Puente' }, { time: 228, label: 'Coro final' },
-  ],
-  chordCues: [
-    { time: 0, chord: 'G' }, { time: 7, chord: 'G9' }, { time: 14, chord: 'Em' },
-    { time: 21, chord: 'Em7/B' }, { time: 27, chord: 'C' }, { time: 31, chord: 'C9' },
-    { time: 36, chord: 'Am' }, { time: 42, chord: 'Am9' }, { time: 48, chord: 'G' },
-    { time: 55, chord: 'G9' }, { time: 62, chord: 'Em' }, { time: 69, chord: 'C' },
-    { time: 74, chord: 'G' }, { time: 81, chord: 'D' }, { time: 88, chord: 'Em' },
-    { time: 95, chord: 'C' },
-  ],
-};
-
-const SECTION_NAMES = /^(?:\[?\s*)?(intro|verso|coro|pre[-\s]?coro|puente|solo|outro|interludio|estrofa)(?:\s*\]?)?\s*[:\-–—]?\s*/i;
-const CHORD_TOKEN = '[A-G](?:#|b)?(?:(?:maj|min|m|M|sus|add|dim|aug)?\\d*)?(?:\\/[A-G](?:#|b)?)?';
-const CHORD_GLOBAL = new RegExp('\\b(' + CHORD_TOKEN + ')\\b', 'g');
-const CHORD_EXACT = new RegExp('^' + CHORD_TOKEN + '$');
+import { getYouTubePracticeMap, getYouTubeVideoId } from '@/lib/youtubePractice';
 
 function labelCase(value = '') {
   const clean = String(value).trim().replace(/\s+/g, ' ');
   return clean ? clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase() : 'Sección';
 }
 
-function chordTokens(line = '') {
-  return [...String(line).matchAll(CHORD_GLOBAL)].map((match) => match[1]).filter((token) => CHORD_EXACT.test(token));
-}
-
-function getCifradoSequence(song) {
-  const raw = String(song?.content_raw || song?.tablature || '');
-  const sequence = [];
-  const sectionLabels = [];
-  raw.split(/\r?\n/).forEach((line) => {
-    const sectionMatch = line.match(SECTION_NAMES);
-    const withoutSection = sectionMatch ? line.slice(sectionMatch[0].length) : line;
-    const tokens = chordTokens(withoutSection);
-    if (!tokens.length) return;
-
-    const lettersOnly = withoutSection
-      .replace(CHORD_GLOBAL, '')
-      .replace(/[\s\d()[\]{}:;|,./xX*+\-–—]/g, '');
-
-    // Un cifrado contiene líneas enteras de acordes; esta regla evita extraer
-    // letras sueltas de las estrofas y toma el orden original del cifrado.
-    const chordLine = Boolean(sectionMatch) || lettersOnly.length <= Math.max(1, Math.floor(withoutSection.length * 0.18));
-    if (!chordLine) return;
-
-    if (sectionMatch) sectionLabels.push(labelCase(sectionMatch[1]));
-    tokens.forEach((chord) => sequence.push(chord));
-  });
-
-  const deduped = sequence.filter((chord, index) => index === 0 || chord !== sequence[index - 1]);
-  return {
-    sequence: deduped.length ? deduped : (song?.original_key ? [song.original_key] : []),
-    sectionLabels: [...new Set(sectionLabels)],
-  };
-}
-
-function secondsFrom(value = '') {
-  const bits = String(value).trim().split(':').map(Number);
-  if (bits.some(Number.isNaN)) return null;
-  if (bits.length === 1) return bits[0];
-  if (bits.length === 2) return (bits[0] * 60) + bits[1];
-  return null;
-}
-
-function parsePracticeMap(value = '') {
-  const cues = [];
-  const sections = [];
-  String(value || '').split(/\r?\n|,/).forEach((rawLine) => {
-    const line = rawLine.trim();
-    if (!line) return;
-    // Formato: 0:00 [Intro] D  |  0:04 G  |  1:13 [Coro] D
-    const match = line.match(new RegExp('^(\\d+(?::\\d{1,2})?)\\s*(?:[-=|:]?\\s*)?(?:\\[([^\\]]+)\\]\\s*)?(' + CHORD_TOKEN + ')\\s*$', 'i'));
-    if (!match) return;
-    const time = secondsFrom(match[1]);
-    if (time === null || time < 0) return;
-    const cue = { time, chord: match[3] };
-    cues.push(cue);
-    if (match[2]) sections.push({ time, label: labelCase(match[2]) });
-  });
-  cues.sort((a, b) => a.time - b.time);
-  sections.sort((a, b) => a.time - b.time);
-  return { cues, sections };
-}
-
 function getPracticeForSong(song) {
   const videoId = song?.youtube_video_id || getYouTubeVideoId(song?.youtube_embed);
-  const fromCifrado = getCifradoSequence(song);
-  const savedMap = parsePracticeMap(song?.youtube_practice_map);
-
-  if (videoId) {
-    if (savedMap.cues.length) {
-      return {
-        videoId,
-        title: song?.title || 'Práctica con YouTube',
-        chordCues: savedMap.cues,
-        sections: savedMap.sections.length ? savedMap.sections : [{ time: 0, label: fromCifrado.sectionLabels[0] || 'Inicio' }],
-        sequence: fromCifrado.sequence,
-        hasTimingMap: true,
-      };
-    }
-
-    // La antigua canción piloto puede conservar su guía ya revisada. Ninguna
-    // otra canción hereda esta estructura ni sus acordes.
-    if (isYouTubePracticePilot(song)) {
-      return { ...PILOT_GUIDE, videoId, title: song?.title || PILOT_GUIDE.title, sequence: PILOT_GUIDE.chordCues.map((cue) => cue.chord), hasTimingMap: true };
-    }
-
-    return {
-      videoId,
-      title: song?.title || 'Práctica con YouTube',
-      chordCues: fromCifrado.sequence.length ? [{ time: 0, chord: fromCifrado.sequence[0] }] : [],
-      sections: [{ time: 0, label: fromCifrado.sectionLabels[0] || 'Cifrado' }],
-      sequence: fromCifrado.sequence,
-      hasTimingMap: false,
-    };
-  }
-
-  return isYouTubePracticePilot(song)
-    ? { ...PILOT_GUIDE, sequence: PILOT_GUIDE.chordCues.map((cue) => cue.chord), hasTimingMap: true }
-    : null;
+  const map = getYouTubePracticeMap(song);
+  if (!videoId || !map) return null;
+  const chordCues = map.chord_cues
+    .map((cue) => ({ time: Number(cue.time), chord: String(cue.chord || '').trim() }))
+    .filter((cue) => Number.isFinite(cue.time) && cue.time >= 0 && cue.chord)
+    .sort((a, b) => a.time - b.time);
+  if (chordCues.length < 2) return null;
+  const sections = (Array.isArray(map.sections) ? map.sections : [])
+    .map((section) => ({ time: Number(section.time), label: labelCase(section.label) }))
+    .filter((section) => Number.isFinite(section.time) && section.time >= 0 && section.label)
+    .sort((a, b) => a.time - b.time);
+  return {
+    videoId,
+    title: song?.title || 'Práctica con YouTube',
+    chordCues,
+    sections: sections.length ? sections : [{ time: 0, label: 'Inicio' }],
+    sequence: chordCues.map((cue) => cue.chord),
+    hasTimingMap: true,
+    confidence: Number(map.confidence) || null,
+  };
 }
 
 let iframeApiPromise;
@@ -156,7 +57,7 @@ const formatTime = (seconds) => {
 };
 
 export default function YouTubePracticePlayer({ song }) {
-  const practice = useMemo(() => getPracticeForSong(song), [song?.title, song?.artist_name, song?.content_raw, song?.tablature, song?.original_key, song?.youtube_video_id, song?.youtube_embed, song?.youtube_practice_map]);
+  const practice = useMemo(() => getPracticeForSong(song), [song?.title, song?.youtube_video_id, song?.youtube_embed, song?.youtube_practice_map]);
   const targetRef = useRef(null);
   const playerRef = useRef(null);
   const timerRef = useRef(null);
@@ -257,24 +158,16 @@ export default function YouTubePracticePlayer({ song }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-semibold" style={{ color: '#374151' }}>Sección actual: <span style={{ color: '#EA580C' }}>{activeSection?.label || 'Cifrado'}</span></p>
           <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: '#FFF7ED', color: '#C2410C' }}>
-            {practice.hasTimingMap ? `${formatTime(currentTime)} · sincronizada` : 'Secuencia del cifrado'}
+            {`${formatTime(currentTime)} · sincronizada`}
           </span>
         </div>
 
-        {!practice.hasTimingMap && (
-          <p className="mt-3 rounded-xl border px-3 py-2 text-xs leading-relaxed" style={{ borderColor: '#FED7AA', background: '#FFF7ED', color: '#9A3412' }}>
-            Los acordes de esta práctica salen del cifrado real de “{song.title}”. Aún no hay un mapa de segundos guardado, por eso la página no inventa cambios de acorde.
-          </p>
-        )}
-
-        {practice.hasTimingMap && (
-          <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
             {practice.sections.map((section) => {
               const isActive = section.label === activeSection?.label;
               return <button key={`${section.label}-${section.time}`} type="button" onClick={() => startPractice(section.time)} disabled={!isReady || Boolean(error)} className="inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50" style={isActive ? { background: '#F97316', borderColor: '#F97316', color: '#fff' } : { background: '#fff', borderColor: '#FDBA74', color: '#C2410C' }}><PlayCircle className="h-3.5 w-3.5" /> {section.label} · {formatTime(section.time)}</button>;
             })}
-          </div>
-        )}
+        </div>
 
         <div className="mt-6 rounded-3xl border px-5 py-7 text-center" style={{ borderColor: '#FED7AA', background: '#FFFDFB' }}>
           <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>Acorde ahora</p>
@@ -283,19 +176,18 @@ export default function YouTubePracticePlayer({ song }) {
               {activeCue?.chord || song?.original_key || '—'}
             </div>
           </div>
-          <p className="mt-7 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>{practice.hasTimingMap ? 'Próximos cambios' : 'Siguiente en el cifrado'}</p>
+          <p className="mt-7 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>Próximos cambios</p>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             {nextChords.map((item, index) => {
               const cue = typeof item === 'string' ? { chord: item } : item;
-              return <span key={`${cue.time ?? index}-${cue.chord}`} className="rounded-xl border px-3 py-2 text-sm font-bold" style={{ borderColor: '#FDBA74', color: '#C2410C' }}>{cue.chord} {practice.hasTimingMap && <small className="font-medium opacity-70">{formatTime(cue.time)}</small>}</span>;
+              return <span key={`${cue.time ?? index}-${cue.chord}`} className="rounded-xl border px-3 py-2 text-sm font-bold" style={{ borderColor: '#FDBA74', color: '#C2410C' }}>{cue.chord} <small className="font-medium opacity-70">{formatTime(cue.time)}</small></span>;
             })}
           </div>
         </div>
         <p className="mt-4 text-xs leading-relaxed" style={{ color: '#9CA3AF' }}>
-          {practice.hasTimingMap ? 'Sincronización basada en el mapa de tiempos guardado para esta canción.' : 'Para sincronizar esta canción por segundos, añade su mapa de tiempos desde el editor del administrador.'}
+          Sincronización automática del video con el cifrado de esta canción. Confianza del análisis: {practice.confidence ? `${Math.round(practice.confidence * 100)}%` : 'disponible'}.
         </p>
       </div>
     </section>
   );
 }
-
