@@ -153,7 +153,6 @@ Deno.serve(async (req) => {
       chords_used = [],
       spotify_embed = '',
       youtube_embed = '',
-      youtube_practice_map = '',
       artist_image_url = '',
       spotify_artist_url = '',
       is_unplugged = false,
@@ -236,8 +235,8 @@ Deno.serve(async (req) => {
       ...(manualYouTube.embed ? {
         youtube_embed: manualYouTube.embed,
         youtube_video_id: manualYouTube.videoId,
-        youtube_practice_enabled: Boolean(manualYouTube.videoId),
-        ...(youtube_practice_map.trim() ? { youtube_practice_map: youtube_practice_map.trim() } : {}),
+        youtube_practice_enabled: false,
+        youtube_analysis_status: manualYouTube.videoId ? 'queued' : 'not_requested',
       } : {}),
       ...(manualSpotify.embed ? {
         spotify_embed: manualSpotify.embed,
@@ -270,4 +269,3 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
-
