@@ -13,10 +13,7 @@ const DIFF_COLORS = {
 };
 
 function cleanTitle(title) {
-  return (title || '')
-    .replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '')
-    .replace(/\s*\d+$/, '')
-    .trim();
+  return (title || '').replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '').replace(/\s*\d+$/, '').trim();
 }
 
 function getSpotifyEmbedUrl(raw) {
@@ -36,61 +33,21 @@ export default function SongCard({ song }) {
 
   useEffect(() => {
     if (fetched) return;
-    if (storedTrackId) {
-      setFetched(true);
-      return;
-    }
+    if (storedTrackId) { setFetched(true); return; }
     setFetched(true);
     base44.functions.invoke('spotifySearch', { artist: song.artist_name, title: displayTitle })
-      .then((res) => {
-        const trackId = res?.data?.track_id;
-        if (trackId) setEmbedUrl(`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`);
-      })
+      .then((res) => { const trackId = res?.data?.track_id; if (trackId) setEmbedUrl(`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`); })
       .catch(() => {});
   }, [song.id]);
 
-  const actionLink = hasChords
-    ? `/${song.artist_slug}/${song.slug}/acordes`
-    : hasTab
-      ? `/${song.artist_slug}/${song.slug}/tablatura`
-      : `/${song.artist_slug}/${song.slug}`;
+  const actionLink = hasChords ? `/${song.artist_slug}/${song.slug}/acordes` : hasTab ? `/${song.artist_slug}/${song.slug}/tablatura` : `/${song.artist_slug}/${song.slug}`;
   const actionLabel = hasChords ? 'Ver acordes' : hasTab ? 'Ver tablatura' : 'Ver canción';
   const practiceLink = `/${song.artist_slug}/${song.slug}/practicar`;
 
   return (
     <div className="song-card spotify-card bg-white shadow-sm" style={{ border: '1px solid #E5E7EB' }}>
-      {embedUrl ? (
-        <div className="spotify-embed-wrapper">
-          <SpotifyEmbed source={embedUrl} height={152} title={`Spotify: ${displayTitle}`} />
-        </div>
-      ) : (
-        <div className="flex items-center gap-3 px-4 py-4 min-w-0" style={{ borderBottom: '1px solid #E5E7EB', minHeight: '72px' }}>
-          <ArtistAvatar song={song} className="w-10 h-10" />
-          <div className="song-card-info flex-1">
-            <p className="song-card-title text-sm font-bold" style={{ color: '#1F2937' }}>{displayTitle}</p>
-            <p className="song-card-artist text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
-          </div>
-        </div>
-      )}
-      <div className="song-card-content px-3 py-3">
-        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="song-card-info min-w-0">
-            <p className="song-card-title text-sm font-semibold" style={{ color: '#1F2937' }}>{displayTitle}</p>
-            <p className="song-card-artist text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
-          </div>
-          <div className="song-card-actions flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            {diff && <span className="hidden rounded-full px-2 py-0.5 text-[10px] font-bold sm:inline" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
-            <Link to={actionLink} className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-80 sm:flex-none" style={{ backgroundColor: '#F97316' }}>
-              <BookOpen className="h-4 w-4 shrink-0" /> {actionLabel}
-            </Link>
-            {hasYouTubePractice(song) && (
-              <Link to={practiceLink} className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-center text-xs font-bold text-white transition-opacity hover:opacity-80 sm:flex-none" style={{ backgroundColor: '#FF0000' }}>
-                <Youtube className="h-4 w-4 shrink-0" /> Practicar IA + YouTube
-              </Link>
-            )}
-          </div>
-        </div>
-      </div>
+      {embedUrl ? <div className="spotify-embed-wrapper"><SpotifyEmbed source={embedUrl} height={152} title={`Spotify: ${displayTitle}`} /></div> : <div className="flex items-center gap-3 px-4 py-4 min-w-0" style={{ borderBottom: '1px solid #E5E7EB', minHeight: '72px' }}><ArtistAvatar song={song} className="w-10 h-10" /><div className="song-card-info flex-1"><p className="song-card-title text-sm font-bold" style={{ color: '#1F2937' }}>{displayTitle}</p><p className="song-card-artist text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p></div></div>}
+      <div className="song-card-content px-3 py-3"><div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="song-card-info min-w-0"><p className="song-card-title text-sm font-semibold" style={{ color: '#1F2937' }}>{displayTitle}</p><p className="song-card-artist text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p></div><div className="song-card-actions flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">{diff && <span className="hidden rounded-full px-2 py-0.5 text-[10px] font-bold sm:inline" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}<Link to={actionLink} className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-80 sm:flex-none" style={{ backgroundColor: '#F97316' }}><BookOpen className="h-4 w-4 shrink-0" /> {actionLabel}</Link>{hasYouTubePractice(song) && <Link to={practiceLink} className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-center text-xs font-bold text-white transition-opacity hover:opacity-80 sm:flex-none" style={{ backgroundColor: '#FF0000' }}><Youtube className="h-4 w-4 shrink-0" /> Practicar IA + YouTube</Link>}</div></div></div>
     </div>
   );
 }
