@@ -21,8 +21,7 @@ function cleanTitle(title) {
 function getSpotifyEmbedUrl(raw) {
   if (!raw) return null;
   const match = raw.match(/track\/([A-Za-z0-9]+)/);
-  if (match) return `https://open.spotify.com/embed/track/${match[1]}?utm_source=generator&theme=0`;
-  return null;
+  return match ? `https://open.spotify.com/embed/track/${match[1]}?utm_source=generator&theme=0` : null;
 }
 
 export default function SongCard({ song }) {
@@ -30,27 +29,21 @@ export default function SongCard({ song }) {
   const diff = DIFF_COLORS[song.difficulty];
   const hasChords = song.has_chords;
   const hasTab = song.has_tablature;
-
-  // Prefer a stored track id from Spotify sync (confirmed to exist).
   const storedTrackId = song.spotify_track_id || (song.spotify_embed || '').match(/track\/([A-Za-z0-9]+)/)?.[1] || null;
   const [embedUrl, setEmbedUrl] = useState(storedTrackId ? getSpotifyEmbedUrl(`track/${storedTrackId}`) : null);
   const [fetched, setFetched] = useState(false);
 
-  // Always confirm the track exists via search so we never render a 404 player.
   useEffect(() => {
     if (fetched) return;
-    // If sync already matched a track id, trust it and skip the lookup.
-    if (storedTrackId) { setFetched(true); return; }
+    if (storedTrackId) {
+      setFetched(true);
+      return;
+    }
     setFetched(true);
-    base44.functions.invoke('spotifySearch', {
-      artist: song.artist_name,
-      title: displayTitle,
-    })
-      .then(res => {
+    base44.functions.invoke('spotifySearch', { artist: song.artist_name, title: displayTitle })
+      .then((res) => {
         const trackId = res?.data?.track_id;
-        if (trackId) {
-          setEmbedUrl(`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`);
-        }
+        if (trackId) setEmbedUrl(`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`);
       })
       .catch(() => {});
   }, [song.id]);
@@ -58,10 +51,10 @@ export default function SongCard({ song }) {
   const actionLink = hasChords
     ? `/${song.artist_slug}/${song.slug}/acordes`
     : hasTab
-    ? `/${song.artist_slug}/${song.slug}/tablatura`
-    : `/${song.artist_slug}/${song.slug}`;
-
+      ? `/${song.artist_slug}/${song.slug}/tablatura`
+      : `/${song.artist_slug}/${song.slug}`;
   const actionLabel = hasChords ? 'Ver acordes' : hasTab ? 'Ver tablatura' : 'Ver canción';
+  const practiceLink = `/${song.artist_slug}/${song.slug}/practicar`;
 
   return (
     <div className="song-card spotify-card bg-white shadow-sm" style={{ border: '1px solid #E5E7EB' }}>
@@ -79,20 +72,25 @@ export default function SongCard({ song }) {
         </div>
       )}
 
-      <div className="song-card-content grid grid-cols-[110px_minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_auto] gap-3 px-3 py-3">
-        <div className="song-card-info col-span-2 sm:col-span-1">
-          <p className="song-card-title text-sm font-semibold" style={{ color: '#1F2937' }}>{displayTitle}</p>
-          <p className="song-card-artist text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
-        </div>
-        <div className="song-card-actions flex items-center gap-2 sm:col-auto sm:w-auto">
-          {diff && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full hidden sm:inline" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
-          <Link to={actionLink} className="flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-opacity hover:opacity-80" style={{ backgroundColor: '#F97316' }}>
-            {actionLabel}
-          </Link>
-          {hasYouTubePractice(song) && <Link to={`/${song.artist_slug}/${song.slug}/practicar`} className="flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold text-white text-center transition-opacity hover:opacity-80" style={{ backgroundColor: '#FF0000' }}>Practicar con IA - YouTube</Link>}
+      <div className="song-card-content px-3 py-3">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="song-card-info min-w-0">
+            <p className="song-card-title text-sm font-semibold" style={{ color: '#1F2937' }}>{displayTitle}</p>
+            <p className="song-card-artist text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
+          </div>
+          <div className="song-card-actions flex flex-wrap items-center gap-2">
+            {diff && <span className="hidden rounded-full px-2 py-0.5 text-[10px] font-bold sm:inline" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
+            <Link to={actionLink} className="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-bold text-white transition-opacity hover:opacity-80" style={{ backgroundColor: '#F97316' }}>
+              {actionLabel}
+            </Link>
+            {hasYouTubePractice(song) && (
+              <Link to={practiceLink} className="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-center text-xs font-bold text-white transition-opacity hover:opacity-80" style={{ backgroundColor: '#FF0000' }}>
+                Practicar con IA - YouTube
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
