@@ -1,18 +1,25 @@
-# Reparación urgente de carga
+# Actualización UX: práctica con IA y YouTube
 
-## Qué corrige
+## Archivos a subir
 
-El componente de resultados importa `@/lib/youtubePractice`, pero ese archivo
-no llegó al repositorio. Vite detiene la compilación por ese import faltante y
-por eso el preview queda completamente en blanco.
+Sube los cuatro archivos conservando exactamente estas rutas en GitHub:
 
-## Cómo subirlo
+- `src/lib/youtubePractice.js`
+- `src/components/chat/SongCard.jsx`
+- `src/components/YouTubePracticePlayer.jsx`
+- `src/pages/SongPage.jsx`
 
-1. En GitHub abre la carpeta `src/lib`.
-2. Elige **Add file → Upload files**.
-3. Sube únicamente `youtubePractice.js` de esta carpeta.
-4. Confirma el commit y espera a que Base44 sincronice.
-5. En Base44 pulsa **Refresh preview**.
+En GitHub entra en cada carpeta y usa **Add file → Upload files**. Sobrescribe
+solamente el archivo equivalente, sin borrar ni reemplazar la carpeta `src`.
 
-No borres ni vuelvas a cargar toda la carpeta `src`. Este ZIP contiene solo
-el archivo faltante.
+## Resultado
+
+- La tarjeta de **Silent Lucidity** mostrará ambos botones: naranja para acordes
+  y rojo **Practicar con IA - YouTube**.
+- Una canción con URL/iframe de YouTube cargado desde Admin mostrará el botón
+  rojo automáticamente.
+- La vista normal muestra Spotify y acordes; la ruta `/practicar` muestra
+  únicamente la práctica de YouTube, sin duplicar el reproductor de Spotify.
+- El acorde activo de la práctica queda grande y centrado.
+
+No modifica entidades ni datos de canciones.
