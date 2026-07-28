@@ -75,6 +75,7 @@ const AuthenticatedApp = () => {
         <Route path="/infografias/:slug" element={<InfographicPage />} />
         <Route path="/:artistSlug" element={<ArtistPage />} />
         <Route path="/:artistSlug/:songSlug" element={<SongPage />} />
+        <Route path="/:artistSlug/:songSlug/practicar" element={<SongPage />} />
         <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />
       </Route>
       {/* Admin routes — require an authenticated platform admin */}
@@ -103,3 +104,4 @@ function App() {
 }
 
 export default App
+
