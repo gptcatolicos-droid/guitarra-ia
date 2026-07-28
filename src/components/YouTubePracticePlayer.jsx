@@ -1,7 +1,34 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ExternalLink, PlayCircle, Youtube } from 'lucide-react';
 import { extractChordsFromContent } from '@/lib/musicTheory';
-import { getYouTubePracticeForSong } from '@/lib/youtubePractice';
+
+const normalize = (value = '') => value
+  .toString()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, ' ')
+  .trim();
+
+function getYouTubePracticeForSong(song) {
+  const title = normalize(song?.title);
+  const artist = normalize(song?.artist_name);
+
+  if (!title.includes('silent lucidity') || !artist.includes('queensryche')) return null;
+
+  return {
+    videoId: 'jhat-xUQ6dw',
+    title: 'Silent Lucidity — Queensrÿche',
+    sections: [
+      { time: 0, label: 'Intro' },
+      { time: 31, label: 'Verso' },
+      { time: 73, label: 'Coro' },
+      { time: 123, label: 'Verso' },
+      { time: 181, label: 'Puente' },
+      { time: 228, label: 'Coro final' },
+    ],
+  };
+}
 
 let iframeApiPromise;
 
