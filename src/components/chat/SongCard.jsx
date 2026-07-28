@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { BookOpen, Youtube } from 'lucide-react';
 import ArtistAvatar from '@/components/ArtistAvatar';
 import SpotifyEmbed from '@/components/SpotifyEmbed';
 import { hasYouTubePractice } from '@/lib/youtubePractice';
@@ -71,21 +72,20 @@ export default function SongCard({ song }) {
           </div>
         </div>
       )}
-
       <div className="song-card-content px-3 py-3">
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="song-card-info min-w-0">
             <p className="song-card-title text-sm font-semibold" style={{ color: '#1F2937' }}>{displayTitle}</p>
             <p className="song-card-artist text-xs" style={{ color: '#6B7280' }}>{song.artist_name}</p>
           </div>
-          <div className="song-card-actions flex flex-wrap items-center gap-2">
+          <div className="song-card-actions flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             {diff && <span className="hidden rounded-full px-2 py-0.5 text-[10px] font-bold sm:inline" style={{ backgroundColor: diff.bg, color: diff.color }}>{song.difficulty}</span>}
-            <Link to={actionLink} className="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-bold text-white transition-opacity hover:opacity-80" style={{ backgroundColor: '#F97316' }}>
-              {actionLabel}
+            <Link to={actionLink} className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white transition-opacity hover:opacity-80 sm:flex-none" style={{ backgroundColor: '#F97316' }}>
+              <BookOpen className="h-4 w-4 shrink-0" /> {actionLabel}
             </Link>
             {hasYouTubePractice(song) && (
-              <Link to={practiceLink} className="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-center text-xs font-bold text-white transition-opacity hover:opacity-80" style={{ backgroundColor: '#FF0000' }}>
-                Practicar con IA - YouTube
+              <Link to={practiceLink} className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-center text-xs font-bold text-white transition-opacity hover:opacity-80 sm:flex-none" style={{ backgroundColor: '#FF0000' }}>
+                <Youtube className="h-4 w-4 shrink-0" /> Practicar IA + YouTube
               </Link>
             )}
           </div>
