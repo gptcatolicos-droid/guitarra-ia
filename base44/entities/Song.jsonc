@@ -1,0 +1,326 @@
+{
+  "name": "Song",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "artist_id": {
+      "type": "string"
+    },
+    "artist_name": {
+      "type": "string"
+    },
+    "artist_slug": {
+      "type": "string"
+    },
+    "album": {
+      "type": "string"
+    },
+    "year": {
+      "type": "number"
+    },
+    "original_key": {
+      "type": "string"
+    },
+    "capo": {
+      "type": "number",
+      "default": 0
+    },
+    "tuning": {
+      "type": "string"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "Fácil",
+        "Intermedia",
+        "Avanzada"
+      ]
+    },
+    "language": {
+      "type": "string"
+    },
+    "has_chords": {
+      "type": "boolean",
+      "default": false
+    },
+    "has_tablature": {
+      "type": "boolean",
+      "default": false
+    },
+    "content_raw": {
+      "type": "string"
+    },
+    "tablature": {
+      "type": "string"
+    },
+    "chords_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "default": "published"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_trending": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_hero": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_easy_pick": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_unplugged": {
+      "type": "boolean",
+      "default": false
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "spotify_embed": {
+      "type": "string"
+    },
+    "youtube_embed": {
+      "type": "string"
+    },
+    "youtube_video_id": {
+      "type": "string"
+    },
+    "youtube_practice_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "spotify_track_id": {
+      "type": "string"
+    },
+    "spotify_uri": {
+      "type": "string"
+    },
+    "spotify_url": {
+      "type": "string"
+    },
+    "spotify_embed_url": {
+      "type": "string"
+    },
+    "spotify_track_name": {
+      "type": "string"
+    },
+    "spotify_artist_name": {
+      "type": "string"
+    },
+    "spotify_album_name": {
+      "type": "string"
+    },
+    "spotify_duration_ms": {
+      "type": "number"
+    },
+    "spotify_isrc": {
+      "type": "string"
+    },
+    "spotify_match_score": {
+      "type": "number"
+    },
+    "spotify_match_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "matched",
+        "review_required",
+        "not_found",
+        "error",
+        "disabled"
+      ],
+      "default": "pending"
+    },
+    "spotify_match_method": {
+      "type": "string",
+      "enum": [
+        "isrc",
+        "exact_artist_title",
+        "fuzzy_artist_title",
+        "manual",
+        "existing_url"
+      ]
+    },
+    "spotify_last_sync": {
+      "type": "string"
+    },
+    "spotify_sync_error": {
+      "type": "string"
+    },
+    "spotify_manual_lock": {
+      "type": "boolean",
+      "default": false
+    },
+    "seo_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "generated",
+        "review_required",
+        "approved",
+        "published",
+        "error",
+        "disabled"
+      ],
+      "default": "pending"
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "seo_meta_description": {
+      "type": "string"
+    },
+    "seo_h1": {
+      "type": "string"
+    },
+    "seo_intro": {
+      "type": "string"
+    },
+    "seo_how_to_play": {
+      "type": "string"
+    },
+    "seo_easy_version_text": {
+      "type": "string"
+    },
+    "seo_original_key_text": {
+      "type": "string"
+    },
+    "seo_capo_text": {
+      "type": "string"
+    },
+    "seo_strumming_text": {
+      "type": "string"
+    },
+    "seo_chord_explanation": {
+      "type": "string"
+    },
+    "seo_beginner_tips": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "seo_faq": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "seo_keyword_cluster": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "seo_related_song_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "seo_content_hash": {
+      "type": "string"
+    },
+    "seo_source_hash": {
+      "type": "string"
+    },
+    "seo_generated_at": {
+      "type": "string"
+    },
+    "seo_updated_at": {
+      "type": "string"
+    },
+    "seo_manual_lock": {
+      "type": "boolean",
+      "default": false
+    },
+    "seo_review_notes": {
+      "type": "string"
+    },
+    "seo_quality_score": {
+      "type": "number"
+    },
+    "youtube_practice_map": {
+      "type": "string",
+      "description": "Mapa de acordes y segundos generado desde audio privado autorizado para la práctica."
+    },
+    "youtube_analysis_status": {
+      "type": "string",
+      "enum": [
+        "not_requested",
+        "awaiting_audio",
+        "queued",
+        "processing",
+        "ready",
+        "error"
+      ],
+      "default": "not_requested"
+    },
+    "youtube_analysis_error": {
+      "type": "string"
+    },
+    "youtube_analysis_confidence": {
+      "type": "number"
+    },
+    "youtube_analysis_provider": {
+      "type": "string"
+    },
+    "youtube_analysis_updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "slug",
+    "artist_name",
+    "artist_slug"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
