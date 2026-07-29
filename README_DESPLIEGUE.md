@@ -1,81 +1,123 @@
-# Análisis automático: Práctica con IA + YouTube
+# Práctica IA + YouTube: análisis privado con ChordMini
 
-Este paquete reemplaza las guías piloto por un flujo real: al guardar una URL de YouTube desde el administrador, GuitarraIA toma los acordes del cifrado de esa canción, prepara un análisis privado y sólo muestra el botón rojo cuando recibe un mapa de tiempos válido.
+Este paquete añade un flujo administrado para sincronizar una canción del catálogo con su video de YouTube. El administrador pega el enlace del video y adjunta un audio autorizado de la **misma versión**. El worker privado analiza ese audio con ChordMini, contrasta sus acordes contra el cifrado ya guardado en GuitarraIA y conserva únicamente el mapa de tiempos resultante.
 
-## Qué se sube al repositorio de GuitarraIA
+## Garantías del flujo
 
-Sube el contenido de estas carpetas conservando sus rutas:
+- El audio no se publica ni se entrega al navegador de los usuarios.
+- Se carga a un bucket privado y se borra automáticamente al terminar, tanto si el análisis funciona como si falla.
+- La regla de ciclo de vida de un día es una red de seguridad para archivos que no alcancen a borrarse.
+- No se crean claves JSON de cuentas de servicio.
+- El usuario final solo ve el video oficial de YouTube y el mapa de acordes guardado en la canción.
 
-- `src/`
-- `base44/entities/Song.jsonc`
-- `base44/functions/`
-- `cloud-run/chordmini-worker/`
+## Qué debe subir el administrador
 
-`cloud-run/` va en la raíz del repositorio, no dentro de `src/`. Así GitHub conserva también el código que se despliega en Google Cloud Run.
+En el editor de una canción:
 
-`base44/entities/Song.jsonc` ya es el archivo completo y conserva todas las propiedades actuales. Sólo añade seis propiedades para el análisis; no modifica canciones, artistas, ni datos existentes. No subas el archivo `Song.practice-analysis-fields.jsonc`: es únicamente una referencia del cambio incluido en el archivo completo.
+1. Pega el enlace de YouTube oficial.
+2. Adjunta un archivo autorizado `mp3`, `wav`, `m4a`, `aac` u `ogg` de máximo 80 MB, correspondiente a esa misma versión del video.
+3. Guarda la canción.
 
-## Despliegue privado del analizador en Google Cloud
+El panel mostrará el estado `Audio privado pendiente`, `En cola`, `Analizando`, `Listo` o `Revisar`. Cuando termine, la página de práctica utiliza los tiempos guardados para mostrar el acorde actual, próximos cambios y secciones.
 
-La cuenta de servicio ya creada debe seguir siendo:
+> Importante: si el cifrado está transpuesto frente al audio/video, no se debe forzar una sincronización falsa. El worker valida los resultados contra los acordes del cifrado y dejará el registro para revisión cuando no haya coincidencias fiables.
 
-`guitarraia-chordmini-worker@guitarraia.iam.gserviceaccount.com`
+## Recursos de Google Cloud ya creados
 
-En Cloud Shell, desde una carpeta donde esté `cloud-run/chordmini-worker`, crea primero el repositorio de imágenes si aún no existe:
+- Proyecto: `guitarraia`
+- Bucket privado: `guitarraia-chordmini-temp`
+- Cuenta de servicio de Cloud Run: `guitarraia-chordmini-worker@guitarraia.iam.gserviceaccount.com`
+- Rol de la cuenta de servicio: `roles/storage.objectUser`
+- Regla de ciclo de vida: borrar objetos a partir de un día
 
-```bash
-gcloud artifacts repositories create chordmini --repository-format=docker --location=us-central1 --project=guitarraia
+No cambies el bucket a público y no generes una clave de la cuenta de servicio. Cloud Run recibe su identidad de Google directamente.
+
+## 1. Subir los archivos del paquete
+
+Copia cada archivo a la misma ruta dentro del repositorio de GuitarraIA. Los archivos de `base44/` se sincronizan con Base44; el directorio `cloud-run/chordmini-worker/` se despliega aparte en Cloud Run.
+
+Antes de desplegar, revisa que no se hayan sustituido versiones más recientes de tus archivos existentes. Este paquete no cambia canciones, artistas ni datos actuales.
+
+## 2. Crear secretos
+
+Genera cuatro valores largos y aleatorios. No los pongas en el repositorio.
+
+En Base44 configura:
+
+```text
+YOUTUBE_PRACTICE_WORKER_URL=https://URL-DEL-WORKER
+YOUTUBE_PRACTICE_REQUEST_SECRET=valor-aleatorio-1
+YOUTUBE_PRACTICE_UPLOAD_SECRET=valor-aleatorio-2
+YOUTUBE_PRACTICE_CALLBACK_SECRET=valor-aleatorio-3
 ```
 
-Genera dos secretos distintos. No los guardes en GitHub ni los pegues en el chat:
+En Google Secret Manager crea los tres mismos secretos que consume Cloud Run:
 
-```bash
-openssl rand -hex 32
-openssl rand -hex 32
+```text
+youtube-practice-request-secret
+youtube-practice-upload-secret
+youtube-practice-callback-secret
 ```
 
-Crea en Secret Manager los secretos con esos valores:
+Usa como contenido exactamente los valores 1, 2 y 3 de Base44, respectivamente. El cuarto valor de Base44 es la URL pública del worker después de desplegarlo.
+
+## 3. Construir y desplegar Cloud Run
+
+Desde el directorio `cloud-run/chordmini-worker` ejecuta estos comandos en Cloud Shell. Sustituye `BASE44_CALLBACK_URL` por la URL pública exacta de la función `completeYouTubePracticeAnalysis` una vez Base44 haya sincronizado las funciones.
 
 ```bash
-printf %s 'PRIMER_VALOR' | gcloud secrets create guitarraia-practice-request --data-file=- --project=guitarraia
-printf %s 'SEGUNDO_VALOR' | gcloud secrets create guitarraia-practice-callback --data-file=- --project=guitarraia
+gcloud artifacts repositories create chordmini \
+  --repository-format=docker \
+  --location=us-central1 \
+  --description="Imagen privada de análisis ChordMini" \
+  --project=guitarraia
+
+gcloud builds submit \
+  --tag us-central1-docker.pkg.dev/guitarraia/chordmini/practice-worker:1 \
+  --project=guitarraia
+
+gcloud run deploy guitarraia-chordmini-worker \
+  --image us-central1-docker.pkg.dev/guitarraia/chordmini/practice-worker:1 \
+  --region us-central1 \
+  --service-account guitarraia-chordmini-worker@guitarraia.iam.gserviceaccount.com \
+  --min-instances 1 \
+  --no-cpu-throttling \
+  --memory 2Gi \
+  --cpu 2 \
+  --timeout 900 \
+  --concurrency 1 \
+  --max-instances 1 \
+  --allow-unauthenticated \
+  --set-env-vars AUDIO_TEMP_BUCKET=guitarraia-chordmini-temp,BASE44_CALLBACK_URL=BASE44_CALLBACK_URL,ALLOWED_ORIGINS=https://guitarraia.com,https://www.guitarraia.com,MAX_AUDIO_BYTES=83886080 \
+  --set-secrets YOUTUBE_PRACTICE_REQUEST_SECRET=youtube-practice-request-secret:latest,YOUTUBE_PRACTICE_UPLOAD_SECRET=youtube-practice-upload-secret:latest,YOUTUBE_PRACTICE_CALLBACK_SECRET=youtube-practice-callback-secret:latest \
+  --project=guitarraia
 ```
 
-Da a la cuenta de Cloud Run acceso de lectura a los dos secretos:
+`--allow-unauthenticated` solo permite que el navegador suba el audio temporal mediante un ticket HMAC de corta duración; el worker sigue validando firma, canción, ruta y tamaño. No convierte el bucket ni el audio en públicos.
 
-```bash
-gcloud secrets add-iam-policy-binding guitarraia-practice-request --member=serviceAccount:guitarraia-chordmini-worker@guitarraia.iam.gserviceaccount.com --role=roles/secretmanager.secretAccessor --project=guitarraia
-gcloud secrets add-iam-policy-binding guitarraia-practice-callback --member=serviceAccount:guitarraia-chordmini-worker@guitarraia.iam.gserviceaccount.com --role=roles/secretmanager.secretAccessor --project=guitarraia
-```
+Si pruebas desde el editor de Base44, añade temporalmente el origen exacto de su preview a `ALLOWED_ORIGINS`. En producción deja solo los dominios de GuitarraIA.
 
-Compila y despliega desde la carpeta `cloud-run/chordmini-worker`:
+Después del despliegue copia la URL de Cloud Run a `YOUTUBE_PRACTICE_WORKER_URL` en los secretos de Base44 y actualiza el valor de `BASE44_CALLBACK_URL` en Cloud Run si aún estaba pendiente.
 
-```bash
-gcloud builds submit --tag us-central1-docker.pkg.dev/guitarraia/chordmini/guitarraia-chordmini:1 --project=guitarraia
-gcloud run deploy guitarraia-chordmini --image us-central1-docker.pkg.dev/guitarraia/chordmini/guitarraia-chordmini:1 --region=us-central1 --project=guitarraia --service-account=guitarraia-chordmini-worker@guitarraia.iam.gserviceaccount.com --allow-unauthenticated --memory=8Gi --cpu=4 --timeout=900 --concurrency=1 --max-instances=1 --min-instances=0 --set-env-vars=AUDIO_TEMP_BUCKET=guitarraia-chordmini-temp,BASE44_CALLBACK_URL=https://www.guitarraia.com/functions/completeYouTubePracticeAnalysis --set-secrets=YOUTUBE_PRACTICE_REQUEST_SECRET=guitarraia-practice-request:latest,YOUTUBE_PRACTICE_CALLBACK_SECRET=guitarraia-practice-callback:latest
-```
+## 4. Pruebas de aceptación
 
-`--allow-unauthenticated` sólo permite que Base44 llegue al endpoint. Cada solicitud sigue exigiendo una firma HMAC privada; las URLs sin firma son rechazadas. El bucket no es público.
+Haz dos pruebas antes de procesar más canciones:
 
-Al finalizar, copia la URL que devuelve Cloud Run y guárdala en Base44 como secreto `YOUTUBE_PRACTICE_WORKER_URL`.
+1. **Hysteria**: pega el video correcto, adjunta el audio autorizado de esa misma versión y confirma que el primer acorde detectado coincide con el cifrado (`D`, no el mapa piloto anterior en `G`).
+2. **Silent Lucidity**: repite la carga y comprueba que cambian el acorde actual, los próximos acordes y las secciones mientras avanza el video.
 
-Guarda los mismos valores privados en los secretos de Base44:
+Comprueba en Cloud Storage que el objeto desaparezca tras la finalización. La regla de un día solo debe actuar como respaldo.
 
-```bash
-base44 secrets set YOUTUBE_PRACTICE_WORKER_URL='URL_DE_CLOUD_RUN'
-base44 secrets set YOUTUBE_PRACTICE_REQUEST_SECRET='PRIMER_VALOR'
-base44 secrets set YOUTUBE_PRACTICE_CALLBACK_SECRET='SEGUNDO_VALOR'
-```
+## Operación y calidad
 
-## Operación para el administrador
+- Procesa pocas canciones a la vez: Cloud Run está deliberadamente configurado con concurrencia 1 para no agotar CPU ni memoria.
+- Conserva el cifrado corregido de cada canción; es la referencia con la que se filtra ChordMini.
+- Revisa el primer resultado de cada tipo de fuente. Reconocer acordes sobre una mezcla terminada es probabilístico y puede requerir corrección cuando la versión, afinación o transposición no coincide.
+- Para volver a analizar una canción, guarda de nuevo un audio autorizado y su video. El mapa anterior se reemplaza únicamente cuando el nuevo análisis termina correctamente.
 
-1. Abre una canción, pega únicamente una URL de YouTube y guarda.
-2. La canción queda en estado de análisis. Todavía no se muestra el botón público.
-3. El servicio procesa el audio temporalmente, lo elimina y devuelve un mapa de tiempos filtrado por los acordes del cifrado existente.
-4. Cuando el estado sea `ready`, aparecen los botones de práctica en los cards y en la canción.
+## Qué no hace este paquete
 
-No hay editor manual de segundos. Si el análisis no identifica suficientes cambios compatibles con el cifrado, marca error y no publica una guía falsa.
-
-## Derechos y uso
-
-Utiliza esta automatización únicamente con videos y audio para los que GuitarraIA tenga autorización de análisis. El archivo temporal no se publica ni se conserva: el proceso lo borra inmediatamente y Cloud Storage lo elimina como respaldo después de un día.
+- No descarga audio de YouTube o Spotify.
+- No acepta enlaces públicos de usuarios para procesarlos.
+- No reproduce ni expone el archivo de audio cargado.
+- No altera el catálogo existente hasta que el administrador inicia un análisis de una canción concreta.
