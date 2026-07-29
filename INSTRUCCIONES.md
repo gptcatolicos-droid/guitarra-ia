@@ -1,10 +1,28 @@
-# Reparación de pantalla blanca — YouTube Practice
+# Reparación: importador de audio para Práctica IA + YouTube
 
-Esta reparación sustituye **dos archivos existentes** y no borra canciones, entidades ni datos.
+Este paquete corrige el error actual de pantalla blanca:
 
-1. En GitHub abre la carpeta `src/lib` y reemplaza `youtubePractice.js` por el archivo de este paquete.
-2. Abre la carpeta `src/components` y reemplaza `YouTubePracticePlayer.jsx` por el archivo de este paquete.
-3. Haz un único commit con ambos cambios y espera a que Base44 sincronice.
-4. Refresca la vista previa.
+`Failed to resolve import "@/lib/youtubePracticeUpload"`
 
-Los dos archivos se entregan juntos porque el componente anterior intentaba importar funciones que no estaban presentes en la versión de `youtubePractice.js` que quedó publicada. Esa incompatibilidad detiene Vite y deja la aplicación completamente en blanco.
+## Qué subir
+
+Sube únicamente este archivo a la misma ruta dentro de tu repositorio:
+
+`src/lib/youtubePracticeUpload.js`
+
+No borres ni reemplaces `SongCreatorForm.jsx`: ya tiene el import correcto y solo le faltaba este archivo.
+
+## Cómo hacerlo desde GitHub
+
+1. Extrae este ZIP en tu computador.
+2. En GitHub, entra a la carpeta `src`, después a `lib`.
+3. Selecciona **Add file → Upload files** y carga `youtubePracticeUpload.js`.
+4. Confirma el commit y espera la sincronización de Base44. Luego actualiza el preview.
+
+Mensaje sugerido para el commit:
+
+`fix: add private YouTube practice upload helper`
+
+## Seguridad
+
+Este archivo no modifica canciones, entidades ni datos del catálogo. Solicita al backend una carga firmada privada, sube el audio temporalmente y encola el análisis existente. No hace público el audio.
