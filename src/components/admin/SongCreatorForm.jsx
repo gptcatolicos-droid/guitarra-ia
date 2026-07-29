@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Plus, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { uploadAndQueueYouTubePractice } from '@/lib/youtubePracticeUpload';
 
 const DIFFICULTIES = ['Fácil', 'Intermedia', 'Avanzada'];
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',
@@ -28,6 +29,7 @@ export default function SongCreatorForm({ onCreated }) {
   const [form, setForm] = useState(EMPTY);
   const [status, setStatus] = useState(null); // null | 'loading' | 'success' | 'error' | 'duplicate'
   const [message, setMessage] = useState('');
+  const [practiceAudio, setPracticeAudio] = useState(null);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -36,6 +38,12 @@ export default function SongCreatorForm({ onCreated }) {
     setStatus('loading');
     setMessage('');
 
+    if (practiceAudio && !form.youtube_embed.trim()) {
+      setStatus('error');
+      setMessage('Pega primero el enlace de YouTube para asociar el audio autorizado.');
+      return;
+    }
+
     try {
       const res = await base44.functions.invoke('createSongWithArtist', {
         ...form,
@@ -43,17 +51,19 @@ export default function SongCreatorForm({ onCreated }) {
       });
       const data = res.data;
       let practiceQueued = false;
-      if (form.youtube_embed && data.songId) {
+      let practiceWarning = '';
+      if (practiceAudio && data.songId) {
         try {
-          const analysis = await base44.functions.invoke('requestYouTubePracticeAnalysis', { songId: data.songId });
-          practiceQueued = analysis?.data?.status === 'queued';
-        } catch (_) {
-          // La canción queda guardada. El mensaje no promete una práctica hasta que el servicio esté listo.
+          const analysis = await uploadAndQueueYouTubePractice(base44, data.songId, practiceAudio);
+          practiceQueued = analysis?.status === 'queued';
+        } catch (analysisError) {
+          practiceWarning = ` La canción fue creada, pero el análisis no se inició: ${analysisError.message}. Puedes reintentarlo desde el editor.`;
         }
       }
       setStatus('success');
-      setMessage(`Canción creada. Artista ${data.artistCreated ? 'nuevo creado' : 'reutilizado'}.${practiceQueued ? ' El análisis de práctica quedó en cola y aparecerá cuando termine.' : form.youtube_embed ? ' El enlace de YouTube quedó guardado; la práctica aparecerá cuando el analizador esté configurado y termine.' : ''}`);
+      setMessage(`Canción creada. Artista ${data.artistCreated ? 'nuevo creado' : 'reutilizado'}.${practiceWarning || (practiceQueued ? ' El análisis de práctica quedó en cola y aparecerá cuando termine.' : form.youtube_embed ? ' El enlace de YouTube quedó guardado; la práctica aparecerá cuando el analizador esté configurado y termine.' : '')}`);
       setForm(EMPTY);
+      setPracticeAudio(null);
       onCreated && onCreated();
     } catch (err) {
       const data = err?.response?.data || {};
@@ -147,7 +157,15 @@ export default function SongCreatorForm({ onCreated }) {
         <input className={`${inputCls} font-mono text-xs`} value={form.youtube_embed}
           onChange={e => set('youtube_embed', e.target.value)}
           placeholder='https://www.youtube.com/watch?v=...' />
-        <p className="text-xs text-muted-foreground mt-1">Pega solo el enlace normal. Al guardar, GuitarraIA analiza el audio de forma privada y sincroniza los acordes del cifrado automáticamente. El botón público aparece solo cuando el análisis termina.</p>
+        <p className="text-xs text-muted-foreground mt-1">Pega el enlace normal. El botón público aparece solo cuando subas el audio autorizado y termine el análisis.</p>
+      </div>
+
+      <div>
+        <label className={labelCls}>Audio autorizado para sincronizar (opcional)</label>
+        <input type="file" accept="audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg"
+          className={`${inputCls} file:mr-3 file:border-0 file:bg-primary/10 file:text-primary file:font-medium file:rounded-md file:px-2 file:py-1`}
+          onChange={e => setPracticeAudio(e.target.files?.[0] || null)} />
+        <p className="text-xs text-muted-foreground mt-1">Máximo 80 MB. Se sube a un bucket privado, se analiza con ChordMini y se elimina automáticamente; GuitarraIA conserva solo el mapa de acordes y tiempos.</p>
       </div>
 
       {/* Artist identity — stored once in Artist and used by every song card */}
