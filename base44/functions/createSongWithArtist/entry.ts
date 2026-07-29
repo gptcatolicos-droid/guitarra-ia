@@ -236,7 +236,7 @@ Deno.serve(async (req) => {
         youtube_embed: manualYouTube.embed,
         youtube_video_id: manualYouTube.videoId,
         youtube_practice_enabled: false,
-        youtube_analysis_status: manualYouTube.videoId ? 'queued' : 'not_requested',
+        youtube_analysis_status: manualYouTube.videoId ? 'awaiting_audio' : 'not_requested',
       } : {}),
       ...(manualSpotify.embed ? {
         spotify_embed: manualSpotify.embed,
