@@ -38,7 +38,7 @@ function validObjectName(songId: string, objectName: string) {
   const filename = objectName.slice(prefix.length);
   if (!filename || filename.includes('/') || filename.includes('..')) return false;
 
-  return /^[A-Za-z0-9._-]+\.(mp3|wav|m4a|aac|ogg)$/i.test(filename);
+  return /\.(mp3|wav|m4a|aac|ogg)$/i.test(filename);
 }
 
 async function hmac(secret: string, payload: string) {
