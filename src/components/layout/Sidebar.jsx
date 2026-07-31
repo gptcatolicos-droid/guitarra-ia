@@ -1,13 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, LayoutGrid, Radio, Guitar,
-  BookOpen, ShoppingBag, Images, X, MessageCircleMore
+  BookOpen, ShoppingBag, Images, X, MessageCircleMore, PlayCircle
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 
 const navItems = [
   { icon: Home, label: 'Inicio', path: '/' },
   { icon: Radio, label: 'Afinador IA', path: '/afinador' },
+  { icon: PlayCircle, label: 'Practicar con IA', path: '/practicar', badge: 'NUEVO' },
   { icon: Guitar, label: 'Unplugged', path: '/unplugged' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
   { icon: BookOpen, label: 'Blog', path: '/blog' },
