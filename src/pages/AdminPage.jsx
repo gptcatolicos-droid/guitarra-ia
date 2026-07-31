@@ -376,7 +376,18 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
             placeholder="Pega el enlace: https://www.youtube.com/watch?v=..."
             className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-red-500"
           />
-          <p className="text-xs text-muted-foreground mt-1">Solo pega la URL. Al guardar, GuitarraIA analiza el video de forma privada y sincroniza los acordes del cifrado sin que tengas que crear un mapa manual.</p>
+          <p className="text-xs text-muted-foreground mt-1">Pega la URL del video oficial y sube un audio autorizado de la misma versión.</p>
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-foreground mb-1.5">Audio autorizado para sincronizar</label>
+            <input
+              type="file"
+              accept="audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg"
+              onChange={(e) => setPracticeAudio(e.target.files?.[0] || null)}
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs text-foreground"
+            />
+            <p className="text-xs text-muted-foreground mt-1">MP3, WAV, M4A, AAC u OGG. Máximo 80 MB.</p>
+          </div>
+          {practiceUploadError && <p className="mt-2 text-xs font-medium text-red-600">{practiceUploadError}</p>}
           {youtubeUrl && <p className="mt-2 text-xs font-medium text-red-600">Estado de práctica: {analysisStatus === 'ready' ? 'lista para publicar' : analysisStatus === 'error' ? 'requiere reintento' : 'analizando automáticamente'}</p>}
         </div>
 
