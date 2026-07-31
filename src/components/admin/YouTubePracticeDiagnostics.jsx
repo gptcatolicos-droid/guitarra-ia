@@ -40,6 +40,7 @@ export default function YouTubePracticeDiagnostics() {
 
   const configuration = result?.configuration || {};
   const worker = result?.worker || {};
+  const secretMatches = result?.secret_matches || {};
 
   return (
     <section className="rounded-xl border border-border bg-card p-6">
@@ -87,6 +88,15 @@ export default function YouTubePracticeDiagnostics() {
               <StatusRow label="Secreto de solicitudes" ok={configuration.request_secret} />
               <StatusRow label="Secreto de carga" ok={configuration.upload_secret} />
               <StatusRow label="Secreto de callback" ok={configuration.callback_secret} />
+            </div>
+          </div>
+
+          <div>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Coincidencia de secretos</h3>
+            <div className="grid gap-3 md:grid-cols-3">
+              <StatusRow label="Secreto de carga coincide" ok={secretMatches.upload} detail={secretMatches.upload ? 'Base44 y Cloud Run usan el mismo valor.' : 'Los valores no coinciden o el worker aún no expone la huella.'} />
+              <StatusRow label="Secreto de solicitudes coincide" ok={secretMatches.request} detail={secretMatches.request ? 'Base44 y Cloud Run usan el mismo valor.' : 'Los valores no coinciden o el worker aún no expone la huella.'} />
+              <StatusRow label="Secreto de callback coincide" ok={secretMatches.callback} detail={secretMatches.callback ? 'Base44 y Cloud Run usan el mismo valor.' : 'Los valores no coinciden o el worker aún no expone la huella.'} />
             </div>
           </div>
 
