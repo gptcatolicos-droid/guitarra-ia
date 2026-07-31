@@ -116,6 +116,7 @@ function SongEditor({ song, onClose, onSaved }) {
   const [spotifyEmbed, setSpotifyEmbed] = useState(song.spotify_embed || '');
   const [youtubeUrl, setYoutubeUrl] = useState(song.youtube_embed || (song.youtube_video_id ? `https://www.youtube.com/watch?v=${song.youtube_video_id}` : ''));
   const [analysisStatus, setAnalysisStatus] = useState(song.youtube_analysis_status || 'not_requested');
+  const [practiceEnabled, setPracticeEnabled] = useState(Boolean(song.youtube_practice_enabled));
   const [practiceAudio, setPracticeAudio] = useState(null);
   const [practiceUploadError, setPracticeUploadError] = useState('');
   const [artistRecord, setArtistRecord] = useState(null);
@@ -138,6 +139,7 @@ function SongEditor({ song, onClose, onSaved }) {
         setSpotifyEmbed(fresh.spotify_embed || '');
         setYoutubeUrl(fresh.youtube_embed || (fresh.youtube_video_id ? `https://www.youtube.com/watch?v=${fresh.youtube_video_id}` : ''));
         setAnalysisStatus(fresh.youtube_analysis_status || 'not_requested');
+        setPracticeEnabled(Boolean(fresh.youtube_practice_enabled));
         setIsUnplugged(Boolean(fresh.is_unplugged));
       }
     });
@@ -200,6 +202,7 @@ function SongEditor({ song, onClose, onSaved }) {
       spotify_embed: spotifyEmbed || null,
       youtube_embed: trimmedYoutubeUrl || null,
       youtube_video_id: youtubeVideoId || null,
+      youtube_practice_enabled: analysisStatus === 'ready' ? practiceEnabled : false,
       ...(youtubeChanged ? {
         youtube_practice_enabled: false,
         youtube_practice_map: null,
@@ -389,6 +392,19 @@ Devuelve SOLO el cifrado completo corregido/mejorado, sin explicaciones adiciona
           </div>
           {practiceUploadError && <p className="mt-2 text-xs font-medium text-red-600">{practiceUploadError}</p>}
           {youtubeUrl && <p className="mt-2 text-xs font-medium text-red-600">Estado de práctica: {analysisStatus === 'ready' ? 'lista para publicar' : analysisStatus === 'error' ? 'requiere reintento' : 'analizando automáticamente'}</p>}
+          <label className={`mt-3 flex items-start gap-3 rounded-xl border p-3 ${analysisStatus === 'ready' ? 'cursor-pointer bg-orange-50/60' : 'cursor-not-allowed bg-gray-50 opacity-60'}`} style={{ borderColor: analysisStatus === 'ready' ? '#FDBA74' : '#E5E7EB' }}>
+            <input
+              type="checkbox"
+              checked={practiceEnabled}
+              disabled={analysisStatus !== 'ready'}
+              onChange={(e) => setPracticeEnabled(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-orange-500"
+            />
+            <span>
+              <b className="block text-xs text-foreground">Publicar en “Practicar con IA”</b>
+              <small className="mt-0.5 block text-[11px] text-muted-foreground">Al activarla aparecerá en la página de prácticas y podrá destacarse debajo del hero.</small>
+            </span>
+          </label>
         </div>
 
         <div className="px-4 py-3 border-b border-border bg-secondary/20 grid grid-cols-1 sm:grid-cols-2 gap-3">
