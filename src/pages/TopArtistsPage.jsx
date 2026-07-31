@@ -5,7 +5,7 @@ import { Sparkles } from 'lucide-react';
 import { useSEO } from '@/lib/seo';
 
 export default function TopArtistsPage() {
-  useSEO({ title: 'Artistas | Guitarra IA', canonical: 'https://www.guitarraia.com/artistas' });
+  useSEO({ title: 'Artistas | Guitarra IA', canonical: 'https://guitarraia.com/artistas' });
   const navigate = useNavigate();
   const [artists, setArtists] = useState([]);
   const [loading, setLoading] = useState(true);

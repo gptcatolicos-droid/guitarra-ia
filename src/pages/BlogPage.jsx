@@ -27,7 +27,7 @@ export default function BlogPage() {
   useSEO({
     title: 'Blog de Guitarra — Guías, Acordes, Técnicas | Guitarra IA',
     description: 'Aprende guitarra con guías completas: acordes, ritmos, técnicas, tipos de guitarras y canciones recomendadas en guitarraia.com.',
-    canonical: 'https://www.guitarraia.com/blog',
+    canonical: 'https://guitarraia.com/blog',
   });
 
   useEffect(() => {

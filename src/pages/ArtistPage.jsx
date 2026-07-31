@@ -14,7 +14,7 @@ export default function ArtistPage() {
   useSEO({
     title: artist ? `${artist.name} — Acordes y Tablaturas | Guitarra IA` : 'Artista | Guitarra IA',
     description: artist ? `Canciones de ${artist.name} con acordes y tablaturas de guitarra en guitarraia.com.` : '',
-    canonical: `https://www.guitarraia.com/${artistSlug}`,
+    canonical: `https://guitarraia.com/${artistSlug}`,
     jsonLd: artist ? {
       '@context': 'https://schema.org',
       '@type': 'MusicGroup',

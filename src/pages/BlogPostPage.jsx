@@ -49,15 +49,15 @@ export default function BlogPostPage() {
   useSEO({
     title: post ? `${post.title} | Guitarra IA` : 'Blog | Guitarra IA',
     description: post?.excerpt || 'Artículo de guitarra en guitarraia.com',
-    canonical: `https://www.guitarraia.com/blog/${slug}`,
+    canonical: `https://guitarraia.com/blog/${slug}`,
     jsonLd: post ? {
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: post.title,
       description: post.excerpt,
-      url: `https://www.guitarraia.com/blog/${slug}`,
+      url: `https://guitarraia.com/blog/${slug}`,
       author: { '@type': 'Organization', name: 'Guitarra IA' },
-      publisher: { '@type': 'Organization', name: 'Guitarra IA', url: 'https://www.guitarraia.com' },
+      publisher: { '@type': 'Organization', name: 'Guitarra IA', url: 'https://guitarraia.com' },
       keywords: post.tags ? post.tags.join(', ') : '',
     } : undefined,
   });

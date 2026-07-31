@@ -61,7 +61,7 @@ export default function UnpluggedPage() {
   useSEO({
     title: 'Unplugged — Canciones acústicas para guitarra | GuitarraIA',
     description: 'Una selección Unplugged de canciones para tocar en guitarra, con reproductor oficial de Spotify, acordes y tablaturas.',
-    canonical: 'https://www.guitarraia.com/unplugged',
+    canonical: 'https://guitarraia.com/unplugged',
   });
 
   useEffect(() => {

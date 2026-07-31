@@ -93,7 +93,7 @@ export default function Home() {
     title: 'Guitarra IA — Acordes, tablaturas y asistente IA | guitarraia.com',
     description: 'Busca acordes, tablaturas y cifrados de guitarra con inteligencia artificial.',
     image: LOGO_URL,
-    canonical: 'https://www.guitarraia.com/',
+    canonical: 'https://guitarraia.com/',
   });
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 
-const CANONICAL_ORIGIN = 'https://www.guitarraia.com';
+const CANONICAL_ORIGIN = 'https://guitarraia.com';
 const OUTPUT_DIR = resolve('public');
 
 const STATIC_PATHS = [

@@ -3,7 +3,7 @@
 ## Qué se corrigió
 
 Google Search Console solo procesa la respuesta de la URL pública
-`https://www.guitarraia.com/sitemap.xml`. El panel anterior intentaba auditar una
+`https://guitarraia.com/sitemap.xml`. El panel anterior intentaba auditar una
 función interna de Base44 desde el navegador, lo que podía fallar por CORS y no
 comprobaba el archivo que realmente recibe Google.
 
@@ -27,7 +27,7 @@ lo entregue directamente. El generador elimina URLs repetidas usando la pareja
 1. Copia las carpetas y archivos conservando exactamente sus rutas.
 2. Sube los cambios descomprimidos a GitHub; no subas el ZIP como un solo archivo.
 3. Espera la sincronización con Base44 y publica una nueva versión de la app.
-4. Abre `https://www.guitarraia.com/sitemap.xml` en una ventana privada.
+4. Abre `https://guitarraia.com/sitemap.xml` en una ventana privada.
 5. En Admin → Sitemap, pulsa **Verificar sitemap público**. Debe mostrar HTTP 200,
    XML y “Listo para enviar”.
 6. En Google Search Console, vuelve a enviar `sitemap.xml`.

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, CheckCircle, Copy, ExternalLink, Globe, RefreshCw, XCircle } from 'lucide-react';
 
-const CANONICAL = 'https://www.guitarraia.com';
+const CANONICAL = 'https://guitarraia.com';
 const SITEMAP_URL = `${CANONICAL}/sitemap.xml`;
 const ROBOTS_URL = `${CANONICAL}/robots.txt`;
 
@@ -165,7 +165,7 @@ export default function SitemapPanel() {
         <ol className="list-decimal space-y-1 pl-5 text-xs leading-relaxed text-muted-foreground">
           <li>Publica primero estos cambios y espera a que Base44 termine la sincronización.</li>
           <li>Abre el sitemap en una ventana privada y ejecuta la verificación anterior.</li>
-          <li>En Search Console, envía <strong className="text-foreground">sitemap.xml</strong> para la propiedad <strong className="text-foreground">https://www.guitarraia.com/</strong>.</li>
+          <li>En Search Console, envía <strong className="text-foreground">sitemap.xml</strong> para la propiedad <strong className="text-foreground">https://guitarraia.com/</strong>.</li>
         </ol>
         {[{ label: 'Sitemap público', url: SITEMAP_URL }, { label: 'robots.txt público', url: ROBOTS_URL }].map((item) => (
           <div key={item.url} className="flex items-center gap-2 rounded-lg border border-border p-3">

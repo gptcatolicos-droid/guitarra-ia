@@ -58,7 +58,7 @@ export default function PracticePage() {
   useSEO({
     title: 'Practicar con IA y YouTube | Guitarra IA',
     description: 'Practica canciones seleccionadas con video de YouTube, acordes y diagramas sincronizados en tiempo real.',
-    canonical: 'https://www.guitarraia.com/practicar',
+    canonical: 'https://guitarraia.com/practicar',
   });
 
   useEffect(() => {

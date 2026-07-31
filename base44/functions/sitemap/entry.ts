@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 // Canonical domain — ALWAYS https + www, single host, no trailing slash.
-const SITE_URL = 'https://www.guitarraia.com';
+const SITE_URL = 'https://guitarraia.com';
 
 // Public, indexable static pages. Excludes admin, login, internal search filters, previews.
 const STATIC_URLS = [

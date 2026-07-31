@@ -16,7 +16,7 @@ function cleanTitle(t) {
 }
 
 export default function TopSongsPage() {
-  useSEO({ title: 'Canciones | Guitarra IA', canonical: 'https://www.guitarraia.com/canciones' });
+  useSEO({ title: 'Canciones | Guitarra IA', canonical: 'https://guitarraia.com/canciones' });
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
 

@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /buscar
 Disallow: /chat
 
-Sitemap: https://www.guitarraia.com/sitemap.xml
+Sitemap: https://guitarraia.com/sitemap.xml
