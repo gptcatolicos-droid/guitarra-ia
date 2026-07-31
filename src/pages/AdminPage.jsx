@@ -199,7 +199,7 @@ function SongEditor({ song, onClose, onSaved }) {
       ...(youtubeChanged ? {
         youtube_practice_enabled: false,
         youtube_practice_map: null,
-        youtube_analysis_status: youtubeVideoId ? 'queued' : 'not_requested',
+        youtube_analysis_status: youtubeVideoId ? 'awaiting_audio' : 'not_requested',
         youtube_analysis_error: null,
       } : {}),
       // A pasted player is an editorial decision. Protect it from all future
@@ -217,12 +217,7 @@ function SongEditor({ song, onClose, onSaved }) {
     await base44.entities.Song.update(song.id, updateData);
 
     if (youtubeVideoId && youtubeChanged) {
-      try {
-        await base44.functions.invoke('requestYouTubePracticeAnalysis', { songId: song.id });
-        setAnalysisStatus('queued');
-      } catch (error) {
-        alert(error?.response?.data?.error || 'La canción se guardó, pero no se pudo iniciar el análisis de YouTube.');
-      }
+      setAnalysisStatus('awaiting_audio');
     }
 
     // Artist images are deliberately kept on Artist, not copied into Song.
