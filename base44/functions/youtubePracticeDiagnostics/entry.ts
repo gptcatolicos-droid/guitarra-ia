@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
 
     if (workerUrl) {
       try {
-        const response = await fetch(workerUrl.replace(/\/$/, '') + '/healthz', {
+        const response = await fetch(workerUrl.replace(/\/$/, '') + '/health', {
           headers: { accept: 'application/json' },
           signal: AbortSignal.timeout(10000),
         });
