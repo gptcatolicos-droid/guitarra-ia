@@ -224,6 +224,25 @@ function SongEditor({ song, onClose, onSaved }) {
       setAnalysisStatus('awaiting_audio');
     }
 
+    if (practiceAudio) {
+      if (!youtubeVideoId) {
+        setSaving(false);
+        setPracticeUploadError('Guarda primero un enlace válido de YouTube para esta canción.');
+        return;
+      }
+
+      try {
+        setPracticeUploadError('');
+        setAnalysisStatus('queued');
+        await uploadAndQueueYouTubePractice(base44, song.id, practiceAudio);
+      } catch (error) {
+        setSaving(false);
+        setAnalysisStatus('error');
+        setPracticeUploadError(error?.message || 'No se pudo subir o analizar el audio.');
+        return;
+      }
+    }
+
     // Artist images are deliberately kept on Artist, not copied into Song.
     // This one update is reflected by every song/card for this artist.
     if (resolvedArtist && (
