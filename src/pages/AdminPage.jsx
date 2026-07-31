@@ -18,6 +18,7 @@ import SitemapPanel from '@/components/admin/SitemapPanel';
 import FacebookPostManager from '@/components/admin/FacebookPostManager';
 import InfographicsManager from '@/components/admin/InfographicsManager';
 import SongFlagsRepair from '@/components/admin/SongFlagsRepair';
+import YouTubePracticeDiagnostics from '@/components/admin/YouTubePracticeDiagnostics';
 import { invalidateArtistImage } from '@/components/ArtistAvatar';
 import { getYouTubeVideoId } from '@/lib/youtubePractice';
 
@@ -671,7 +672,7 @@ export default function AdminPage() {
           { id: 'import', label: 'Importar' }, { id: 'hero', label: 'Hero Banner' }, { id: 'trending', label: 'Tendencias' },
           { id: 'store', label: 'Guitar Store' }, { id: 'infographics', label: 'Infografías' }, { id: 'spotify', label: 'Spotify Sync' },
           { id: 'seo', label: 'SEO' }, { id: 'sitemap', label: 'Sitemap' }, { id: 'stats', label: 'Estadísticas' },
-          { id: 'facebook', label: 'Facebook' }, { id: 'repair', label: 'Reparar canciones' }, { id: 'theme', label: 'Tema' },
+          { id: 'facebook', label: 'Facebook' }, { id: 'practice', label: 'Práctica IA' }, { id: 'repair', label: 'Reparar canciones' }, { id: 'theme', label: 'Tema' },
         ].map((t) => <button key={t.id} onClick={() => setTab(t.id)} className={`min-h-11 py-2 px-3 rounded-xl text-sm font-medium transition-colors ${tab === t.id ? 'bg-card text-foreground border border-border shadow-sm' : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-card'}`}>{t.label}</button>)}
       </div>
 
@@ -762,6 +763,8 @@ Tengo la camisa negra...`}</pre>
           <FacebookPostManager />
         </div>
       )}
+
+      {tab === 'practice' && <YouTubePracticeDiagnostics />}
 
       {tab === 'repair' && <SongFlagsRepair allSongsList={allSongsList} onCompleted={loadStats} />}
 
