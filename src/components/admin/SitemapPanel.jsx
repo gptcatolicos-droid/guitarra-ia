@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, CheckCircle, Copy, ExternalLink, Globe, RefreshCw, XCircle } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const CANONICAL = 'https://guitarraia.com';
 const SITEMAP_URL = `${CANONICAL}/sitemap.xml`;
@@ -33,19 +34,6 @@ function analyzeSitemap(text, status, contentType) {
     contentType,
     firstUrl: locs[0] || '—',
     lastUrl: locs.at(-1) || '—',
-  };
-}
-
-async function request(url) {
-  const response = await fetch(`${url}?audit=${Date.now()}`, {
-    headers: { Accept: 'application/xml,text/plain;q=0.9,*/*;q=0.1' },
-    cache: 'no-store',
-  });
-  const text = await response.text();
-  return {
-    status: response.status,
-    contentType: response.headers.get('content-type') || 'sin cabecera',
-    text,
   };
 }
 
@@ -83,17 +71,16 @@ export default function SitemapPanel() {
     setLoading(true);
     setError('');
     try {
-      const [sitemap, robots] = await Promise.all([request(SITEMAP_URL), request(ROBOTS_URL)]);
-      const report = analyzeSitemap(sitemap.text, sitemap.status, sitemap.contentType);
+      const response = await base44.functions.invoke('auditPublicSitemap', {});
+      const report = response?.data || response;
+      if (report?.error) throw new Error(report.error);
       setResult({
         ...report,
-        robotsStatus: robots.status,
-        robotsHasSitemap: robots.text.includes(`Sitemap: ${SITEMAP_URL}`),
-        auditedAt: new Date().toLocaleString('es-CO'),
+        auditedAt: new Date(report.auditedAt || Date.now()).toLocaleString('es-CO'),
       });
     } catch (auditError) {
       setResult(null);
-      setError('No fue posible leer el sitemap público. Comprueba que la versión publicada ya terminó de sincronizarse e inténtalo de nuevo.');
+      setError(auditError?.response?.data?.error || auditError?.message || 'No fue posible auditar el sitemap público desde el servidor.');
     } finally {
       setLoading(false);
     }
@@ -142,11 +129,12 @@ export default function SitemapPanel() {
             </div>
           </div>
           <div>
+            <DataRow label="URL final" value={result.finalUrl || SITEMAP_URL} mono />
             <DataRow label="Content-Type" value={result.contentType} mono />
             <DataRow label="URLs encontradas" value={result.locCount} />
             <DataRow label="URLs duplicadas" value={result.duplicateCount} />
-            <DataRow label="URLs fuera de www.guitarraia.com" value={result.invalidUrls.length} />
-            <DataRow label="Rutas privadas incluidas" value={result.privateUrls.length} />
+            <DataRow label="URLs fuera de guitarraia.com" value={result.invalidUrlCount ?? result.invalidUrls?.length ?? 0} />
+            <DataRow label="Rutas privadas incluidas" value={result.privateUrlCount ?? result.privateUrls?.length ?? 0} />
             <DataRow label="robots.txt" value={`HTTP ${result.robotsStatus} · ${result.robotsHasSitemap ? 'declara el sitemap correcto' : 'no declara el sitemap correcto'}`} />
             <DataRow label="Primera URL" value={result.firstUrl} mono />
             <DataRow label="Última URL" value={result.lastUrl} mono />
