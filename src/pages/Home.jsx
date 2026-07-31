@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { TrendingUp, Music, ChevronRight, ChevronDown, ChevronUp, Star, BookOpen, Radio, Guitar, PlayCircle, Sparkles, Youtube } from 'lucide-react';
+import { TrendingUp, Music, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Star, BookOpen, Radio, Guitar, PlayCircle, Sparkles, Youtube } from 'lucide-react';
 import HeroSearchChat from '@/components/home/HeroSearchChat';
 import ArtistAvatar from '@/components/ArtistAvatar';
 import SpotifyEmbed from '@/components/SpotifyEmbed';
@@ -36,6 +36,11 @@ function orderTrendingSongs(songs, randomMode) {
     return (b.views || 0) - (a.views || 0);
   });
   return randomMode ? shuffleSongs(ordered) : ordered;
+}
+
+function carouselWindow(items, start, size) {
+  if (!items.length) return [];
+  return Array.from({ length: Math.min(size, items.length) }, (_, offset) => items[(start + offset) % items.length]);
 }
 
 function hasSpotifyPlayer(song) {
@@ -87,7 +92,8 @@ export default function Home() {
   const [easySongs, setEasySongs] = useState([]);
   const [unpluggedSongs, setUnpluggedSongs] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
-  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [trendingIndex, setTrendingIndex] = useState(0);
+  const [popularIndex, setPopularIndex] = useState(0);
   const [practiceExpanded, setPracticeExpanded] = useState(false);
   const [unpluggedExpanded, setUnpluggedExpanded] = useState(false);
 
@@ -137,8 +143,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setCarouselIndex((index) => Math.min(index, Math.max(trendingSongs.length - 1, 0)));
+    setTrendingIndex((index) => Math.min(index, Math.max(trendingSongs.length - 1, 0)));
   }, [trendingSongs.length]);
+
+  useEffect(() => {
+    setPopularIndex((index) => Math.min(index, Math.max(allSpotifySongs.length - 1, 0)));
+  }, [allSpotifySongs.length]);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F8F9FB' }}>
@@ -266,32 +276,23 @@ export default function Home() {
                 Ver todas <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
-            {/* Desktop: 3 col grid */}
             <div className="hidden sm:grid grid-cols-3 gap-4">
-              {trendingSongs.slice(0, 3).map(song => <SpotifySongCard key={song.id} song={song} />)}
+              {carouselWindow(trendingSongs, trendingIndex, 3).map(song => <SpotifySongCard key={song.id} song={song} />)}
             </div>
-            {/* Mobile: carousel */}
             <div className="sm:hidden">
-              <SpotifySongCard song={trendingSongs[carouselIndex]} />
-              <div className="flex items-center justify-between mt-3">
-                <button onClick={() => setCarouselIndex(i => (i - 1 + trendingSongs.length) % trendingSongs.length)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full"
-                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}>
-                  <ChevronRight className="w-4 h-4 rotate-180" />
+              <SpotifySongCard song={trendingSongs[trendingIndex]} />
+            </div>
+            {trendingSongs.length > 1 && (
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button type="button" aria-label="Canciones anteriores" onClick={() => setTrendingIndex(i => (i - 1 + trendingSongs.length) % trendingSongs.length)} className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm" style={{ border: '1px solid #E5E7EB', color: '#C2410C' }}>
+                  <ChevronLeft className="h-5 w-5" />
                 </button>
-                <div className="flex gap-1.5">
-                  {trendingSongs.map((_, i) => (
-                    <span key={i} className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: i === carouselIndex ? '#F97316' : '#D1D5DB' }} />
-                  ))}
-                </div>
-                <button onClick={() => setCarouselIndex(i => (i + 1) % trendingSongs.length)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full"
-                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}>
-                  <ChevronRight className="w-4 h-4" />
+                <span className="min-w-16 text-center text-xs font-semibold" style={{ color: '#6B7280' }}>{trendingIndex + 1} de {trendingSongs.length}</span>
+                <button type="button" aria-label="Canciones siguientes" onClick={() => setTrendingIndex(i => (i + 1) % trendingSongs.length)} className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm" style={{ border: '1px solid #E5E7EB', color: '#C2410C' }}>
+                  <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
-            </div>
+            )}
           </div>
         </section>
       )}
@@ -309,9 +310,23 @@ export default function Home() {
                 Ver todas <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {allSpotifySongs.map(song => <SpotifySongCard key={song.id} song={song} />)}
+            <div className="hidden sm:grid grid-cols-3 gap-4">
+              {carouselWindow(allSpotifySongs, popularIndex, 3).map(song => <SpotifySongCard key={song.id} song={song} />)}
             </div>
+            <div className="sm:hidden">
+              <SpotifySongCard song={allSpotifySongs[popularIndex]} />
+            </div>
+            {allSpotifySongs.length > 1 && (
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button type="button" aria-label="Más vistas anteriores" onClick={() => setPopularIndex(i => (i - 1 + allSpotifySongs.length) % allSpotifySongs.length)} className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm" style={{ border: '1px solid #E5E7EB', color: '#C2410C' }}>
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <span className="min-w-16 text-center text-xs font-semibold" style={{ color: '#6B7280' }}>{popularIndex + 1} de {allSpotifySongs.length}</span>
+                <button type="button" aria-label="Más vistas siguientes" onClick={() => setPopularIndex(i => (i + 1) % allSpotifySongs.length)} className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm" style={{ border: '1px solid #E5E7EB', color: '#C2410C' }}>
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}
