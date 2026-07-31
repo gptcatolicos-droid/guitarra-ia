@@ -60,28 +60,30 @@ export default function SpotifyPlayer({ song, compact = false }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2 px-4 pb-4 pt-1">
-        <a
-          href={spotifyTrackUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 min-h-11 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ background: '#1DB954' }}
-        >
-          <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-          Spotify
-        </a>
-        <a
-          href={youtubeMusicUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 min-h-11 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ background: '#FF0000' }}
-        >
-          <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">YouTube Music</span>
-        </a>
-      </div>
+      {!embedSrc && (
+        <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2 px-4 pb-4 pt-1">
+          <a
+            href={spotifyTrackUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 min-h-11 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ background: '#1DB954' }}
+          >
+            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+            Spotify
+          </a>
+          <a
+            href={youtubeMusicUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 min-h-11 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ background: '#FF0000' }}
+          >
+            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">YouTube Music</span>
+          </a>
+        </div>
+      )}
     </div>
   );
 }
