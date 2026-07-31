@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+// deployment-version: private-audio-validation-v3
 
 const CHORD = /\b([A-G](?:#|b)?(?:(?:maj|min|m|M|sus|add|dim|aug)?\d*)?(?:\/[A-G](?:#|b)?)?)\b/g;
 const SECTION = /^\s*\[?\s*(intro|verso|coro|pre[-\s]?coro|puente|solo|outro|interludio|estrofa)\s*\]?/i;
