@@ -24,7 +24,7 @@ export default function YouTubePracticeDiagnostics() {
     setLoading(true);
     setError('');
     try {
-      const response = await base44.functions.invoke('youtubePracticeDiagnostics', {});
+      const response = await base44.functions.invoke('youtubePracticeDiagnosticsV2', {});
       setResult(response?.data || response);
     } catch (diagnosticError) {
       setResult(null);
