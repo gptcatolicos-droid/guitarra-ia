@@ -160,6 +160,7 @@ def process(payload):
     audio_path = temp_dir / ('source' + Path(object_name).suffix.lower())
     blob = None
     try:
+        callback({'song_id': song_id, 'video_id': video_id, 'status': 'processing'})
         if not BUCKET_NAME:
             raise RuntimeError('Falta configurar AUDIO_TEMP_BUCKET.')
         blob = storage.Client().bucket(BUCKET_NAME).blob(object_name)
