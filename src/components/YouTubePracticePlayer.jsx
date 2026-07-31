@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ExternalLink, PauseCircle, PlayCircle, Youtube } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import ChordDiagram from '@/components/ChordDiagram';
+import { getChordDiagram } from '@/lib/musicTheory';
 
 // Se mantienen aquí los dos lectores mínimos para que el reproductor nunca
 // haga caer la aplicación si el archivo auxiliar todavía no se ha actualizado.
@@ -112,6 +115,9 @@ export default function YouTubePracticePlayer({ song }) {
     return cues.slice(Math.max(0, activeIndex + 1), Math.max(0, activeIndex + 5));
   }, [activeCue, practice]);
 
+  const activeChordName = activeCue?.chord || song?.original_key || '—';
+  const activeChordDiagram = useMemo(() => getChordDiagram(activeChordName), [activeChordName]);
+
   useEffect(() => {
     if (!practice || !targetRef.current) return undefined;
     let disposed = false;
@@ -206,7 +212,27 @@ export default function YouTubePracticePlayer({ song }) {
         </div>
         <div className="mt-6 rounded-3xl border px-5 py-7 text-center" style={{ borderColor: '#FED7AA', background: '#FFFDFB' }}>
           <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>Acorde ahora</p>
-          <div className="mt-4 flex justify-center"><div className="flex h-40 min-w-52 items-center justify-center rounded-3xl px-8 text-7xl font-black shadow-lg" style={{ color: '#fff', background: 'linear-gradient(135deg, #FB923C, #F97316)' }}>{activeCue?.chord || song?.original_key || '—'}</div></div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeChordName}
+              initial={{ opacity: 0, y: 12, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.97 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="mx-auto mt-4 grid max-w-2xl grid-cols-1 items-center gap-5 sm:grid-cols-[minmax(0,1fr)_220px]"
+            >
+              <div className="flex min-h-44 items-center justify-center rounded-3xl px-8 text-7xl font-black shadow-lg sm:text-8xl" style={{ color: '#fff', background: 'linear-gradient(135deg, #FB923C, #F97316)' }}>
+                {activeChordName}
+              </div>
+              <div className="flex min-h-44 items-center justify-center rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor: '#FED7AA' }}>
+                <div className="flex h-[150px] w-[120px] items-center justify-center">
+                  <div style={{ transform: 'scale(1.75)', transformOrigin: 'center' }}>
+                    <ChordDiagram chordName={activeChordName} diagram={activeChordDiagram} capo={song?.capo || 0} playable={false} />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
           <p className="mt-7 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>Próximos cambios</p>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             {nextChords.map((cue, index) => <span key={`${cue.time}-${cue.chord}-${index}`} className="rounded-xl border px-3 py-2 text-sm font-bold" style={{ borderColor: '#FDBA74', color: '#C2410C' }}>{cue.chord} <small className="font-medium opacity-70">{formatTime(cue.time)}</small></span>)}
