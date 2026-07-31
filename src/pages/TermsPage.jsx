@@ -41,8 +41,7 @@ const spanishSections = [
     title: '5. No almacenamiento ni distribución de canciones',
     body: [
       'GuitarraIA no aloja, almacena, distribuye, descarga, retransmite ni pone a disposición archivos completos de audio o video de canciones comerciales.',
-      'Los contenidos audiovisuales reproducidos mediante embeds son servidos directamente por la plataforma externa correspondiente. GuitarraIA no permite descargar, extraer o eludir las protecciones, anuncios, controles o restricciones de esos servicios.',
-      'Cuando se utiliza temporalmente un archivo de audio autorizado para generar un mapa de práctica o sincronización, dicho archivo se procesa únicamente para esa finalidad técnica, no se publica como canción, no se ofrece al público y debe eliminarse al finalizar el procesamiento, salvo obligación legal o necesidad técnica excepcional debidamente justificada.'
+      'Los contenidos audiovisuales reproducidos mediante embeds son servidos directamente por la plataforma externa correspondiente. GuitarraIA no permite descargar, extraer o eludir las protecciones, anuncios, controles o restricciones de esos servicios.'
     ]
   },
   {
@@ -161,8 +160,7 @@ const englishSections = [
     title: '5. No storage or distribution of songs',
     body: [
       'GuitarraIA does not host, store, distribute, download, retransmit, or make available complete audio or video files of commercial songs.',
-      'Audiovisual content played through embeds is served directly by the relevant external platform. GuitarraIA does not enable users to download, extract, or bypass protections, advertising, controls, or restrictions imposed by those services.',
-      'Where an authorized audio file is temporarily used to generate a practice or synchronization map, it is processed only for that technical purpose, is not published as a song, is not offered to the public, and should be deleted after processing unless retention is legally required or exceptionally necessary for a justified technical reason.'
+      'Audiovisual content played through embeds is served directly by the relevant external platform. GuitarraIA does not enable users to download, extract, or bypass protections, advertising, controls, or restrictions imposed by those services.'
     ]
   },
   {
