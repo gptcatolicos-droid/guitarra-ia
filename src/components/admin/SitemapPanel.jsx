@@ -6,37 +6,6 @@ const CANONICAL = 'https://guitarraia.com';
 const SITEMAP_URL = `${CANONICAL}/sitemap.xml`;
 const ROBOTS_URL = `${CANONICAL}/robots.txt`;
 
-function analyzeSitemap(text, status, contentType) {
-  const locs = [...text.matchAll(/<loc>([\s\S]*?)<\/loc>/g)].map((match) => match[1].trim());
-  const unique = new Set(locs);
-  const invalidUrls = locs.filter((loc) => !loc.startsWith(`${CANONICAL}/`));
-  const privateUrls = locs.filter((loc) => /\/(admin|buscar|chat)(?:[/?#]|$)/.test(loc));
-  const isHtml = /<!doctype html|<html|<div id="root"/i.test(text);
-  const hasXmlDeclaration = /^\s*<\?xml/i.test(text);
-  const hasUrlset = /<urlset\b/i.test(text);
-  const isValid = status === 200
-    && hasXmlDeclaration
-    && hasUrlset
-    && locs.length > 0
-    && !isHtml
-    && invalidUrls.length === 0
-    && privateUrls.length === 0;
-
-  return {
-    isValid,
-    isHtml,
-    hasXmlDeclaration,
-    hasUrlset,
-    locCount: locs.length,
-    duplicateCount: locs.length - unique.size,
-    invalidUrls,
-    privateUrls,
-    contentType,
-    firstUrl: locs[0] || '—',
-    lastUrl: locs.at(-1) || '—',
-  };
-}
-
 function Status({ ok, children }) {
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${ok ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
