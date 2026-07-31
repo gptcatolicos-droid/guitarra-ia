@@ -210,7 +210,7 @@ export default function YouTubePracticePlayer({ song }) {
             return <button key={`${section.label}-${section.time}`} type="button" onClick={() => startPractice(section.time)} disabled={!isReady || Boolean(error)} className="inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50" style={isActive ? { background: '#F97316', borderColor: '#F97316', color: '#fff' } : { background: '#fff', borderColor: '#FDBA74', color: '#C2410C' }}><PlayCircle className="h-3.5 w-3.5" /> {section.label} · {formatTime(section.time)}</button>;
           })}
         </div>
-        <div className="mt-6 rounded-3xl border px-5 py-7 text-center" style={{ borderColor: '#FED7AA', background: '#FFFDFB' }}>
+        <div className="mt-4 rounded-3xl border px-3 py-4 text-center sm:mt-6 sm:px-5 sm:py-7" style={{ borderColor: '#FED7AA', background: '#FFFDFB' }}>
           <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>Acorde ahora</p>
           <AnimatePresence mode="wait">
             <motion.div
@@ -219,21 +219,21 @@ export default function YouTubePracticePlayer({ song }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.97 }}
               transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="mx-auto mt-4 grid max-w-2xl grid-cols-1 items-center gap-5 sm:grid-cols-[minmax(0,1fr)_220px]"
+              className="mx-auto mt-3 grid max-w-2xl grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-stretch gap-2 sm:mt-4 sm:grid-cols-[minmax(0,1fr)_220px] sm:gap-5"
             >
-              <div className="flex min-h-44 items-center justify-center rounded-3xl px-8 text-7xl font-black shadow-lg sm:text-8xl" style={{ color: '#fff', background: 'linear-gradient(135deg, #FB923C, #F97316)' }}>
+              <div className="flex min-h-36 items-center justify-center rounded-2xl px-3 text-5xl font-black shadow-lg sm:min-h-44 sm:rounded-3xl sm:px-8 sm:text-8xl" style={{ color: '#fff', background: 'linear-gradient(135deg, #FB923C, #F97316)' }}>
                 {activeChordName}
               </div>
-              <div className="flex min-h-44 items-center justify-center rounded-3xl border bg-white p-5 shadow-sm" style={{ borderColor: '#FED7AA' }}>
-                <div className="flex h-[150px] w-[120px] items-center justify-center">
-                  <div style={{ transform: 'scale(1.75)', transformOrigin: 'center' }}>
+              <div className="flex min-h-36 items-center justify-center overflow-hidden rounded-2xl border bg-white p-1 shadow-sm sm:min-h-44 sm:rounded-3xl sm:p-5" style={{ borderColor: '#FED7AA' }}>
+                <div className="flex h-[136px] w-[106px] items-center justify-center sm:h-[150px] sm:w-[120px]">
+                  <div className="scale-[1.28] sm:scale-[1.75]" style={{ transformOrigin: 'center' }}>
                     <ChordDiagram chordName={activeChordName} diagram={activeChordDiagram} capo={song?.capo || 0} playable={false} />
                   </div>
                 </div>
               </div>
             </motion.div>
           </AnimatePresence>
-          <p className="mt-7 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>Próximos cambios</p>
+          <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] sm:mt-7" style={{ color: '#9CA3AF' }}>Próximos cambios</p>
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             {nextChords.map((cue, index) => <span key={`${cue.time}-${cue.chord}-${index}`} className="rounded-xl border px-3 py-2 text-sm font-bold" style={{ borderColor: '#FDBA74', color: '#C2410C' }}>{cue.chord} <small className="font-medium opacity-70">{formatTime(cue.time)}</small></span>)}
           </div>
