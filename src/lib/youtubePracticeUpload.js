@@ -60,7 +60,7 @@ export async function uploadAndQueueYouTubePractice(base44, songId, file) {
   let uploadResponse;
   try {
     uploadResponse = await fetch(uploadTicket.upload_url, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'content-type': uploadTicket.content_type || file.type || 'application/octet-stream',
         'x-guitarraia-timestamp': uploadTicket.timestamp || '',
