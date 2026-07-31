@@ -116,6 +116,8 @@ function SongEditor({ song, onClose, onSaved }) {
   const [spotifyEmbed, setSpotifyEmbed] = useState(song.spotify_embed || '');
   const [youtubeUrl, setYoutubeUrl] = useState(song.youtube_embed || (song.youtube_video_id ? `https://www.youtube.com/watch?v=${song.youtube_video_id}` : ''));
   const [analysisStatus, setAnalysisStatus] = useState(song.youtube_analysis_status || 'not_requested');
+  const [practiceAudio, setPracticeAudio] = useState(null);
+  const [practiceUploadError, setPracticeUploadError] = useState('');
   const [artistRecord, setArtistRecord] = useState(null);
   const [artistImageUrl, setArtistImageUrl] = useState('');
   const [artistSpotifyUrl, setArtistSpotifyUrl] = useState('');
