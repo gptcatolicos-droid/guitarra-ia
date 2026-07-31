@@ -41,7 +41,8 @@ export async function uploadAndQueueYouTubePractice(base44, songId, file) {
 
   let uploadTicket;
   try {
-    const response = await base44.functions.invoke('completeYouTubePracticeAnalysis', {
+    const response = await base44.functions.invoke('requestYouTubePracticeAnalysis', {
+      action: 'create_upload_ticket',
       songId,
       filename: file.name,
       contentType: file.type || 'application/octet-stream',
