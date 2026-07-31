@@ -253,8 +253,8 @@ def analyze():
     return jsonify({'accepted': True}), 202
 
 
-@app.get('/healthz')
-def healthz():
+@app.get('/health')
+def health():
     return jsonify({'ok': True, 'storage': bool(BUCKET_NAME), 'chordmini_url': CHORDMINI_URL})
 
 
