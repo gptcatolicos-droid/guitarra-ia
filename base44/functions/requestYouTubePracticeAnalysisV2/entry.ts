@@ -37,6 +37,12 @@ async function hmac(secret: string, payload: string) {
   return Array.from(new Uint8Array(signature)).map((n) => n.toString(16).padStart(2, '0')).join('');
 }
 
+async function fingerprint(secret: string | undefined) {
+  if (!secret) return 'missing';
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret));
+  return Array.from(new Uint8Array(digest)).map((n) => n.toString(16).padStart(2, '0')).join('').slice(0, 16);
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   try {
@@ -45,6 +51,20 @@ Deno.serve(async (req) => {
 
     const payload = await req.json();
     const { action, songId, audioObjectName, filename, contentType, size } = payload;
+
+    if (action === 'diagnostics') {
+      const workerUrl = Deno.env.get('YOUTUBE_PRACTICE_WORKER_URL');
+      const uploadSecret = Deno.env.get('YOUTUBE_PRACTICE_UPLOAD_SECRET');
+      const requestSecret = Deno.env.get('YOUTUBE_PRACTICE_REQUEST_SECRET');
+      const callbackSecret = Deno.env.get('YOUTUBE_PRACTICE_CALLBACK_SECRET');
+      return Response.json({
+        worker_url_configured: Boolean(workerUrl),
+        upload_secret_fingerprint: await fingerprint(uploadSecret),
+        request_secret_fingerprint: await fingerprint(requestSecret),
+        callback_secret_fingerprint: await fingerprint(callbackSecret),
+      });
+    }
+
     const song = (await base44.asServiceRole.entities.Song.filter({ id: songId }))?.[0];
     if (!song) return Response.json({ error: 'Canción no encontrada.' }, { status: 404 });
 
