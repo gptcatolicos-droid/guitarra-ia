@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
-import { TrendingUp, Music, ChevronRight, Star, BookOpen, Radio, Guitar } from 'lucide-react';
+import { TrendingUp, Music, ChevronRight, Star, BookOpen, Radio, Guitar, PlayCircle, Sparkles, Youtube } from 'lucide-react';
 import HeroSearchChat from '@/components/home/HeroSearchChat';
 import ArtistAvatar from '@/components/ArtistAvatar';
 import SpotifyEmbed from '@/components/SpotifyEmbed';
@@ -80,6 +80,7 @@ function SpotifySongCard({ song }) {
 
 export default function Home() {
   const [heroSongs, setHeroSongs] = useState([]);
+  const [practiceSongs, setPracticeSongs] = useState([]);
   const [trendingSongs, setTrendingSongs] = useState([]);
   const [allSpotifySongs, setAllSpotifySongs] = useState([]);
   const [trendingRandom, setTrendingRandom] = useState(false);
@@ -123,6 +124,8 @@ export default function Home() {
     loadHomeSongs();
     // This section is editorially curated in Admin; difficulty alone must
     // never override the administrator's selection.
+    base44.entities.Song.filter({ youtube_practice_enabled: true, youtube_analysis_status: 'ready' }, '-youtube_analysis_updated_at', 6)
+      .then(setPracticeSongs).catch(() => {});
     base44.entities.Song.filter({ is_easy_pick: true }, '-views', 6)
       .then(setEasySongs).catch(() => {});
     base44.entities.Song.filter({ is_unplugged: true }, '-views', 3)
@@ -157,6 +160,38 @@ export default function Home() {
           <Link to="/afinador" className="tuner-promo"><span><Radio className="w-5 h-5" /></span><div><b>Afinador IA</b><small>Afinación precisa con IA en tiempo real.</small></div><em>Abrir afinador</em></Link>
         </div>
       </section>
+
+      {/* ===== PRACTICE WITH IA ===== */}
+      {practiceSongs.length > 0 && (
+        <section className="relative overflow-hidden px-4 py-10 lg:px-8 lg:py-14" style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 48%, #FFEDD5 100%)', borderBottom: '1px solid #FED7AA' }}>
+          <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full blur-3xl" style={{ background: 'rgba(251,146,60,.20)' }} />
+          <div className="relative mx-auto max-w-6xl">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="max-w-2xl">
+                <span className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]" style={{ background: '#FFF1E0', color: '#C2410C' }}><Sparkles className="h-4 w-4" /> Nueva experiencia</span>
+                <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl" style={{ color: '#1F2937' }}>Practica con YouTube y mira cada acorde <span style={{ color: '#F97316' }}>en el momento exacto.</span></h2>
+                <p className="mt-2 text-sm sm:text-base" style={{ color: '#6B7280' }}>Canciones seleccionadas con letra del acorde, figura y cambios sincronizados.</p>
+              </div>
+              <Link to="/practicar" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-black text-white" style={{ background: 'linear-gradient(135deg, #FB923C, #F97316)', boxShadow: '0 8px 20px rgba(249,115,22,.22)' }}>
+                Ver todas las prácticas <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {practiceSongs.slice(0, 6).map((song) => (
+                <Link key={song.id} to={`/${song.artist_slug}/${song.slug}/practicar`} className="group overflow-hidden rounded-2xl border bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-xl" style={{ borderColor: '#FED7AA' }}>
+                  <div className="relative aspect-[16/9] overflow-hidden bg-orange-50">
+                    {song.youtube_video_id ? <img src={`https://i.ytimg.com/vi/${song.youtube_video_id}/hqdefault.jpg`} alt={song.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <div className="flex h-full items-center justify-center"><Guitar className="h-10 w-10" style={{ color: '#FDBA74' }} /></div>}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+                    <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-black text-white"><Youtube className="h-3.5 w-3.5" /> SINCRONIZADA</span>
+                    <div className="absolute bottom-3 left-3 right-3 text-white"><p className="truncate text-base font-black">{song.title.replace(/\s*\d+$/, '').trim()}</p><p className="truncate text-xs text-white/80">{song.artist_name}</p></div>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 p-4"><div className="flex flex-wrap gap-1.5 text-[10px] font-bold">{song.original_key && <span className="rounded-full px-2 py-1" style={{ background: '#FFF7ED', color: '#C2410C' }}>Tono {song.original_key}</span>}{song.difficulty && <span className="rounded-full bg-gray-100 px-2 py-1 text-gray-600">{song.difficulty}</span>}</div><span className="inline-flex shrink-0 items-center gap-1 text-xs font-black" style={{ color: '#EA580C' }}><PlayCircle className="h-4 w-4" /> Practicar</span></div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ===== UNPLUGGED PLAYLIST ===== */}
       {unpluggedSongs.length > 0 && (
