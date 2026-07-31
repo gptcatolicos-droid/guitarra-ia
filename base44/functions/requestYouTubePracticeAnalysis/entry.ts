@@ -32,8 +32,11 @@ function cifrado(song: any) {
 }
 
 function validObjectName(songId: string, objectName: string) {
-  const prefix = 'incoming/' + songId + '/';
-  return objectName.startsWith(prefix) && /^incoming\/[A-Za-z0-9_-]+\/[a-f0-9-]{16,80}\.(mp3|wav|m4a|aac|ogg)$/i.test(objectName);
+  const prefix = `incoming/${songId}/`;
+  if (!objectName.startsWith(prefix)) return false;
+
+  const filename = objectName.slice(prefix.length);
+  return /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}\.(mp3|wav|m4a|aac|ogg)$/i.test(filename);
 }
 
 async function hmac(secret: string, payload: string) {
