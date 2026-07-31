@@ -21,6 +21,7 @@ import SongFlagsRepair from '@/components/admin/SongFlagsRepair';
 import YouTubePracticeDiagnostics from '@/components/admin/YouTubePracticeDiagnostics';
 import { invalidateArtistImage } from '@/components/ArtistAvatar';
 import { getYouTubeVideoId } from '@/lib/youtubePractice';
+import { uploadAndQueueYouTubePractice } from '@/lib/youtubePracticeUpload';
 
 const THEME_COLORS = [
   { label: 'Naranja', value: '28 100% 50%' },
