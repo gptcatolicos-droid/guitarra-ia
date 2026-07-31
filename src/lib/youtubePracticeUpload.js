@@ -41,7 +41,7 @@ export async function uploadAndQueueYouTubePractice(base44, songId, file) {
 
   let uploadTicket;
   try {
-    const response = await base44.functions.invoke('requestYouTubePracticeAnalysis', {
+    const response = await base44.functions.invoke('requestYouTubePracticeAnalysisV2', {
       action: 'create_upload_ticket',
       songId,
       filename: file.name,
@@ -80,7 +80,7 @@ export async function uploadAndQueueYouTubePractice(base44, songId, file) {
   }
 
   try {
-    const response = await base44.functions.invoke('requestYouTubePracticeAnalysis', {
+    const response = await base44.functions.invoke('requestYouTubePracticeAnalysisV2', {
       songId,
       audioObjectName: uploadTicket.object_name,
     });
