@@ -29,6 +29,10 @@ def signature(secret, payload):
     return hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
 
 
+def secret_fingerprint(secret):
+    return hashlib.sha256(secret.encode()).hexdigest()[:16] if secret else 'missing'
+
+
 def recent(timestamp):
     try:
         return abs(int(time.time() * 1000) - int(timestamp)) <= 10 * 60 * 1000
@@ -219,8 +223,32 @@ def request_mime(extension):
 def upload():
     song_id = request.headers.get('x-guitarraia-song-id', '')
     object_name = request.headers.get('x-guitarraia-object-name', '')
-    if not upload_authorized(song_id, object_name) or not valid_object_name(song_id, object_name):
-        return jsonify({'error': 'Unauthorized'}), 401
+    timestamp = request.headers.get('x-guitarraia-timestamp', '')
+    received_signature = request.headers.get('x-guitarraia-signature', '')
+
+    if not UPLOAD_SECRET:
+        return jsonify({
+            'error': 'upload_secret_missing',
+            'upload_secret_fingerprint': secret_fingerprint(UPLOAD_SECRET),
+        }), 503
+    if not recent(timestamp):
+        return jsonify({'error': 'expired_or_invalid_timestamp'}), 401
+    if not valid_object_name(song_id, object_name):
+        return jsonify({
+            'error': 'invalid_object_name',
+            'song_id_present': bool(song_id),
+            'object_name_prefix_ok': bool(object_name.startswith('incoming/' + song_id + '/')) if song_id else False,
+        }), 400
+
+    expected_signature = signature(UPLOAD_SECRET, timestamp + '.' + song_id + '.' + object_name)
+    if not received_signature or not hmac.compare_digest(received_signature, expected_signature):
+        return jsonify({
+            'error': 'invalid_signature',
+            'upload_secret_fingerprint': secret_fingerprint(UPLOAD_SECRET),
+            'timestamp_present': bool(timestamp),
+            'song_id_present': bool(song_id),
+            'object_name_present': bool(object_name),
+        }), 401
     if not BUCKET_NAME:
         return jsonify({'error': 'AUDIO_TEMP_BUCKET no está configurado.'}), 503
     if request.content_length is not None and request.content_length > MAX_AUDIO_BYTES:
@@ -255,7 +283,14 @@ def analyze():
 
 @app.get('/health')
 def health():
-    return jsonify({'ok': True, 'storage': bool(BUCKET_NAME), 'chordmini_url': CHORDMINI_URL})
+    return jsonify({
+        'ok': True,
+        'storage': bool(BUCKET_NAME),
+        'chordmini_url': CHORDMINI_URL,
+        'upload_secret_fingerprint': secret_fingerprint(UPLOAD_SECRET),
+        'request_secret_fingerprint': secret_fingerprint(REQUEST_SECRET),
+        'callback_secret_fingerprint': secret_fingerprint(CALLBACK_SECRET),
+    })
 
 
 if __name__ == '__main__':
