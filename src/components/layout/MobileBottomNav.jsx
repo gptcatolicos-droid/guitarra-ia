@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Sparkles, LayoutGrid, BookOpen, Radio } from 'lucide-react';
+import { Home, Sparkles, LayoutGrid, PlayCircle, Radio } from 'lucide-react';
 
 const items = [
   { icon: Home, label: 'Inicio', path: '/' },
   { icon: Radio, label: 'Afinador', path: '/afinador' },
   { icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
-  { icon: BookOpen, label: 'Blog', path: '/blog' },
+  { icon: PlayCircle, label: 'Practicar', path: '/practicar' },
 ];
 
 export default function MobileBottomNav() {
