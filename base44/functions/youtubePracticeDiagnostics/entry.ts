@@ -1,5 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
+async function fingerprint(secret: string) {
+  if (!secret) return 'missing';
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret));
+  return Array.from(new Uint8Array(digest)).map((n) => n.toString(16).padStart(2, '0')).join('').slice(0, 16);
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
@@ -21,6 +27,12 @@ Deno.serve(async (req) => {
       callback_secret: Boolean(callbackSecret),
     };
 
+    const base44Fingerprints = {
+      upload: await fingerprint(uploadSecret),
+      request: await fingerprint(requestSecret),
+      callback: await fingerprint(callbackSecret),
+    };
+
     let worker = {
       reachable: false,
       ok: false,
@@ -28,6 +40,9 @@ Deno.serve(async (req) => {
       chordmini_configured: false,
       status: null as number | null,
       error: null as string | null,
+      upload_secret_fingerprint: 'missing',
+      request_secret_fingerprint: 'missing',
+      callback_secret_fingerprint: 'missing',
     };
 
     if (workerUrl) {
@@ -44,20 +59,31 @@ Deno.serve(async (req) => {
           chordmini_configured: Boolean(payload?.chordmini_url),
           status: response.status,
           error: response.ok ? null : `HTTP ${response.status}`,
+          upload_secret_fingerprint: payload?.upload_secret_fingerprint || 'missing',
+          request_secret_fingerprint: payload?.request_secret_fingerprint || 'missing',
+          callback_secret_fingerprint: payload?.callback_secret_fingerprint || 'missing',
         };
       } catch (error) {
         worker.error = error?.message || 'No se pudo consultar el worker.';
       }
     }
 
+    const secretMatches = {
+      upload: base44Fingerprints.upload !== 'missing' && base44Fingerprints.upload === worker.upload_secret_fingerprint,
+      request: base44Fingerprints.request !== 'missing' && base44Fingerprints.request === worker.request_secret_fingerprint,
+      callback: base44Fingerprints.callback !== 'missing' && base44Fingerprints.callback === worker.callback_secret_fingerprint,
+    };
+
     const allConfigured = Object.values(configuration).every(Boolean);
-    const readyForPilot = allConfigured && worker.ok && worker.storage && worker.chordmini_configured;
+    const allSecretsMatch = Object.values(secretMatches).every(Boolean);
+    const readyForPilot = allConfigured && allSecretsMatch && worker.ok && worker.storage && worker.chordmini_configured;
 
     return Response.json({
       success: true,
       checked_at: new Date().toISOString(),
       configuration,
       worker,
+      secret_matches: secretMatches,
       ready_for_pilot: readyForPilot,
     });
   } catch (error) {
