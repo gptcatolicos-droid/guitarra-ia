@@ -123,10 +123,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!validObjectName(song.id, String(audioObjectName || ''))) {
-      return Response.json({
-        error: 'La referencia del audio privado no es válida.',
-      }, { status: 400 });
+    const normalizedAudioObjectName = String(audioObjectName || '').trim();
+    if (!normalizedAudioObjectName) {
+      return Response.json({ error: 'No se recibió la referencia del audio privado.' }, { status: 400 });
     }
 
     const id = song.youtube_video_id || videoId(song.youtube_embed);
