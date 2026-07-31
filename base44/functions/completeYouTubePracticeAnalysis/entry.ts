@@ -139,8 +139,16 @@ async function handleAdminUploadTicket(
   const workerUrl = Deno.env.get('YOUTUBE_PRACTICE_WORKER_URL');
   const secret = Deno.env.get('YOUTUBE_PRACTICE_UPLOAD_SECRET');
   if (!workerUrl || !secret) {
-    return Response.json({ error: 'La carga privada de audio aún no está configurada.' }, { status: 503 });
+    const missing = [
+      !workerUrl ? 'YOUTUBE_PRACTICE_WORKER_URL' : null,
+      !secret ? 'YOUTUBE_PRACTICE_UPLOAD_SECRET' : null,
+    ].filter(Boolean);
+    return Response.json({
+      error: `La carga privada de audio aún no está configurada. Falta: ${missing.join(', ')}`,
+    }, { status: 503 });
   }
+
+  // Deployment marker: refresh function environment after secret changes.
 
   const objectName = `incoming/${song.id}/${crypto.randomUUID()}.${ext}`;
   const timestamp = String(Date.now());
