@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm install --include=dev && node render-migration-postbootstrap.mjs && vite build",
+    "build": "npm install --include=dev && npm install --no-save react-router-dom@6.26.0 && node render-migration-postbootstrap.mjs && vite build",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
@@ -69,6 +69,7 @@
     "react-markdown": "^9.0.1",
     "react-quill": "^2.0.0",
     "react-resizable-panels": "^2.1.7",
+    "react-router-dom": "^6.26.0",
     "recharts": "^2.15.4",
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",
