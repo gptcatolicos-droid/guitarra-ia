@@ -65,7 +65,7 @@ async function migratePage(client, entity, limit, skip, dryRun = false) {
 async function migrateAllEntities() {
   const appId = process.env.BASE44_APP_ID;
   if (!appId) throw new Error("BASE44_APP_ID is not configured");
-  const client = createClient({ appId, requiresAuth: false, serverUrl: "" });
+  const client = createClient({ appId, requiresAuth: false, serverUrl: "https://base44.app" });
   const summary = {};
 
   for (const entity of ALLOWED_ENTITIES) {
@@ -103,7 +103,7 @@ base44MigrationRouter.post("/pull", requireMigrationSecret, async (req, res) => 
     const limit = Math.min(Math.max(Number(req.body?.limit || 100), 1), 500);
     const skip = Math.max(Number(req.body?.skip || 0), 0);
     const dryRun = Boolean(req.body?.dryRun);
-    const client = createClient({ appId, requiresAuth: false, serverUrl: "" });
+    const client = createClient({ appId, requiresAuth: false, serverUrl: "https://base44.app" });
     res.json(await migratePage(client, entity, limit, skip, dryRun));
   } catch (error) {
     console.error("Base44 pull failed", error);
