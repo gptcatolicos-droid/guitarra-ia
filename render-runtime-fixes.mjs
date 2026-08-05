@@ -3,11 +3,17 @@ import fs from 'node:fs';
 const indexPath = 'server/index.js';
 const authPath = 'server/auth.js';
 const entitiesPath = 'server/entities.js';
+const adminPath = 'src/pages/AdminPage.jsx';
 let index = fs.readFileSync(indexPath, 'utf8');
 let auth = fs.readFileSync(authPath, 'utf8');
 let entities = fs.readFileSync(entitiesPath, 'utf8');
+let admin = fs.readFileSync(adminPath, 'utf8');
 
 entities = entities.replace('const limit = Math.min(Number(req.query.limit || 100), 500);', 'const limit = Math.min(Number(req.query.limit || 100), 5000);');
+entities = entities.replace(
+  'const publicEntities = new Set(["Song","Artist","BlogPost","Infographic","AmazonProduct"]);',
+  'const publicEntities = new Set(["Song","Artist","BlogPost","Infographic","AmazonProduct","NavigationSettings"]);'
+);
 
 if (!index.includes('app.get("/api/search"')) {
   index = index.replace(
@@ -55,7 +61,23 @@ export async function login(req, res) {`
   );
 }
 
+if (!admin.includes("NavigationMenuManager")) {
+  admin = admin.replace(
+    "import SongFlagsRepair from '@/components/admin/SongFlagsRepair';",
+    "import SongFlagsRepair from '@/components/admin/SongFlagsRepair';\nimport NavigationMenuManager from '@/components/admin/NavigationMenuManager';"
+  );
+  admin = admin.replace(
+    "{ id: 'facebook', label: 'Facebook' }, { id: 'practice', label: 'Práctica IA' }, { id: 'repair', label: 'Reparar canciones' }, { id: 'theme', label: 'Tema' },",
+    "{ id: 'facebook', label: 'Facebook' }, { id: 'practice', label: 'Práctica IA' }, { id: 'repair', label: 'Reparar canciones' }, { id: 'navigation', label: 'Menú' }, { id: 'theme', label: 'Tema' },"
+  );
+  admin = admin.replace(
+    "{tab === 'theme' && <ThemeSettings />}",
+    "{tab === 'navigation' && <NavigationMenuManager />}\n\n      {tab === 'theme' && <ThemeSettings />}"
+  );
+}
+
 fs.writeFileSync(indexPath, index, 'utf8');
 fs.writeFileSync(authPath, auth, 'utf8');
 fs.writeFileSync(entitiesPath, entities, 'utf8');
+fs.writeFileSync(adminPath, admin, 'utf8');
 console.log('Runtime fixes installed.');
