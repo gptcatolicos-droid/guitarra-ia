@@ -30,10 +30,11 @@ import TunerPage from '@/pages/TunerPage';
 import UnpluggedPage from '@/pages/UnpluggedPage';
 import PracticePage from '@/pages/PracticePage';
 
+const PRIVATE_ADMIN_PATH = '/dp-control-8f31c7';
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -42,18 +43,15 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
       <Route element={<AppLayout />}>
@@ -80,18 +78,17 @@ const AuthenticatedApp = () => {
         <Route path="/:artistSlug/:songSlug/practicar" element={<SongPage />} />
         <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />
       </Route>
-      {/* Admin routes — require an authenticated platform admin */}
+
+      <Route path="/admin" element={<PageNotFound />} />
       <Route element={<AdminRoute />}>
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path={PRIVATE_ADMIN_PATH} element={<AdminPage />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
@@ -106,4 +103,3 @@ function App() {
 }
 
 export default App
-
