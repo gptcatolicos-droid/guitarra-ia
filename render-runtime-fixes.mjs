@@ -2,8 +2,12 @@ import fs from 'node:fs';
 
 const indexPath = 'server/index.js';
 const authPath = 'server/auth.js';
+const entitiesPath = 'server/entities.js';
 let index = fs.readFileSync(indexPath, 'utf8');
 let auth = fs.readFileSync(authPath, 'utf8');
+let entities = fs.readFileSync(entitiesPath, 'utf8');
+
+entities = entities.replace('const limit = Math.min(Number(req.query.limit || 100), 500);', 'const limit = Math.min(Number(req.query.limit || 100), 5000);');
 
 if (!index.includes('app.get("/api/search"')) {
   index = index.replace(
@@ -53,4 +57,5 @@ export async function login(req, res) {`
 
 fs.writeFileSync(indexPath, index, 'utf8');
 fs.writeFileSync(authPath, auth, 'utf8');
+fs.writeFileSync(entitiesPath, entities, 'utf8');
 console.log('Runtime fixes installed.');
