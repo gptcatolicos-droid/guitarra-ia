@@ -30,7 +30,7 @@ import TunerPage from '@/pages/TunerPage';
 import UnpluggedPage from '@/pages/UnpluggedPage';
 import PracticePage from '@/pages/PracticePage';
 
-const PRIVATE_ADMIN_PATH = '/dp-control-8f31c7';
+const PRIVATE_ADMIN_PATH = '/supercalifragilisticoespialidoso';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -61,7 +61,6 @@ const AuthenticatedApp = () => {
         <Route path="/afinador" element={<TunerPage />} />
         <Route path="/unplugged" element={<UnpluggedPage />} />
         <Route path="/practicar" element={<PracticePage />} />
-
         <Route path="/terminos" element={<TermsPage />} />
         <Route path="/acordes" element={<AcordesPage />} />
         <Route path="/acordes/:chord" element={<ChordDetailPage />} />
@@ -80,6 +79,7 @@ const AuthenticatedApp = () => {
       </Route>
 
       <Route path="/admin" element={<PageNotFound />} />
+      <Route path="/dp-control-8f31c7" element={<PageNotFound />} />
       <Route element={<AdminRoute />}>
         <Route path={PRIVATE_ADMIN_PATH} element={<AdminPage />} />
       </Route>
