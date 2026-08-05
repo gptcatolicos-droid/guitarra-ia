@@ -12,8 +12,8 @@ import Home from '@/pages/Home';
 import ArtistPage from '@/pages/ArtistPage';
 import SongPage from '@/pages/SongPage';
 import SearchPage from '@/pages/SearchPage';
-
 import AdminPage from '@/pages/AdminPage';
+import AdminLoginPage from '@/pages/AdminLoginPage';
 import ChatPage from '@/pages/ChatPage';
 import TermsPage from '@/pages/TermsPage';
 import AcordesPage from '@/pages/AcordesPage';
@@ -31,29 +31,20 @@ import UnpluggedPage from '@/pages/UnpluggedPage';
 import PracticePage from '@/pages/PracticePage';
 
 const PRIVATE_ADMIN_PATH = '/supercalifragilisticoespialidoso';
+const PRIVATE_LOGIN_PATH = '/supercalifragilisticoespialidoso/acceso';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>;
   }
 
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
-    }
-  }
+  if (authError?.type === 'user_not_registered') return <UserNotRegisteredError />;
 
   return (
     <Routes>
+      <Route path={PRIVATE_LOGIN_PATH} element={<AdminLoginPage />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/buscar" element={<SearchPage />} />
@@ -77,10 +68,9 @@ const AuthenticatedApp = () => {
         <Route path="/:artistSlug/:songSlug/practicar" element={<SongPage />} />
         <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />
       </Route>
-
       <Route path="/admin" element={<PageNotFound />} />
       <Route path="/dp-control-8f31c7" element={<PageNotFound />} />
-      <Route element={<AdminRoute />}>
+      <Route element={<AdminRoute loginPath={PRIVATE_LOGIN_PATH} />}>
         <Route path={PRIVATE_ADMIN_PATH} element={<AdminPage />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
@@ -92,10 +82,7 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <ScrollToTop />
-          <AuthenticatedApp />
-        </Router>
+        <Router><ScrollToTop /><AuthenticatedApp /></Router>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
