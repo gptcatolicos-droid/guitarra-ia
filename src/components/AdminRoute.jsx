@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 
 const LoadingScreen = () => (
@@ -8,45 +8,27 @@ const LoadingScreen = () => (
   </div>
 );
 
-/**
- * Guards admin-only routes.
- * - Not authenticated  -> redirect to Base44 login.
- * - Authenticated but not platform admin -> "no access" screen.
- * - Authenticated admin -> render nested routes.
- * NOTE: real enforcement also lives in entity RLS + backend functions
- * (role !== 'admin' is rejected server-side). This is the UI gate.
- */
-export default function AdminRoute() {
-  const { isAuthenticated, isLoadingAuth, authChecked, authError, checkUserAuth, navigateToLogin, user } = useAuth();
+export default function AdminRoute({ loginPath = '/supercalifragilisticoespialidoso/acceso' }) {
+  const { isAuthenticated, isLoadingAuth, authChecked, authError, checkUserAuth, user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!authChecked && !isLoadingAuth) {
-      checkUserAuth();
-    }
+    if (!authChecked && !isLoadingAuth) checkUserAuth();
   }, [authChecked, isLoadingAuth, checkUserAuth]);
 
   useEffect(() => {
     if (authChecked && !isLoadingAuth && !isAuthenticated) {
-      navigateToLogin();
+      navigate(`${loginPath}?from=${encodeURIComponent(window.location.pathname)}`, { replace: true });
     }
-  }, [authChecked, isLoadingAuth, isAuthenticated, navigateToLogin]);
+  }, [authChecked, isLoadingAuth, isAuthenticated, loginPath, navigate]);
 
-  if (isLoadingAuth || !authChecked) {
-    return <LoadingScreen />;
-  }
-
-  if (!isAuthenticated || authError) {
-    // Redirect handled by effect above; show loader meanwhile
-    return <LoadingScreen />;
-  }
+  if (isLoadingAuth || !authChecked || !isAuthenticated || authError) return <LoadingScreen />;
 
   if (!user || user.role !== 'admin') {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: '#0B0D0E' }}>
         <h1 className="text-xl font-bold mb-2" style={{ color: '#F4F4F2' }}>Acceso restringido</h1>
-        <p className="text-sm" style={{ color: '#A7ACAE' }}>
-          Tu cuenta no tiene permisos de administrador para acceder a este panel.
-        </p>
+        <p className="text-sm" style={{ color: '#A7ACAE' }}>Tu cuenta no tiene permisos de administrador.</p>
       </div>
     );
   }
