@@ -15,7 +15,7 @@ if (!index.includes('app.get("/api/search"')) {
     `app.get("/api/search", async (req, res) => {
   const q = String(req.query.q || "").trim();
   if (!q) return res.json({ songs: [], artists: [], posts: [] });
-  const term = `%${q}%`;
+  const term = '%' + q + '%';
   const [songs, artists, posts] = await Promise.all([
     pool.query("SELECT * FROM entity_records WHERE entity_name='Song' AND (COALESCE(data->>'title','') ILIKE $1 OR COALESCE(data->>'artist_name','') ILIKE $1) ORDER BY updated_date DESC LIMIT 200", [term]),
     pool.query("SELECT * FROM entity_records WHERE entity_name='Artist' AND COALESCE(data->>'name','') ILIKE $1 ORDER BY updated_date DESC LIMIT 100", [term]),
