@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: guitarraia-migration
+    runtime: node
+    branch: migration/render
+    autoDeploy: true
+    buildCommand: >-
+      node render-migration-bootstrap.mjs &&
+      npm install --no-save express@4 pg cors dotenv bcryptjs jsonwebtoken &&
+      npm run build
+    startCommand: node server/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PUBLIC_ORIGIN
+        value: https://guitarraia-migration.onrender.com
+      - key: SPOTIFY_CLIENT_ID
+        sync: false
+      - key: SPOTIFY_CLIENT_SECRET
+        sync: false
+      - key: VITE_API_URL
+        value: ""
