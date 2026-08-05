@@ -12,6 +12,12 @@ entities = entities.replace(
   'const publicEntities = new Set(["Song","Artist","BlogPost","Infographic","AmazonProduct"]);',
   'const publicEntities = new Set(["Song","Artist","BlogPost","Infographic","AmazonProduct","NavigationSettings"]);'
 );
+// Migrated Base44 payloads may contain a legacy `id`. The PostgreSQL UUID must
+// always be the public API id so update/delete routes receive a valid UUID.
+entities = entities.replace(
+  'id: row.id,\n    ...row.data,',
+  '...row.data,\n    id: row.id,'
+);
 
 if (!index.includes('app.get("/api/search"')) {
   index = index.replace(
@@ -25,7 +31,7 @@ if (!index.includes('app.get("/api/search"')) {
     pool.query("SELECT * FROM entity_records WHERE entity_name='Artist' AND COALESCE(data->>'name','') ILIKE $1 ORDER BY updated_date DESC LIMIT 100", [term]),
     pool.query("SELECT * FROM entity_records WHERE entity_name='BlogPost' AND COALESCE(data->>'published','false') IN ('true','1') AND (COALESCE(data->>'title','') ILIKE $1 OR COALESCE(data->>'excerpt','') ILIKE $1 OR COALESCE(data->>'content','') ILIKE $1 OR COALESCE(data->>'category','') ILIKE $1) ORDER BY updated_date DESC LIMIT 100", [term])
   ]);
-  const normalize = row => ({ id: row.id, ...row.data, created_date: row.created_date, updated_date: row.updated_date });
+  const normalize = row => ({ ...row.data, id: row.id, created_date: row.created_date, updated_date: row.updated_date });
   res.json({ songs: songs.rows.map(normalize), artists: artists.rows.map(normalize), posts: posts.rows.map(normalize) });
 });
 
