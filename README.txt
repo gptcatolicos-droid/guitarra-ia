@@ -1,14 +1,10 @@
-GuitarraIA Render - bootstrap sin duplicados Spotify
+GuitarraIA - HMAC runtime fix
 
-Reemplaza SOLO render-migration-bootstrap.mjs en la rama migration/render.
+1. Sube render-hmac-fix.mjs a la raíz de la rama migration/render.
+2. En Render, agrega al final del Build Command, después de render-runtime-dedupe.mjs:
 
-Qué corrige:
-- Elimina del bootstrap las declaraciones syncSpotifyForSong y syncSpotifyCatalogBatch.
-- Conserva el dispatch de rutas para que los parches posteriores render-spotify-*.mjs
-  sean la única implementación de esas funciones.
-- Mantiene intactas las funciones YouTube/ChordMini, creación de canciones, auth y SEO.
+   && node render-hmac-fix.mjs && node --check server/functions.js && node --check server/index.js
 
-Después:
-1. Commit en migration/render.
-2. Render: Manual Deploy -> Clear build cache & deploy.
-3. No cambies de rama ni los secrets.
+3. Manual Deploy -> Clear build cache & deploy.
+
+El parche no cambia secrets ni ChordMini. Solo añade crypto/hmac donde el runtime final lo necesita.
