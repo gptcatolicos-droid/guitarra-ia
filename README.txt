@@ -1,6 +1,14 @@
-1. Sube render-runtime-dedupe.mjs a la raíz de la rama migration/render.
-2. En Render > guitarraia-render > Settings > Build Command, usa:
+GuitarraIA Render - bootstrap sin duplicados Spotify
 
-npm install --include=dev && node render-migration-bootstrap.mjs && npm install express pg cors dotenv bcryptjs jsonwebtoken --include=dev && npm run build && node render-runtime-dedupe.mjs && node --check server/index.js
+Reemplaza SOLO render-migration-bootstrap.mjs en la rama migration/render.
 
-3. Guarda. Render hará deploy. Si no, Manual Deploy > Clear build cache & deploy.
+Qué corrige:
+- Elimina del bootstrap las declaraciones syncSpotifyForSong y syncSpotifyCatalogBatch.
+- Conserva el dispatch de rutas para que los parches posteriores render-spotify-*.mjs
+  sean la única implementación de esas funciones.
+- Mantiene intactas las funciones YouTube/ChordMini, creación de canciones, auth y SEO.
+
+Después:
+1. Commit en migration/render.
+2. Render: Manual Deploy -> Clear build cache & deploy.
+3. No cambies de rama ni los secrets.
