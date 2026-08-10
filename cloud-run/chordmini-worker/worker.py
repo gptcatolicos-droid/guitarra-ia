@@ -83,11 +83,13 @@ def callback(payload):
         raise RuntimeError('Falta configurar BASE44_CALLBACK_URL o YOUTUBE_PRACTICE_CALLBACK_SECRET.')
     raw = json.dumps(payload, separators=(',', ':'))
     timestamp = str(int(time.time() * 1000))
-    response = requests.post(CALLBACK_URL, data=raw, timeout=30, headers={
+    app.logger.info('CALLBACK_START status=%s url=%s song_id=%s', payload.get('status'), CALLBACK_URL, payload.get('song_id'))
+    response = requests.post(CALLBACK_URL, data=raw, timeout=90, headers={
         'content-type': 'application/json',
         'x-guitarraia-timestamp': timestamp,
         'x-guitarraia-signature': signature(CALLBACK_SECRET, timestamp + '.' + raw),
     })
+    app.logger.info('CALLBACK_RESPONSE status=%s http=%s body=%s', payload.get('status'), response.status_code, response.text[:300])
     response.raise_for_status()
 
 
@@ -159,6 +161,7 @@ def sections_from_cifrado(cues, sections):
 
 def process(payload):
     song_id, video_id = payload['song_id'], payload['video_id']
+    app.logger.info('PROCESS_START song_id=%s video_id=%s object=%s', song_id, video_id, payload.get('audio_object_name'))
     object_name = payload['audio_object_name']
     temp_dir = Path(tempfile.mkdtemp(prefix='guitarraia-'))
     audio_path = temp_dir / ('source' + Path(object_name).suffix.lower())
@@ -178,8 +181,10 @@ def process(payload):
                 data={'model': 'chord-cnn-lstm'},
                 timeout=900,
             )
+        app.logger.info('CHORDMINI_RESPONSE song_id=%s http=%s', song_id, response.status_code)
         response.raise_for_status()
         cues = normalise_result(response.json(), payload['catalog_chords'])
+        app.logger.info('CHORDMINI_CUES song_id=%s cues=%s', song_id, len(cues))
         if len(cues) < 2:
             raise RuntimeError('ChordMini no encontró suficientes cambios que coincidan con el cifrado del catálogo.')
         confidence = min(0.98, max(0.35, len(cues) / max(8, len(payload['catalog_chords']))))
@@ -198,11 +203,15 @@ def process(payload):
                 'sections_estimated': True,
             },
         })
+        app.logger.info('PROCESS_READY song_id=%s', song_id)
+        return {'ok': True, 'status': 'ready'}
     except Exception as error:
+        app.logger.exception('PROCESS_ERROR song_id=%s error=%s', song_id, str(error)[:500])
         try:
             callback({'song_id': song_id, 'video_id': video_id, 'status': 'error', 'error': str(error)[:500]})
         except Exception:
-            app.logger.exception('No se pudo reportar el error a Base44')
+            app.logger.exception('No se pudo reportar el error a Render')
+        raise
     finally:
         if blob:
             try:
@@ -277,8 +286,12 @@ def analyze():
     required = {'song_id', 'video_id', 'audio_object_name', 'catalog_chords'}
     if not required.issubset(payload) or len(payload['catalog_chords']) < 2 or not valid_object_name(payload['song_id'], payload['audio_object_name']):
         return jsonify({'error': 'Solicitud incompleta.'}), 400
-    threading.Thread(target=process, args=(payload,), daemon=True).start()
-    return jsonify({'accepted': True}), 202
+    try:
+        result = process(payload)
+        return jsonify({'accepted': True, 'completed': True, **(result or {})}), 200
+    except Exception as error:
+        app.logger.exception('ANALYZE_FAILED song_id=%s', payload.get('song_id'))
+        return jsonify({'error': str(error)[:500]}), 500
 
 
 @app.get('/health')
