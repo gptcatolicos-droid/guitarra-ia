@@ -5,6 +5,11 @@ import { useSEO } from '@/lib/seo';
 import { PlayCircle, Sparkles, Youtube, Music2 } from 'lucide-react';
 import ArtistAvatar from '@/components/ArtistAvatar';
 
+const PRACTICE_FIELDS = [
+  'id', 'title', 'slug', 'artist_name', 'artist_slug', 'artist_image',
+  'original_key', 'difficulty', 'youtube_video_id', 'youtube_analysis_updated_at',
+];
+
 function cleanTitle(value = '') {
   return String(value).replace(/\s*-\s*\d+\s*-\s*[a-f0-9]{6,}\s*$/i, '').replace(/\s*\d+$/, '').trim();
 }
@@ -17,6 +22,8 @@ function PracticeCard({ song }) {
           <img
             src={`https://i.ytimg.com/vi/${song.youtube_video_id}/hqdefault.jpg`}
             alt={`Práctica de ${cleanTitle(song.title)}`}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
@@ -62,10 +69,35 @@ export default function PracticePage() {
   });
 
   useEffect(() => {
-    base44.entities.Song.filter({ youtube_practice_enabled: true, youtube_analysis_status: 'ready' }, '-youtube_analysis_updated_at', 30)
-      .then((rows) => setSongs(rows || []))
-      .catch(() => setSongs([]))
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    let idleId;
+    const query = { youtube_practice_enabled: true, youtube_analysis_status: 'ready' };
+
+    // Paint the newest practice first. The remaining cards arrive during the
+    // next idle window, already sorted from newest to oldest.
+    base44.entities.Song.filter(query, '-youtube_analysis_updated_at', 1, 0, PRACTICE_FIELDS)
+      .then((rows) => {
+        if (cancelled) return;
+        setSongs(rows || []);
+        setLoading(false);
+        const loadRest = () => base44.entities.Song.filter(
+          query, '-youtube_analysis_updated_at', 29, 1, PRACTICE_FIELDS,
+        ).then((rest) => {
+          if (!cancelled) setSongs((current) => [...current, ...(rest || [])]);
+        }).catch(() => {});
+        idleId = 'requestIdleCallback' in window
+          ? window.requestIdleCallback(loadRest, { timeout: 1200 })
+          : window.setTimeout(loadRest, 400);
+      })
+      .catch(() => {
+        if (!cancelled) { setSongs([]); setLoading(false); }
+      });
+
+    return () => {
+      cancelled = true;
+      if ('cancelIdleCallback' in window) window.cancelIdleCallback(idleId);
+      else window.clearTimeout(idleId);
+    };
   }, []);
 
   return (
