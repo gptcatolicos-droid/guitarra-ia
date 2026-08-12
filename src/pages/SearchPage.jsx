@@ -226,7 +226,7 @@ export default function SearchPage() {
                   <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: '#F3F4F6', color: '#6B7280' }}>{songs.length}</span>
                 </div>
                 <div className="space-y-1.5">
-                  {songs.map(s => {
+                  {songs.slice(0, visibleSongCount).map(s => {
                     const diff = DIFF_COLORS[s.difficulty];
                     return (
                       <Link key={s.id} to={`/${s.artist_slug}/${s.slug}`}
@@ -261,12 +261,13 @@ export default function SearchPage() {
                     );
                   })}
                 </div>
+                {visibleSongCount < songs.length && <div ref={loadMoreRef} className="h-8" aria-hidden="true" />}
               </div>
             )}
           </div>
         )}
 
-        {!loading && query && !hasResults && (
+        {!loading && !loadingMore && query && !hasResults && (
           <div className="text-center py-16">
             <Music className="w-12 h-12 mx-auto mb-4" style={{ color: '#E5E7EB' }} />
             <p className="font-semibold mb-1" style={{ color: '#1F2937' }}>No encontramos resultados</p>
