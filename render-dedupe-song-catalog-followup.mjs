@@ -102,5 +102,11 @@ if (!index.includes("await ensureSongCatalogFooter();")) {
     "await dedupeSongCatalogAndAddFooter();\nawait ensureSongCatalogFooter();"
   );
 }
+if (!index.includes("Scheduled song catalog footer check failed")) {
+  index = index.replace(
+    "await ensureSongCatalogFooter();",
+    "await ensureSongCatalogFooter();\nsetTimeout(() => { ensureSongCatalogFooter().catch((error) => console.error(\"Scheduled song catalog footer check failed\", error)); }, 120000);"
+  );
+}
 fs.writeFileSync(indexPath, index, "utf8");
 console.log("Song catalog footer follow-up installed.");
