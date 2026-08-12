@@ -1,109 +1,95 @@
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
+import { lazy, Suspense } from 'react';
+import { Toaster } from "@/components/ui/toaster";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClientInstance } from '@/lib/query-client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import PageNotFound from './lib/PageNotFound';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { AuthProvider } from '@/lib/AuthContext';
 import ScrollToTop from './components/ScrollToTop';
 import AppLayout from '@/components/layout/AppLayout';
-import AdminRoute from '@/components/AdminRoute';
 import Home from '@/pages/Home';
-import ArtistPage from '@/pages/ArtistPage';
-import SongPage from '@/pages/SongPage';
-import SearchPage from '@/pages/SearchPage';
 
-import AdminPage from '@/pages/AdminPage';
-import ChatPage from '@/pages/ChatPage';
-import TermsPage from '@/pages/TermsPage';
-import AcordesPage from '@/pages/AcordesPage';
-import ChordDetailPage from '@/pages/ChordDetailPage';
-import TopArtistsPage from '@/pages/TopArtistsPage';
-import TopSongsPage from '@/pages/TopSongsPage';
-import GuitarStorePage from '@/pages/GuitarStorePage';
-import BlogPage from '@/pages/BlogPage';
-import BlogPostPage from '@/pages/BlogPostPage';
-import AboutPage from '@/pages/AboutPage';
-import InfographicsPage from '@/pages/InfographicsPage';
-import InfographicPage from '@/pages/InfographicPage';
-import TunerPage from '@/pages/TunerPage';
-import UnpluggedPage from '@/pages/UnpluggedPage';
-import PracticePage from '@/pages/PracticePage';
+const PageNotFound = lazy(() => import('./lib/PageNotFound'));
+const AdminRoute = lazy(() => import('@/components/AdminRoute'));
+const ArtistPage = lazy(() => import('@/pages/ArtistPage'));
+const SongPage = lazy(() => import('@/pages/SongPage'));
+const SearchPage = lazy(() => import('@/pages/SearchPage'));
+const AdminPage = lazy(() => import('@/pages/AdminPage'));
+const ChatPage = lazy(() => import('@/pages/ChatPage'));
+const TermsPage = lazy(() => import('@/pages/TermsPage'));
+const AcordesPage = lazy(() => import('@/pages/AcordesPage'));
+const ChordDetailPage = lazy(() => import('@/pages/ChordDetailPage'));
+const TopArtistsPage = lazy(() => import('@/pages/TopArtistsPage'));
+const TopSongsPage = lazy(() => import('@/pages/TopSongsPage'));
+const GuitarStorePage = lazy(() => import('@/pages/GuitarStorePage'));
+const BlogPage = lazy(() => import('@/pages/BlogPage'));
+const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'));
+const AboutPage = lazy(() => import('@/pages/AboutPage'));
+const InfographicsPage = lazy(() => import('@/pages/InfographicsPage'));
+const InfographicPage = lazy(() => import('@/pages/InfographicPage'));
+const TunerPage = lazy(() => import('@/pages/TunerPage'));
+const UnpluggedPage = lazy(() => import('@/pages/UnpluggedPage'));
+const PracticePage = lazy(() => import('@/pages/PracticePage'));
 
-const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+function RouteFallback() {
+  return (
+    <div className="flex min-h-[45vh] items-center justify-center" aria-label="Cargando contenido">
+      <div className="h-7 w-7 animate-spin rounded-full border-4 border-orange-100 border-t-orange-500" />
+    </div>
+  );
+}
 
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+const deferred = (Component) => (
+  <Suspense fallback={<RouteFallback />}>
+    <Component />
+  </Suspense>
+);
 
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
-  }
-
-  // Render the main app
+function PublicRoutes() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/buscar" element={<SearchPage />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/afinador" element={<TunerPage />} />
-        <Route path="/unplugged" element={<UnpluggedPage />} />
-        <Route path="/practicar" element={<PracticePage />} />
+        <Route path="/buscar" element={deferred(SearchPage)} />
+        <Route path="/chat" element={deferred(ChatPage)} />
+        <Route path="/afinador" element={deferred(TunerPage)} />
+        <Route path="/unplugged" element={deferred(UnpluggedPage)} />
+        <Route path="/practicar" element={deferred(PracticePage)} />
+        <Route path="/terminos" element={deferred(TermsPage)} />
+        <Route path="/acordes" element={deferred(AcordesPage)} />
+        <Route path="/acordes/:chord" element={deferred(ChordDetailPage)} />
+        <Route path="/artistas" element={deferred(TopArtistsPage)} />
+        <Route path="/canciones" element={deferred(TopSongsPage)} />
+        <Route path="/tienda" element={deferred(GuitarStorePage)} />
+        <Route path="/blog" element={deferred(BlogPage)} />
+        <Route path="/blog/:slug" element={deferred(BlogPostPage)} />
+        <Route path="/acerca" element={deferred(AboutPage)} />
+        <Route path="/infografias" element={deferred(InfographicsPage)} />
+        <Route path="/infografias/:slug" element={deferred(InfographicPage)} />
+        <Route path="/:artistSlug" element={deferred(ArtistPage)} />
+        <Route path="/:artistSlug/:songSlug" element={deferred(SongPage)} />
+        <Route path="/:artistSlug/:songSlug/practicar" element={deferred(SongPage)} />
+        <Route path="/:artistSlug/:songSlug/:view" element={deferred(SongPage)} />
+      </Route>
 
-        <Route path="/terminos" element={<TermsPage />} />
-        <Route path="/acordes" element={<AcordesPage />} />
-        <Route path="/acordes/:chord" element={<ChordDetailPage />} />
-        <Route path="/artistas" element={<TopArtistsPage />} />
-        <Route path="/canciones" element={<TopSongsPage />} />
-        <Route path="/tienda" element={<GuitarStorePage />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/blog/:slug" element={<BlogPostPage />} />
-        <Route path="/acerca" element={<AboutPage />} />
-        <Route path="/infografias" element={<InfographicsPage />} />
-        <Route path="/infografias/:slug" element={<InfographicPage />} />
-        <Route path="/:artistSlug" element={<ArtistPage />} />
-        <Route path="/:artistSlug/:songSlug" element={<SongPage />} />
-        <Route path="/:artistSlug/:songSlug/practicar" element={<SongPage />} />
-        <Route path="/:artistSlug/:songSlug/:view" element={<SongPage />} />
+      <Route element={deferred(AdminRoute)}>
+        <Route path="/admin" element={deferred(AdminPage)} />
       </Route>
-      {/* Admin routes — require an authenticated platform admin */}
-      <Route element={<AdminRoute />}>
-        <Route path="/admin" element={<AdminPage />} />
-      </Route>
-      <Route path="*" element={<PageNotFound />} />
+
+      <Route path="*" element={deferred(PageNotFound)} />
     </Routes>
   );
-};
+}
 
-
-function App() {
-
+export default function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
-          <AuthenticatedApp />
+          <PublicRoutes />
         </Router>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
-  )
+  );
 }
-
-export default App
-
