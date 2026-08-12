@@ -92,3 +92,5 @@ if (!index.includes("await repairInvertedLote001Followup();")) {
 fs.writeFileSync(indexPath, index, "utf8");
 console.log("Lote 001 follow-up repair installed.");
 
+// Install the final narrowly scoped follow-up in the same build step.
+await import("./render-repair-inverted-lote001-followup2.mjs");

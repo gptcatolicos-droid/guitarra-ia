@@ -10,7 +10,14 @@ import { pool } from "./db.js";
 
 export const base44MigrationRouter = express.Router();
 const ALLOWED_ENTITIES = ["Artist", "Song", "BlogPost", "Infographic", "AmazonProduct"];
-const PRESERVED_SONG_SOURCE_IDS = new Set(["6a5f8eda1c6cc3db7b29be76"]);
+const PRESERVED_SONG_SOURCE_IDS = new Set([
+  "6a5f8eda1c6cc3db7b29be76",
+  "6a5ff94a18a42b32ed8ba499",
+]);
+const EXCLUDED_ARTIST_SOURCE_IDS = new Set([
+  "6a60f16ee08414782f100af8",
+  "6a60f16ee08414782f100b31",
+]);
 
 function requireMigrationSecret(req, res, next) {
   const configured = process.env.MIGRATION_SECRET;
@@ -38,6 +45,11 @@ async function migratePage(client, entity, limit, skip, dryRun = false) {
 
   for (const original of records) {
     const record = cleanRecord(original);
+    // These rows were accidentally created as artists from inverted lote 001
+    // filenames. They are not artists and must never be recreated.
+    if (entity === "Artist" && EXCLUDED_ARTIST_SOURCE_IDS.has(record.sourceId)) {
+      continue;
+    }
     if (dryRun) continue;
 
     const existing = await pool.query(
