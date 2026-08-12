@@ -84,6 +84,7 @@ export default function ChatInterface({ embedded, heroMode }) {
   const [scanningExternal, setScanningExternal] = useState(false);
   const [songsCache, setSongsCache] = useState([]);
   const [blogPostsCache, setBlogPostsCache] = useState([]);
+  const [activeQuery, setActiveQuery] = useState(urlQuery);
   const scrollRef = useRef(null);
   const autoQueryFired = useRef(false);
   const keepResultsAtTop = useRef(Boolean(urlQuery));
@@ -239,6 +240,7 @@ export default function ChatInterface({ embedded, heroMode }) {
     // Every search is a fresh result set. Keep the newest Spotify-first cards
     // at the top instead of appending them below the previous artist.
     keepResultsAtTop.current = true;
+    setActiveQuery(userMessage);
     setInput('');
     setMessages([]);
     setLoading(true);
@@ -261,19 +263,67 @@ export default function ChatInterface({ embedded, heroMode }) {
       return;
     }
 
-    // Check if we have local results first — if yes, skip scanning animation
-    const localMatches = quickLocalSearch(userMessage, songsCache);
-    const hasLocalResults = localMatches.length > 0;
-
-    // Only show scanning animation if no local results found
+    // Check the current cache first. If this artist or song was not part of
+    // the previous result set, resolve it directly before considering an AI
+    // response. This makes consecutive searches independent from each other.
+    let localMatches = quickLocalSearch(userMessage, songsCache);
     let scanTimer = null;
-    if (!hasLocalResults) {
-      scanTimer = setTimeout(() => setScanningExternal(true), 1000);
+    if (!localMatches.length) {
+      scanTimer = setTimeout(() => setScanningExternal(true), 700);
     }
 
     try {
-      // Find local matches FIRST
-      const localMatches2 = quickLocalSearch(userMessage, songsCache);
+      if (!localMatches.length) {
+        const querySlug = toSlug(userMessage);
+        const normalizedQuery = normalize(userMessage);
+        const [exactSongs, artists] = await Promise.all([
+          base44.entities.Song.filter({ slug: querySlug }, '-views', 3, 0, CHAT_SONG_FIELDS),
+          base44.entities.Artist.list('-created_date', 3000, 0, ['id', 'name', 'slug']),
+        ]);
+
+        const matchedArtist = (artists || [])
+          .filter((artist) => {
+            const name = normalize(artist.name);
+            const slug = normalize((artist.slug || '').replace(/[-_]/g, ' '));
+            return name === normalizedQuery
+              || slug === normalizedQuery
+              || name.includes(normalizedQuery)
+              || slug.includes(normalizedQuery);
+          })
+          .sort((a, b) => {
+            const aName = normalize(a.name);
+            const bName = normalize(b.name);
+            const aExact = aName === normalizedQuery ? 1 : 0;
+            const bExact = bName === normalizedQuery ? 1 : 0;
+            const aStarts = aName.startsWith(normalizedQuery) ? 1 : 0;
+            const bStarts = bName.startsWith(normalizedQuery) ? 1 : 0;
+            return bExact - aExact || bStarts - aStarts || aName.length - bName.length;
+          })[0];
+
+        const artistSongs = matchedArtist
+          ? await base44.entities.Song.filter(
+              { artist_slug: matchedArtist.slug }, '-views', 500, 0, CHAT_SONG_FIELDS,
+            )
+          : [];
+        let fetchedSongs = [...(exactSongs || []), ...(artistSongs || [])]
+          .filter((song, index, rows) => rows.findIndex((candidate) => candidate.id === song.id) === index);
+
+        if (!fetchedSongs.length) {
+          fetchedSongs = await base44.entities.Song.list('-views', 5000, 0, CHAT_SONG_FIELDS);
+        }
+
+        if (fetchedSongs.length) {
+          setSongsCache((current) => {
+            const known = new Set(current.map((song) => song.id));
+            return [...current, ...fetchedSongs.filter((song) => !known.has(song.id))];
+          });
+          localMatches = artistSongs.length || exactSongs?.length
+            ? fetchedSongs
+            : quickLocalSearch(userMessage, fetchedSongs);
+        }
+      }
+
+      const localMatches2 = localMatches;
 
       // Deduplicate by normalized title+artist
       const seenLocal = new Set();
@@ -539,7 +589,7 @@ IMPORTANTE:
         <div className="max-w-3xl mx-auto w-full min-w-0 space-y-6">
           {urlQuery && !hasMessages && (
             <div className="rounded-2xl border bg-white px-5 py-4 text-sm font-semibold" style={{ borderColor: '#FED7AA', color: '#6B7280' }}>
-              Buscando “{urlQuery}”… Las canciones con Spotify aparecerán primero.
+              Buscando “{activeQuery}”… Las canciones con Spotify aparecerán primero.
             </div>
           )}
           {messages.map((msg, i) => (
