@@ -203,43 +203,67 @@ export default function ChatInterface({ embedded, heroMode }) {
       // Sort: with spotify_embed first
       dedupedLocal.sort((a, b) => (b.spotify_embed ? 1 : 0) - (a.spotify_embed ? 1 : 0));
 
-      // Build content for LLM — ONLY matched songs, max 6
-      const contentForLLM = dedupedLocal.slice(0, 6).map((s) => ({
-        id: s.id,
-        title: s.title.replace(/\s*\d+$/, '').trim(),
-        artist: s.artist_name,
-        key: s.original_key,
-        capo: s.capo,
-        difficulty: s.difficulty,
-        has_chords: s.has_chords,
-        has_tablature: s.has_tablature,
-        content_raw: s.content_raw || '',
-        tablature: s.tablature || '',
-      }));
-
-      // If we have local matches, return them directly without LLM for catalog queries
+      // If we have local matches, return the strongest result immediately.
+      // Artist searches start with three songs; the rest are appended in the
+      // next idle window so the user never waits for a long list to render.
       const isChordQuery = /acorde|chord|diagrama|como\s+se\s+toca|rasgueo|ritmo|técnica|teoria|escala/i.test(userMessage);
-      
+
       if (dedupedLocal.length > 0 && !isChordQuery) {
-        // Direct response: show cards without LLM call
-        const cleanSongs = dedupedLocal.map(s => ({ ...s, title: s.title.replace(/\s*\d+$/, '').trim() }));
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: '',
-            songs: cleanSongs,
-            suggestions: [],
-          },
-        ]);
+        const normalizedQuery = normalize(userMessage);
+        const cleanSongs = dedupedLocal
+          .map((song) => ({ ...song, title: song.title.replace(/\s*\d+$/, '').trim() }))
+          .sort((a, b) => {
+            const aExact = normalize(a.title) === normalizedQuery ? 1 : 0;
+            const bExact = normalize(b.title) === normalizedQuery ? 1 : 0;
+            return bExact - aExact || (b.views || 0) - (a.views || 0);
+          });
+        const isArtistSearch = cleanSongs.some((song) => normalize(song.artist_name) === normalizedQuery);
+        const initialSongs = cleanSongs.slice(0, isArtistSearch ? 3 : 1);
+        const responseId = `catalog-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        setMessages((prev) => [...prev, {
+          id: responseId,
+          role: 'assistant',
+          content: '',
+          songs: initialSongs,
+          suggestions: [],
+        }]);
+        const revealRest = () => setMessages((current) => current.map((message) => (
+          message.id === responseId ? { ...message, songs: cleanSongs } : message
+        )));
+        if (cleanSongs.length > initialSongs.length) {
+          if ('requestIdleCallback' in window) window.requestIdleCallback(revealRest, { timeout: 700 });
+          else window.setTimeout(revealRest, 180);
+        }
         if (scanTimer) clearTimeout(scanTimer);
         setScanningExternal(false);
         setLoading(false);
         return;
       }
 
-      // Find relevant blog posts for technique/rhythm questions
-      const relevantPosts = findRelevantBlogPosts(userMessage, blogPostsCache);
+      // Only the few candidates that need an AI answer fetch their full musical
+      // content. The large catalog remains metadata-only.
+      const detailedMatches = await Promise.all(
+        dedupedLocal.slice(0, 6).map((song) => base44.entities.Song.get(song.id).catch(() => song)),
+      );
+      const contentForLLM = detailedMatches.map((song) => ({
+        id: song.id,
+        title: song.title.replace(/\s*\d+$/, '').trim(),
+        artist: song.artist_name,
+        key: song.original_key,
+        capo: song.capo,
+        difficulty: song.difficulty,
+        has_chords: song.has_chords,
+        has_tablature: song.has_tablature,
+        content_raw: song.content_raw || '',
+        tablature: song.tablature || '',
+      }));
+
+      let availablePosts = blogPostsCache;
+      if (isChordQuery && availablePosts.length === 0) {
+        availablePosts = await base44.entities.BlogPost.filter({ published: true }, '-created_date', 100);
+        setBlogPostsCache(availablePosts || []);
+      }
+      const relevantPosts = findRelevantBlogPosts(userMessage, availablePosts || []);
       const postsForLLM = relevantPosts.map((p) => ({
         title: p.title,
         slug: p.slug,
