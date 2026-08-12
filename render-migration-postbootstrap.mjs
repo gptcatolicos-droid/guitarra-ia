@@ -10,6 +10,7 @@ import { pool } from "./db.js";
 
 export const base44MigrationRouter = express.Router();
 const ALLOWED_ENTITIES = ["Artist", "Song", "BlogPost", "Infographic", "AmazonProduct"];
+const PRESERVED_SONG_SOURCE_IDS = new Set(["6a5f8eda1c6cc3db7b29be76"]);
 
 function requireMigrationSecret(req, res, next) {
   const configured = process.env.MIGRATION_SECRET;
@@ -45,6 +46,13 @@ async function migratePage(client, entity, limit, skip, dryRun = false) {
     );
 
     if (existing.rows[0]) {
+      // This legacy Base44 row is repaired in PostgreSQL by the lote 001
+      // migration. Do not let recurring Base44 sync restore its inverted
+      // artist/title metadata or its older content.
+      if (entity === "Song" && PRESERVED_SONG_SOURCE_IDS.has(record.sourceId)) {
+        updated += 1;
+        continue;
+      }
       await pool.query(
         "UPDATE entity_records SET data=$3::jsonb, updated_date=COALESCE($4::timestamptz,NOW()) WHERE id=$1 AND entity_name=$2",
         [existing.rows[0].id, entity, JSON.stringify(record.data), record.updatedDate]
