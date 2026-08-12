@@ -490,7 +490,7 @@ IMPORTANTE:
     </div>
   );
 
-  if (heroMode && !hasMessages && !urlQuery) {
+  if (heroMode && !hasMessages && !urlQuery && !loading) {
     // Hero state: centered layout with background image, input in the middle
     return (
       <div className="flex flex-col flex-1 overflow-hidden">
