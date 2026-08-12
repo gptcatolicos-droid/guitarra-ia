@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Every Spotify controller registered in the current page.  The official
 // embed runs in an iframe, so ordinary React events cannot hear its Play
@@ -62,9 +62,26 @@ export default function SpotifyEmbed({ source, height = 152, title = 'Spotify', 
   const mountRef = useRef(null);
   const playerId = useRef(`spotify-${Math.random().toString(36).slice(2)}`);
   const entityUrl = spotifyEntityUrl(source);
+  const [shouldMount, setShouldMount] = useState(false);
 
   useEffect(() => {
-    if (!entityUrl || !mountRef.current) return undefined;
+    if (!entityUrl || !mountRef.current || shouldMount) return undefined;
+    const mount = mountRef.current;
+    if (!('IntersectionObserver' in window)) {
+      setShouldMount(true);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setShouldMount(true);
+      observer.disconnect();
+    }, { rootMargin: '320px 0px' });
+    observer.observe(mount);
+    return () => observer.disconnect();
+  }, [entityUrl, shouldMount]);
+
+  useEffect(() => {
+    if (!entityUrl || !mountRef.current || !shouldMount) return undefined;
 
     let disposed = false;
     let controller;
@@ -117,7 +134,7 @@ export default function SpotifyEmbed({ source, height = 152, title = 'Spotify', 
       controller?.pause?.();
       controller?.destroy?.();
     };
-  }, [entityUrl, height, title]);
+  }, [entityUrl, height, title, shouldMount]);
 
   if (!entityUrl) return null;
 
