@@ -53,13 +53,6 @@ const CHAT_SONG_FIELDS = [
   'youtube_video_id', 'views', 'created_date',
 ];
 
-const SUGGESTIONS = [
-  'Muéstrame los acordes de La Camisa Negra',
-  '¿Cómo tocar el rasgueo de una balada?',
-  'Canciones fáciles con cuatro acordes',
-  'Tablaturas de rock clásico',
-];
-
 // Normalize for matching (remove numbers, accents, trim)
 const normalize = (s) =>
   (s || '')
@@ -239,12 +232,15 @@ export default function ChatInterface({ embedded, heroMode }) {
       .map((s) => s.post);
   };
 
-  const handleSend = async (text, { fromUrl = false } = {}) => {
+  const handleSend = async (text) => {
     const userMessage = (text || input).trim();
     if (!userMessage || loading) return;
-    keepResultsAtTop.current = fromUrl;
+
+    // Every search is a fresh result set. Keep the newest Spotify-first cards
+    // at the top instead of appending them below the previous artist.
+    keepResultsAtTop.current = true;
     setInput('');
-    if (!fromUrl) setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+    setMessages([]);
     setLoading(true);
     setScanningExternal(false);
 
@@ -530,16 +526,6 @@ IMPORTANTE:
                 style={{ backgroundColor: '#F97316' }}>
                 <Send className="w-5 h-5" />
               </button>
-            </div>
-            {/* Quick suggestions */}
-            <div className="flex flex-wrap justify-center gap-2 mt-4">
-              {SUGGESTIONS.map((s, i) => (
-                <button key={i} onClick={() => handleSend(s)}
-                  className="text-xs px-3 py-1.5 rounded-full transition-colors hover:border-orange-400"
-                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#4B5563' }}>
-                  {s}
-                </button>
-              ))}
             </div>
           </div>
         </div>
