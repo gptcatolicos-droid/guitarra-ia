@@ -68,6 +68,8 @@ const normalize = (s) =>
     .replace(/\s*\d+$/, '')
     .trim();
 
+const toSlug = (value) => normalize(value).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
 export default function ChatInterface({ embedded, heroMode }) {
   const location = useLocation();
   const [messages, setMessages] = useState([]);
@@ -80,12 +82,46 @@ export default function ChatInterface({ embedded, heroMode }) {
   const autoQueryFired = useRef(false);
 
   useEffect(() => {
-    // Metadata-only catalog: enough for immediate matching and song cards.
-    // Full lyrics/tabs are fetched only for the few matches sent to the AI.
-    base44.entities.Song.list('-views', 5000, 0, CHAT_SONG_FIELDS)
-      .then(setSongsCache)
-      .catch(() => {});
-  }, []);
+    let cancelled = false;
+    let idleId;
+    const urlQuery = new URLSearchParams(location.search).get('q')?.trim();
+
+    const loadCatalog = () => base44.entities.Song.list('-views', 5000, 0, CHAT_SONG_FIELDS)
+      .then((rows) => {
+        if (!cancelled) setSongsCache((current) => {
+          const known = new Set(current.map((song) => song.id));
+          return [...current, ...(rows || []).filter((song) => !known.has(song.id))];
+        });
+      }).catch(() => {});
+
+    if (urlQuery) {
+      const querySlug = toSlug(urlQuery);
+      Promise.all([
+        base44.entities.Song.filter({ slug: querySlug }, '-views', 3, 0, CHAT_SONG_FIELDS),
+        base44.entities.Artist.filter({ slug: querySlug }, '-created_date', 1, 0, ['id', 'slug']),
+      ]).then(async ([exactSongs, exactArtists]) => {
+        const artistSongs = exactArtists?.[0]
+          ? await base44.entities.Song.filter({ artist_slug: exactArtists[0].slug }, '-views', 3, 0, CHAT_SONG_FIELDS)
+          : [];
+        if (cancelled) return;
+        const immediate = [...(exactSongs || []), ...(artistSongs || [])];
+        if (immediate.length) setSongsCache(immediate);
+        idleId = 'requestIdleCallback' in window
+          ? window.requestIdleCallback(loadCatalog, { timeout: 800 })
+          : window.setTimeout(loadCatalog, 200);
+      }).catch(loadCatalog);
+    } else {
+      idleId = 'requestIdleCallback' in window
+        ? window.requestIdleCallback(loadCatalog, { timeout: 700 })
+        : window.setTimeout(loadCatalog, 150);
+    }
+
+    return () => {
+      cancelled = true;
+      if ('cancelIdleCallback' in window) window.cancelIdleCallback(idleId);
+      else window.clearTimeout(idleId);
+    };
+  }, [location.search]);
 
   // Auto-fire query from URL param ?q=
   useEffect(() => {
