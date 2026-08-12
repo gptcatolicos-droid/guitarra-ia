@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 
-export default function HeroSearchChat({ quickChips }) {
+export default function HeroSearchChat() {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
 
@@ -35,19 +35,6 @@ export default function HeroSearchChat({ quickChips }) {
         </button>
       </div>
 
-      <div className="quick-chips flex flex-wrap justify-center gap-2">
-        {quickChips.map(chip => (
-          <button key={chip}
-            onClick={() => handleSearch(chip)}
-            className="px-3 py-1.5 rounded-full text-sm font-medium transition-all"
-            style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = '#F97316'; e.currentTarget.style.color = '#F97316'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E5E7EB'; e.currentTarget.style.color = '#6B7280'; }}
-          >
-            {chip}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
