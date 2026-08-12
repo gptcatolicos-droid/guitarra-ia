@@ -49,7 +49,8 @@ Tienes acceso al catálogo interno de la plataforma. SOLO puedes responder con c
 const CHAT_SONG_FIELDS = [
   'id', 'title', 'slug', 'artist_name', 'artist_slug', 'artist_image',
   'original_key', 'capo', 'difficulty', 'has_chords', 'has_tablature',
-  'spotify_embed', 'youtube_video_id', 'views', 'created_date',
+  'spotify_embed', 'spotify_embed_url', 'spotify_track_id', 'spotify_match_status',
+  'youtube_video_id', 'views', 'created_date',
 ];
 
 const SUGGESTIONS = [
@@ -70,8 +71,20 @@ const normalize = (s) =>
 
 const toSlug = (value) => normalize(value).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+const hasSpotifyPlayer = (song) => Boolean(
+  song.spotify_track_id
+  || song.spotify_embed
+  || song.spotify_embed_url
+  || song.spotify_match_status === 'matched'
+);
+
+const prioritizeSpotify = (a, b) =>
+  Number(hasSpotifyPlayer(b)) - Number(hasSpotifyPlayer(a))
+  || (b.views || 0) - (a.views || 0);
+
 export default function ChatInterface({ embedded, heroMode }) {
   const location = useLocation();
+  const urlQuery = new URLSearchParams(location.search).get('q')?.trim() || '';
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -80,11 +93,11 @@ export default function ChatInterface({ embedded, heroMode }) {
   const [blogPostsCache, setBlogPostsCache] = useState([]);
   const scrollRef = useRef(null);
   const autoQueryFired = useRef(false);
+  const keepResultsAtTop = useRef(Boolean(urlQuery));
 
   useEffect(() => {
     let cancelled = false;
     let idleId;
-    const urlQuery = new URLSearchParams(location.search).get('q')?.trim();
 
     const loadCatalog = () => base44.entities.Song.list('-views', 5000, 0, CHAT_SONG_FIELDS)
       .then((rows) => {
@@ -98,30 +111,53 @@ export default function ChatInterface({ embedded, heroMode }) {
       const querySlug = toSlug(urlQuery);
       Promise.all([
         base44.entities.Song.filter({ slug: querySlug }, '-views', 3, 0, CHAT_SONG_FIELDS),
-        base44.entities.Artist.filter({ slug: querySlug }, '-created_date', 1, 0, ['id', 'slug']),
-      ]).then(async ([exactSongs, exactArtists]) => {
-        const relatedArtistSlug = exactArtists?.[0]?.slug || exactSongs?.[0]?.artist_slug;
+        base44.entities.Artist.list('-created_date', 3000, 0, ['id', 'name', 'slug']),
+      ]).then(async ([exactSongs, artists]) => {
+        const normalizedQuery = normalize(urlQuery);
+        const matchedArtist = (artists || [])
+          .filter((artist) => {
+            const name = normalize(artist.name);
+            const slug = normalize((artist.slug || '').replace(/[-_]/g, ' '));
+            return name === normalizedQuery
+              || slug === normalizedQuery
+              || name.includes(normalizedQuery)
+              || slug.includes(normalizedQuery);
+          })
+          .sort((a, b) => {
+            const aName = normalize(a.name);
+            const bName = normalize(b.name);
+            const aExact = aName === normalizedQuery ? 1 : 0;
+            const bExact = bName === normalizedQuery ? 1 : 0;
+            const aStarts = aName.startsWith(normalizedQuery) ? 1 : 0;
+            const bStarts = bName.startsWith(normalizedQuery) ? 1 : 0;
+            return bExact - aExact || bStarts - aStarts || aName.length - bName.length;
+          })[0];
+
+        const relatedArtistSlug = matchedArtist?.slug || exactSongs?.[0]?.artist_slug;
         const artistSongs = relatedArtistSlug
           ? await base44.entities.Song.filter(
               { artist_slug: relatedArtistSlug },
               '-views',
-              exactArtists?.[0] ? 500 : 8,
+              matchedArtist ? 500 : 8,
               0,
               CHAT_SONG_FIELDS,
             )
           : [];
+
         if (cancelled) return;
         const immediate = [...(exactSongs || []), ...(artistSongs || [])]
-          .filter((song, index, rows) => rows.findIndex((candidate) => candidate.id === song.id) === index);
+          .filter((song, index, rows) => rows.findIndex((candidate) => candidate.id === song.id) === index)
+          .sort(prioritizeSpotify);
         if (immediate.length) setSongsCache(immediate);
+
         idleId = 'requestIdleCallback' in window
-          ? window.requestIdleCallback(loadCatalog, { timeout: 800 })
-          : window.setTimeout(loadCatalog, 200);
+          ? window.requestIdleCallback(loadCatalog, { timeout: 1600 })
+          : window.setTimeout(loadCatalog, 700);
       }).catch(loadCatalog);
     } else {
       idleId = 'requestIdleCallback' in window
-        ? window.requestIdleCallback(loadCatalog, { timeout: 700 })
-        : window.setTimeout(loadCatalog, 150);
+        ? window.requestIdleCallback(loadCatalog, { timeout: 1200 })
+        : window.setTimeout(loadCatalog, 500);
     }
 
     return () => {
@@ -129,23 +165,24 @@ export default function ChatInterface({ embedded, heroMode }) {
       if ('cancelIdleCallback' in window) window.cancelIdleCallback(idleId);
       else window.clearTimeout(idleId);
     };
-  }, [location.search]);
+  }, [urlQuery]);
 
   // Auto-fire query from URL param ?q=
   useEffect(() => {
     if (autoQueryFired.current) return;
-    const params = new URLSearchParams(location.search);
-    const q = params.get('q');
-    if (q && songsCache.length > 0) {
+    if (urlQuery && songsCache.length > 0) {
       autoQueryFired.current = true;
-      handleSend(q);
+      handleSend(urlQuery, { fromUrl: true });
     }
-  }, [songsCache, location.search]);
+  }, [songsCache, urlQuery]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (!scrollRef.current) return;
+    if (keepResultsAtTop.current) {
+      scrollRef.current.scrollTop = 0;
+      return;
     }
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, loading]);
 
   // Tokenized local search — splits query into words and checks each against title/artist/slug
@@ -196,11 +233,12 @@ export default function ChatInterface({ embedded, heroMode }) {
       .map((s) => s.post);
   };
 
-  const handleSend = async (text) => {
+  const handleSend = async (text, { fromUrl = false } = {}) => {
     const userMessage = (text || input).trim();
     if (!userMessage || loading) return;
+    keepResultsAtTop.current = fromUrl;
     setInput('');
-    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+    if (!fromUrl) setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setLoading(true);
     setScanningExternal(false);
 
@@ -244,8 +282,8 @@ export default function ChatInterface({ embedded, heroMode }) {
         return true;
       });
 
-      // Sort: with spotify_embed first
-      dedupedLocal.sort((a, b) => (b.spotify_embed ? 1 : 0) - (a.spotify_embed ? 1 : 0));
+      // Spotify players are always shown before results without a player.
+      dedupedLocal.sort(prioritizeSpotify);
 
       // If we have local matches, return the strongest result immediately.
       // Artist searches start with three songs; the rest are appended in the
@@ -257,11 +295,18 @@ export default function ChatInterface({ embedded, heroMode }) {
         const cleanSongs = dedupedLocal
           .map((song) => ({ ...song, title: song.title.replace(/\s*\d+$/, '').trim() }))
           .sort((a, b) => {
+            const spotifyPriority = Number(hasSpotifyPlayer(b)) - Number(hasSpotifyPlayer(a));
             const aExact = normalize(a.title) === normalizedQuery ? 1 : 0;
             const bExact = normalize(b.title) === normalizedQuery ? 1 : 0;
-            return bExact - aExact || (b.views || 0) - (a.views || 0);
+            return spotifyPriority || bExact - aExact || (b.views || 0) - (a.views || 0);
           });
-        const isArtistSearch = cleanSongs.some((song) => normalize(song.artist_name) === normalizedQuery);
+        const isArtistSearch = cleanSongs.length > 1 && cleanSongs.some((song) => {
+          const artist = normalize(song.artist_name);
+          const artistSlug = normalize((song.artist_slug || '').replace(/[-_]/g, ' '));
+          return artist === normalizedQuery
+            || artist.includes(normalizedQuery)
+            || artistSlug.includes(normalizedQuery);
+        });
         const initialSongs = cleanSongs.slice(0, isArtistSearch ? 3 : 1);
         const responseId = `catalog-${Date.now()}-${Math.random().toString(36).slice(2)}`;
         setMessages((prev) => [...prev, {
@@ -443,7 +488,7 @@ IMPORTANTE:
     </div>
   );
 
-  if (heroMode && !hasMessages) {
+  if (heroMode && !hasMessages && !urlQuery) {
     // Hero state: centered layout with background image, input in the middle
     return (
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -500,6 +545,11 @@ IMPORTANTE:
     <>
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 bg-g-page">
         <div className="max-w-3xl mx-auto w-full min-w-0 space-y-6">
+          {urlQuery && !hasMessages && (
+            <div className="rounded-2xl border bg-white px-5 py-4 text-sm font-semibold" style={{ borderColor: '#FED7AA', color: '#6B7280' }}>
+              Buscando “{urlQuery}”… Las canciones con Spotify aparecerán primero.
+            </div>
+          )}
           {messages.map((msg, i) => (
             <ChatMessage key={i} message={msg} onSuggestionClick={handleSend} />
           ))}
