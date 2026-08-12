@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useSEO } from '@/lib/seo';
@@ -8,6 +8,15 @@ import ArtistAvatar from '@/components/ArtistAvatar';
 import SpotifyEmbed from '@/components/SpotifyEmbed';
 
 const LOGO_URL = 'https://media.base44.com/images/public/6a5e15eda090e739a1eebc94/e18c18520_logo.png';
+
+const HOME_SONG_FIELDS = [
+  'id', 'title', 'slug', 'artist_name', 'artist_slug', 'artist_image',
+  'difficulty', 'original_key', 'views', 'trending_order',
+  'spotify_embed', 'spotify_embed_url', 'spotify_match_status', 'spotify_track_id',
+  'youtube_video_id', 'youtube_analysis_updated_at',
+];
+
+const HOME_BLOG_FIELDS = ['id', 'title', 'slug', 'excerpt', 'category', 'featured_image', 'created_date'];
 
 const QUICK_CHIPS = [
   'Canciones fáciles', 'Cuatro acordes', 'Rock en español', 'Baladas', 'Guitarra acústica', 'Para principiantes',
@@ -96,6 +105,8 @@ export default function Home() {
   const [popularIndex, setPopularIndex] = useState(0);
   const [practiceExpanded, setPracticeExpanded] = useState(false);
   const [unpluggedExpanded, setUnpluggedExpanded] = useState(false);
+  const [loadStage, setLoadStage] = useState(0);
+  const loadedSections = useRef(new Set());
 
   useSEO({
     title: 'Guitarra IA — Acordes, tablaturas y asistente IA | guitarraia.com',
@@ -104,43 +115,80 @@ export default function Home() {
     canonical: 'https://guitarraia.com/',
   });
 
+  // The search hero paints immediately. The rest of the home is hydrated in
+  // small steps while the browser is idle, and scrolling accelerates the next
+  // step. This keeps the mobile first viewport free of catalog and embed work.
   useEffect(() => {
-    const loadHomeSongs = async () => {
-      try {
-        // Hero and trends have their own admin flags. They must never depend
-        // on global view count, otherwise configured records can disappear.
-        const [hero, trends, popular] = await Promise.all([
-          base44.entities.Song.filter({ is_hero: true }, '-views', 3),
-          base44.entities.Song.filter({ is_trending: true }, '-views', 100),
-          base44.entities.Song.list('-views', 200),
-        ]);
-        const randomMode = localStorage.getItem('trendingRandom') === 'true';
-        const selectedHero = (hero || []).slice(0, 3);
-        const selectedTrends = orderTrendingSongs(trends || [], randomMode);
-        const selectedIds = new Set([...selectedHero, ...selectedTrends].map((song) => song.id));
-        const withSpotify = (popular || [])
-          .filter((song) => (song.spotify_embed || song.spotify_embed_url) && !selectedIds.has(song.id))
-          .slice(0, 9);
+    const advance = () => setLoadStage((stage) => Math.min(stage + 1, 7));
+    const idleId = 'requestIdleCallback' in window
+      ? window.requestIdleCallback(advance, { timeout: 900 })
+      : window.setTimeout(advance, 350);
+    let scrollLocked = false;
+    const onScroll = () => {
+      if (scrollLocked) return;
+      scrollLocked = true;
+      advance();
+      window.setTimeout(() => { scrollLocked = false; }, 500);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if ('cancelIdleCallback' in window) window.cancelIdleCallback(idleId);
+      else window.clearTimeout(idleId);
+    };
+  }, [loadStage]);
 
-        setHeroSongs(selectedHero);
-        setTrendingSongs(selectedTrends);
-        setTrendingRandom(randomMode);
-        setAllSpotifySongs(withSpotify);
-      } catch {}
+  useEffect(() => {
+    const loadOnce = (key, task) => {
+      if (loadedSections.current.has(key)) return;
+      loadedSections.current.add(key);
+      task().catch(() => loadedSections.current.delete(key));
     };
 
-    loadHomeSongs();
-    // This section is editorially curated in Admin; difficulty alone must
-    // never override the administrator's selection.
-    base44.entities.Song.filter({ youtube_practice_enabled: true, youtube_analysis_status: 'ready' }, '-youtube_analysis_updated_at', 6)
-      .then(setPracticeSongs).catch(() => {});
-    base44.entities.Song.filter({ is_easy_pick: true }, '-views', 6)
-      .then(setEasySongs).catch(() => {});
-    base44.entities.Song.filter({ is_unplugged: true }, '-views', 3)
-      .then((items) => setUnpluggedSongs((items || []).filter(hasSpotifyPlayer))).catch(() => {});
-    base44.entities.BlogPost.filter({ published: true }, '-created_date', 3)
-      .then(setBlogPosts).catch(() => {});
-  }, []);
+    if (loadStage >= 1) {
+      loadOnce('unplugged', () => base44.entities.Song.filter(
+        { is_unplugged: true }, '-views', 3, 0, HOME_SONG_FIELDS,
+      ).then((items) => setUnpluggedSongs((items || []).filter(hasSpotifyPlayer))));
+    }
+    if (loadStage >= 2) {
+      loadOnce('practice-first', () => base44.entities.Song.filter(
+        { youtube_practice_enabled: true, youtube_analysis_status: 'ready' },
+        '-youtube_analysis_updated_at', 1, 0, HOME_SONG_FIELDS,
+      ).then((items) => setPracticeSongs(items || [])));
+    }
+    if (loadStage >= 3) {
+      loadOnce('practice-rest', () => base44.entities.Song.filter(
+        { youtube_practice_enabled: true, youtube_analysis_status: 'ready' },
+        '-youtube_analysis_updated_at', 6, 0, HOME_SONG_FIELDS,
+      ).then((items) => setPracticeSongs(items || [])));
+      loadOnce('hero', () => base44.entities.Song.filter(
+        { is_hero: true }, '-views', 3, 0, HOME_SONG_FIELDS,
+      ).then((items) => setHeroSongs((items || []).slice(0, 3))));
+    }
+    if (loadStage >= 4) {
+      loadOnce('trending', () => base44.entities.Song.filter(
+        { is_trending: true }, '-views', 24, 0, HOME_SONG_FIELDS,
+      ).then((items) => {
+        const randomMode = localStorage.getItem('trendingRandom') === 'true';
+        setTrendingSongs(orderTrendingSongs(items || [], randomMode));
+        setTrendingRandom(randomMode);
+      }));
+    }
+    if (loadStage >= 5) {
+      loadOnce('popular', () => base44.entities.Song.list('-views', 40, 0, HOME_SONG_FIELDS)
+        .then((items) => setAllSpotifySongs((items || []).filter(hasSpotifyPlayer).slice(0, 9))));
+    }
+    if (loadStage >= 6) {
+      loadOnce('easy', () => base44.entities.Song.filter(
+        { is_easy_pick: true }, '-views', 6, 0, HOME_SONG_FIELDS,
+      ).then((items) => setEasySongs(items || [])));
+    }
+    if (loadStage >= 7) {
+      loadOnce('blog', () => base44.entities.BlogPost.filter(
+        { published: true }, '-created_date', 3, 0, HOME_BLOG_FIELDS,
+      ).then((items) => setBlogPosts(items || [])));
+    }
+  }, [loadStage]);
 
   useEffect(() => {
     setTrendingIndex((index) => Math.min(index, Math.max(trendingSongs.length - 1, 0)));
