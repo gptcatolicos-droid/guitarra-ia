@@ -18,10 +18,6 @@ const HOME_SONG_FIELDS = [
 
 const HOME_BLOG_FIELDS = ['id', 'title', 'slug', 'excerpt', 'category', 'featured_image', 'created_date'];
 
-const QUICK_CHIPS = [
-  'Canciones fáciles', 'Cuatro acordes', 'Rock en español', 'Baladas', 'Guitarra acústica', 'Para principiantes',
-];
-
 const DIFF_COLORS = {
   'Fácil': { bg: 'rgba(76,154,42,0.12)', color: '#4C9A2A' },
   'Intermedia': { bg: 'rgba(183,121,31,0.12)', color: '#B7791F' },
@@ -105,7 +101,7 @@ export default function Home() {
   const [popularIndex, setPopularIndex] = useState(0);
   const [practiceExpanded, setPracticeExpanded] = useState(false);
   const [unpluggedExpanded, setUnpluggedExpanded] = useState(false);
-  const [loadStage, setLoadStage] = useState(0);
+  const [loadStage, setLoadStage] = useState(2);
   const loadedSections = useRef(new Set());
 
   useSEO({
@@ -121,8 +117,8 @@ export default function Home() {
   useEffect(() => {
     const advance = () => setLoadStage((stage) => Math.min(stage + 1, 7));
     const idleId = 'requestIdleCallback' in window
-      ? window.requestIdleCallback(advance, { timeout: 900 })
-      : window.setTimeout(advance, 350);
+      ? window.requestIdleCallback(advance, { timeout: 1400 })
+      : window.setTimeout(advance, 700);
     let scrollLocked = false;
     const onScroll = () => {
       if (scrollLocked) return;
@@ -216,7 +212,7 @@ export default function Home() {
           <p className="text-base lg:text-lg mb-8" style={{ color: '#6B7280' }}>
             Afinación precisa, acordes al instante y canciones que suenan como quieres.
           </p>
-          <HeroSearchChat quickChips={QUICK_CHIPS} />
+          <HeroSearchChat />
           <Link to="/afinador" className="tuner-promo"><span><Radio className="w-5 h-5" /></span><div><b>Afinador IA</b><small>Afinación precisa con IA en tiempo real.</small></div><em>Abrir afinador</em></Link>
         </div>
       </section>
