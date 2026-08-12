@@ -148,11 +148,17 @@ export default function ChatInterface({ embedded, heroMode }) {
         const immediate = [...(exactSongs || []), ...(artistSongs || [])]
           .filter((song, index, rows) => rows.findIndex((candidate) => candidate.id === song.id) === index)
           .sort(prioritizeSpotify);
-        if (immediate.length) setSongsCache(immediate);
-
-        idleId = 'requestIdleCallback' in window
-          ? window.requestIdleCallback(loadCatalog, { timeout: 1600 })
-          : window.setTimeout(loadCatalog, 700);
+        if (immediate.length) {
+          setSongsCache(immediate);
+          idleId = 'requestIdleCallback' in window
+            ? window.requestIdleCallback(loadCatalog, { timeout: 1600 })
+            : window.setTimeout(loadCatalog, 700);
+        } else {
+          // A partial song query may not have an exact slug or artist match.
+          // Start the lightweight catalog scan immediately instead of showing
+          // an empty result view for another idle interval.
+          loadCatalog();
+        }
       }).catch(loadCatalog);
     } else {
       idleId = 'requestIdleCallback' in window
