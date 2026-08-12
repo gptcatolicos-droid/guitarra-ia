@@ -46,6 +46,12 @@ Tienes acceso al catálogo interno de la plataforma. SOLO puedes responder con c
 ---SUGERENCIAS---
 ["Nombre canción 1", "Nombre canción 2", "Nombre canción 3"]`;
 
+const CHAT_SONG_FIELDS = [
+  'id', 'title', 'slug', 'artist_name', 'artist_slug', 'artist_image',
+  'original_key', 'capo', 'difficulty', 'has_chords', 'has_tablature',
+  'spotify_embed', 'youtube_video_id', 'views', 'created_date',
+];
+
 const SUGGESTIONS = [
   'Muéstrame los acordes de La Camisa Negra',
   '¿Cómo tocar el rasgueo de una balada?',
@@ -74,11 +80,10 @@ export default function ChatInterface({ embedded, heroMode }) {
   const autoQueryFired = useRef(false);
 
   useEffect(() => {
-    base44.entities.Song.list('-created_date', 2000)
+    // Metadata-only catalog: enough for immediate matching and song cards.
+    // Full lyrics/tabs are fetched only for the few matches sent to the AI.
+    base44.entities.Song.list('-views', 5000, 0, CHAT_SONG_FIELDS)
       .then(setSongsCache)
-      .catch(() => {});
-    base44.entities.BlogPost.filter({ published: true }, '-created_date', 100)
-      .then(setBlogPostsCache)
       .catch(() => {});
   }, []);
 
