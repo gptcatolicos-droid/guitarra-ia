@@ -27,7 +27,8 @@ export default function SongCard({ song }) {
   const diff = DIFF_COLORS[song.difficulty];
   const hasChords = song.has_chords;
   const hasTab = song.has_tablature;
-  const storedTrackId = song.spotify_track_id || (song.spotify_embed || '').match(/track\/([A-Za-z0-9]+)/)?.[1] || null;
+  const spotifySource = song.spotify_track_id || song.spotify_embed || song.spotify_embed_url || '';
+  const storedTrackId = song.spotify_track_id || String(spotifySource).match(/track\/([A-Za-z0-9]+)/)?.[1] || null;
   const [embedUrl, setEmbedUrl] = useState(storedTrackId ? getSpotifyEmbedUrl(`track/${storedTrackId}`) : null);
   const [fetched, setFetched] = useState(false);
 
