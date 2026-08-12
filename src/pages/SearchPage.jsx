@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Music, Users, Search, X } from 'lucide-react';
@@ -11,8 +11,33 @@ const DIFF_COLORS = {
   'Avanzada': { bg: 'rgba(194,65,12,0.12)', color: '#C2410C' },
 };
 
+const SEARCH_SONG_FIELDS = [
+  'id', 'title', 'slug', 'artist_name', 'artist_slug', 'artist_image',
+  'difficulty', 'has_chords', 'has_tablature', 'views', 'created_date',
+];
+const SEARCH_ARTIST_FIELDS = ['id', 'name', 'slug', 'image', 'spotify_image_url', 'created_date'];
+const SEARCH_POST_FIELDS = ['id', 'title', 'slug', 'excerpt', 'category', 'published', 'created_date'];
+
 function cleanTitle(title) {
   return (title || '').replace(/\s*\d+$/, '').trim();
+}
+
+function normalize(value) {
+  return (value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function slugify(value) {
+  return normalize(value).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function uniqueBy(items, keyFor) {
+  const seen = new Set();
+  return (items || []).filter((item) => {
+    const key = keyFor(item);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export default function SearchPage() {
@@ -24,6 +49,9 @@ export default function SearchPage() {
   const [artists, setArtists] = useState([]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [visibleSongCount, setVisibleSongCount] = useState(12);
+  const loadMoreRef = useRef(null);
 
   useSEO({
     title: query ? `Buscar: ${query} | Guitarra IA` : 'Buscar canciones | Guitarra IA',
@@ -31,24 +59,75 @@ export default function SearchPage() {
   });
 
   useEffect(() => {
+    let cancelled = false;
+    let idleId;
     setInputVal(query);
-    if (!query) { setSongs([]); setArtists([]); setPosts([]); return; }
+    setVisibleSongCount(12);
+    if (!query) {
+      setSongs([]); setArtists([]); setPosts([]); setLoading(false); setLoadingMore(false);
+      return undefined;
+    }
+
     setLoading(true);
+    setLoadingMore(true);
+    const querySlug = slugify(query);
+
+    // Phase 1: exact song/artist candidates. An exact artist also gets its
+    // first three songs immediately, before the broader catalog scan.
     Promise.all([
-      base44.entities.Song.list('-created_date', 5000),
-      base44.entities.Artist.list('-created_date', 5000),
-      base44.entities.BlogPost.list('-created_date', 500),
-    ])
-      .then(([allSongs, allArtists, allPosts]) => {
-        const normalize = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      base44.entities.Song.filter({ slug: querySlug }, '-views', 3, 0, SEARCH_SONG_FIELDS),
+      base44.entities.Song.filter({ title: query }, '-views', 3, 0, SEARCH_SONG_FIELDS),
+      base44.entities.Artist.filter({ slug: querySlug }, '-created_date', 3, 0, SEARCH_ARTIST_FIELDS),
+      base44.entities.Artist.filter({ name: query }, '-created_date', 3, 0, SEARCH_ARTIST_FIELDS),
+    ]).then(async ([bySlug, byTitle, artistsBySlug, artistsByName]) => {
+      if (cancelled) return;
+      const exactArtists = uniqueBy([...(artistsBySlug || []), ...(artistsByName || [])], (a) => a.id);
+      const exactArtist = exactArtists[0];
+      const artistSongs = exactArtist
+        ? await base44.entities.Song.filter({ artist_slug: exactArtist.slug }, '-views', 3, 0, SEARCH_SONG_FIELDS)
+        : [];
+      if (cancelled) return;
+      setArtists(exactArtists);
+      setSongs(uniqueBy([...(bySlug || []), ...(byTitle || []), ...(artistSongs || [])], (s) => s.id));
+      setLoading(false);
+
+      const loadBackground = () => Promise.all([
+        base44.entities.Song.list('-views', 5000, 0, SEARCH_SONG_FIELDS),
+        base44.entities.Artist.list('-created_date', 5000, 0, SEARCH_ARTIST_FIELDS),
+        base44.entities.BlogPost.list('-created_date', 500, 0, SEARCH_POST_FIELDS),
+      ]).then(([allSongs, allArtists, allPosts]) => {
+        if (cancelled) return;
         const nq = normalize(query);
-        setSongs(allSongs.filter(s => normalize(s.title).includes(nq) || normalize(s.artist_name).includes(nq)));
-        setArtists(allArtists.filter(a => normalize(a.name).includes(nq)));
-        setPosts(allPosts.filter(p => p.published && [p.title, p.excerpt, p.content, p.category].some(value => normalize(value).includes(nq))));
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+        const matchingSongs = allSongs.filter((song) => normalize(song.title).includes(nq) || normalize(song.artist_name).includes(nq));
+        const matchingArtists = allArtists.filter((artist) => normalize(artist.name).includes(nq));
+        const matchingPosts = allPosts.filter((post) => post.published && [post.title, post.excerpt, post.category].some((value) => normalize(value).includes(nq)));
+        setSongs((current) => uniqueBy([...current, ...matchingSongs], (song) => song.id));
+        setArtists((current) => uniqueBy([...current, ...matchingArtists], (artist) => artist.id));
+        setPosts(matchingPosts);
+      }).catch(() => {}).finally(() => { if (!cancelled) setLoadingMore(false); });
+
+      idleId = 'requestIdleCallback' in window
+        ? window.requestIdleCallback(loadBackground, { timeout: 900 })
+        : window.setTimeout(loadBackground, 250);
+    }).catch(() => {
+      if (!cancelled) { setLoading(false); setLoadingMore(false); }
+    });
+
+    return () => {
+      cancelled = true;
+      if ('cancelIdleCallback' in window) window.cancelIdleCallback(idleId);
+      else window.clearTimeout(idleId);
+    };
   }, [query]);
+
+  useEffect(() => {
+    if (!loadMoreRef.current || visibleSongCount >= songs.length) return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setVisibleSongCount((count) => Math.min(count + 20, songs.length));
+    }, { rootMargin: '500px 0px' });
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [songs.length, visibleSongCount]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -147,7 +226,7 @@ export default function SearchPage() {
                   <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: '#F3F4F6', color: '#6B7280' }}>{songs.length}</span>
                 </div>
                 <div className="space-y-1.5">
-                  {songs.map(s => {
+                  {songs.slice(0, visibleSongCount).map(s => {
                     const diff = DIFF_COLORS[s.difficulty];
                     return (
                       <Link key={s.id} to={`/${s.artist_slug}/${s.slug}`}
@@ -182,12 +261,13 @@ export default function SearchPage() {
                     );
                   })}
                 </div>
+                {visibleSongCount < songs.length && <div ref={loadMoreRef} className="h-8" aria-hidden="true" />}
               </div>
             )}
           </div>
         )}
 
-        {!loading && query && !hasResults && (
+        {!loading && !loadingMore && query && !hasResults && (
           <div className="text-center py-16">
             <Music className="w-12 h-12 mx-auto mb-4" style={{ color: '#E5E7EB' }} />
             <p className="font-semibold mb-1" style={{ color: '#1F2937' }}>No encontramos resultados</p>
