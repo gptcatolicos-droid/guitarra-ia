@@ -100,11 +100,19 @@ export default function ChatInterface({ embedded, heroMode }) {
         base44.entities.Song.filter({ slug: querySlug }, '-views', 3, 0, CHAT_SONG_FIELDS),
         base44.entities.Artist.filter({ slug: querySlug }, '-created_date', 1, 0, ['id', 'slug']),
       ]).then(async ([exactSongs, exactArtists]) => {
-        const artistSongs = exactArtists?.[0]
-          ? await base44.entities.Song.filter({ artist_slug: exactArtists[0].slug }, '-views', 3, 0, CHAT_SONG_FIELDS)
+        const relatedArtistSlug = exactArtists?.[0]?.slug || exactSongs?.[0]?.artist_slug;
+        const artistSongs = relatedArtistSlug
+          ? await base44.entities.Song.filter(
+              { artist_slug: relatedArtistSlug },
+              '-views',
+              exactArtists?.[0] ? 500 : 8,
+              0,
+              CHAT_SONG_FIELDS,
+            )
           : [];
         if (cancelled) return;
-        const immediate = [...(exactSongs || []), ...(artistSongs || [])];
+        const immediate = [...(exactSongs || []), ...(artistSongs || [])]
+          .filter((song, index, rows) => rows.findIndex((candidate) => candidate.id === song.id) === index);
         if (immediate.length) setSongsCache(immediate);
         idleId = 'requestIdleCallback' in window
           ? window.requestIdleCallback(loadCatalog, { timeout: 800 })
