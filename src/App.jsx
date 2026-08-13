@@ -14,6 +14,7 @@ const ArtistPage = lazy(() => import('@/pages/ArtistPage'));
 const SongPage = lazy(() => import('@/pages/SongPage'));
 const SearchPage = lazy(() => import('@/pages/SearchPage'));
 const AdminPage = lazy(() => import('@/pages/AdminPage'));
+const AdminLoginPage = lazy(() => import('@/pages/AdminLoginPage'));
 const ChatPage = lazy(() => import('@/pages/ChatPage'));
 const TermsPage = lazy(() => import('@/pages/TermsPage'));
 const AcordesPage = lazy(() => import('@/pages/AcordesPage'));
@@ -29,6 +30,9 @@ const InfographicPage = lazy(() => import('@/pages/InfographicPage'));
 const TunerPage = lazy(() => import('@/pages/TunerPage'));
 const UnpluggedPage = lazy(() => import('@/pages/UnpluggedPage'));
 const PracticePage = lazy(() => import('@/pages/PracticePage'));
+
+const PRIVATE_ADMIN_PATH = '/supercalifragilisticoespialidoso';
+const PRIVATE_LOGIN_PATH = '/supercalifragilisticoespialidoso/acceso';
 
 function RouteFallback() {
   return (
@@ -71,8 +75,11 @@ function PublicRoutes() {
         <Route path="/:artistSlug/:songSlug/:view" element={deferred(SongPage)} />
       </Route>
 
+      <Route path={PRIVATE_LOGIN_PATH} element={deferred(AdminLoginPage)} />
+
       <Route element={deferred(AdminRoute)}>
         <Route path="/admin" element={deferred(AdminPage)} />
+        <Route path={PRIVATE_ADMIN_PATH} element={deferred(AdminPage)} />
       </Route>
 
       <Route path="*" element={deferred(PageNotFound)} />
