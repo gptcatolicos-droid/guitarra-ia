@@ -17,7 +17,7 @@ function getErrorMessage(error, fallback) {
  * El archivo no se publica: el backend devuelve una URL firmada y luego el
  * worker guarda únicamente el mapa de acordes resultante en la canción.
  */
-export async function uploadAndQueueYouTubePractice(base44, songId, file) {
+export async function uploadAndQueueYouTubePractice(base44, songId, file, options = {}) {
   if (!base44?.functions?.invoke) {
     throw new Error('La conexión del administrador no está disponible. Recarga e inténtalo otra vez.');
   }
@@ -83,6 +83,7 @@ export async function uploadAndQueueYouTubePractice(base44, songId, file) {
     const response = await base44.functions.invoke('requestYouTubePracticeAnalysisV2', {
       songId,
       audioObjectName: uploadTicket.object_name,
+      autoPublish: Boolean(options.autoPublish),
     });
     const analysis = response?.data || response;
 
