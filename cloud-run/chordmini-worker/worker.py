@@ -110,7 +110,11 @@ def extract_rows(value):
             yield from extract_rows(item)
     elif isinstance(value, dict):
         chord = value.get('chord') or value.get('label') or value.get('name')
-        start = value.get('start') or value.get('time') or value.get('timestamp') or value.get('start_time') or value.get('startTime') or value.get('offset')
+        start = next((
+            value.get(key)
+            for key in ('start', 'time', 'timestamp', 'start_time', 'startTime', 'offset')
+            if value.get(key) is not None
+        ), None)
         if chord is not None and start is not None:
             try:
                 yield float(start), str(chord)
