@@ -110,7 +110,11 @@ def extract_rows(value):
             yield from extract_rows(item)
     elif isinstance(value, dict):
         chord = value.get('chord') or value.get('label') or value.get('name')
-        start = value.get('start') or value.get('time') or value.get('timestamp') or value.get('start_time') or value.get('startTime') or value.get('offset')
+        start = next((
+            value.get(key)
+            for key in ('start', 'time', 'timestamp', 'start_time', 'startTime', 'offset')
+            if value.get(key) is not None
+        ), None)
         if chord is not None and start is not None:
             try:
                 yield float(start), str(chord)
@@ -121,7 +125,13 @@ def extract_rows(value):
                 yield from extract_rows(nested)
 
 
+def display_identity(chord):
+    identity = basic_identity(chord)
+    return identity[:1].upper() + identity[1:] if identity else ''
+
+
 def normalise_result(result, allowed):
+    allowed = [chord for chord in (allowed or []) if str(chord or '').strip()]
     aliases = {canonical(chord): chord for chord in allowed}
     by_identity = {}
     for chord in allowed:
@@ -131,10 +141,12 @@ def normalise_result(result, allowed):
     candidates = []
     for moment, chord in extract_rows(result):
         matched = aliases.get(canonical(chord))
-        if not matched:
+        if not matched and allowed:
             options = by_identity.get(basic_identity(chord), [])
             if len(options) == 1:
                 matched = options[0]
+        if not matched and not allowed:
+            matched = display_identity(chord)
         if matched:
             candidates.append({'time': round(max(0, moment), 2), 'chord': matched})
     candidates.sort(key=lambda cue: cue['time'])
@@ -181,12 +193,13 @@ def process(payload):
         response.raise_for_status()
         cues = normalise_result(response.json(), payload['catalog_chords'])
         if len(cues) < 2:
-            raise RuntimeError('ChordMini no encontró suficientes cambios que coincidan con el cifrado del catálogo.')
+            raise RuntimeError('ChordMini no encontró suficientes cambios de acordes en el audio.')
         confidence = min(0.98, max(0.35, len(cues) / max(8, len(payload['catalog_chords']))))
         callback({
             'song_id': song_id,
             'video_id': video_id,
             'status': 'ready',
+            'auto_publish': bool(payload.get('auto_publish')),
             'map': {
                 'version': 2,
                 'provider': 'ChordMini',
@@ -275,7 +288,7 @@ def analyze():
     except (TypeError, json.JSONDecodeError):
         return jsonify({'error': 'JSON inválido.'}), 400
     required = {'song_id', 'video_id', 'audio_object_name', 'catalog_chords'}
-    if not required.issubset(payload) or len(payload['catalog_chords']) < 2 or not valid_object_name(payload['song_id'], payload['audio_object_name']):
+    if not required.issubset(payload) or not isinstance(payload['catalog_chords'], list) or len(payload['catalog_chords']) == 1 or not valid_object_name(payload['song_id'], payload['audio_object_name']):
         return jsonify({'error': 'Solicitud incompleta.'}), 400
     threading.Thread(target=process, args=(payload,), daemon=True).start()
     return jsonify({'accepted': True}), 202
