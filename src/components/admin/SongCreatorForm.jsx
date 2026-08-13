@@ -23,6 +23,7 @@ const EMPTY = {
   artist_image_url: '',
   spotify_artist_url: '',
   is_unplugged: false,
+  practice_only: false,
 };
 
 export default function SongCreatorForm({ onCreated }) {
@@ -44,24 +45,37 @@ export default function SongCreatorForm({ onCreated }) {
       return;
     }
 
+    if (form.practice_only && (!form.youtube_embed.trim() || !practiceAudio)) {
+      setStatus('error');
+      setMessage('Para crear una canción solo de práctica, agrega el enlace de YouTube y selecciona el MP3 autorizado.');
+      return;
+    }
+
     try {
-      const res = await base44.functions.invoke('createSongWithArtist', {
+      const creationPayload = {
         ...form,
         capo: Number(form.capo) || 0,
-      });
+        has_chords: form.practice_only ? false : form.has_chords,
+        has_tablature: form.practice_only ? false : form.has_tablature,
+        content_raw: form.practice_only ? '' : form.content_raw,
+        tablature: form.practice_only ? '' : form.tablature,
+      };
+      const res = await base44.functions.invoke('createSongWithArtist', creationPayload);
       const data = res.data;
       let practiceQueued = false;
       let practiceWarning = '';
       if (practiceAudio && data.songId) {
         try {
-          const analysis = await uploadAndQueueYouTubePractice(base44, data.songId, practiceAudio);
+          const analysis = await uploadAndQueueYouTubePractice(base44, data.songId, practiceAudio, {
+            autoPublish: form.practice_only,
+          });
           practiceQueued = analysis?.status === 'queued';
         } catch (analysisError) {
           practiceWarning = ` La canción fue creada, pero el análisis no se inició: ${analysisError.message}. Puedes reintentarlo desde el editor.`;
         }
       }
       setStatus('success');
-      setMessage(`Canción creada. Artista ${data.artistCreated ? 'nuevo creado' : 'reutilizado'}.${practiceWarning || (practiceQueued ? ' El análisis de práctica quedó en cola y aparecerá cuando termine.' : form.youtube_embed ? ' El enlace de YouTube quedó guardado; la práctica aparecerá cuando el analizador esté configurado y termine.' : '')}`);
+      setMessage(`Canción creada. Artista ${data.artistCreated ? 'nuevo creado' : 'reutilizado'}.${practiceWarning || (practiceQueued ? (form.practice_only ? ' El análisis quedó en cola y se publicará automáticamente en Practicar con IA cuando termine.' : ' El análisis de práctica quedó en cola y aparecerá cuando termine.') : form.youtube_embed ? ' El enlace de YouTube quedó guardado; la práctica aparecerá cuando el analizador esté configurado y termine.' : '')}`);
       setForm(EMPTY);
       setPracticeAudio(null);
       onCreated && onCreated();
@@ -125,15 +139,17 @@ export default function SongCreatorForm({ onCreated }) {
       </div>
 
       {/* Type checkboxes */}
-      <div className="flex gap-6">
+      <div className="flex flex-wrap gap-6">
         <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground">
-          <input type="checkbox" checked={form.has_chords} onChange={e => set('has_chords', e.target.checked)}
-            className="accent-primary w-4 h-4" />
+          <input type="checkbox" checked={form.has_chords} disabled={form.practice_only}
+            onChange={e => set('has_chords', e.target.checked)}
+            className="accent-primary w-4 h-4 disabled:opacity-40" />
           Tiene acordes
         </label>
         <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground">
-          <input type="checkbox" checked={form.has_tablature} onChange={e => set('has_tablature', e.target.checked)}
-            className="accent-primary w-4 h-4" />
+          <input type="checkbox" checked={form.has_tablature} disabled={form.practice_only}
+            onChange={e => set('has_tablature', e.target.checked)}
+            className="accent-primary w-4 h-4 disabled:opacity-40" />
           Tiene tablatura
         </label>
         <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground">
@@ -141,7 +157,22 @@ export default function SongCreatorForm({ onCreated }) {
             className="accent-primary w-4 h-4" />
           Incluir en Unplugged
         </label>
+        <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground">
+          <input type="checkbox" checked={form.practice_only}
+            onChange={e => setForm(f => ({
+              ...f,
+              practice_only: e.target.checked,
+              ...(e.target.checked ? { has_chords: false, has_tablature: false, content_raw: '', tablature: '' } : {}),
+            }))}
+            className="accent-primary w-4 h-4" />
+          Solo práctica con YouTube
+        </label>
       </div>
+      {form.practice_only && (
+        <p className="text-xs text-primary -mt-3">
+          No necesitas cifrado ni tablatura. Agrega el video y el MP3; la práctica se publicará automáticamente al terminar el análisis.
+        </p>
+      )}
 
       {/* Spotify Embed */}
       <div>
@@ -153,7 +184,7 @@ export default function SongCreatorForm({ onCreated }) {
       </div>
 
       <div>
-        <label className={labelCls}>Video de práctica de YouTube (opcional)</label>
+        <label className={labelCls}>Video de práctica de YouTube {form.practice_only ? '*' : '(opcional)'}</label>
         <input className={`${inputCls} font-mono text-xs`} value={form.youtube_embed}
           onChange={e => set('youtube_embed', e.target.value)}
           placeholder='https://www.youtube.com/watch?v=...' />
@@ -161,7 +192,7 @@ export default function SongCreatorForm({ onCreated }) {
       </div>
 
       <div>
-        <label className={labelCls}>Audio autorizado para sincronizar (opcional)</label>
+        <label className={labelCls}>Audio autorizado para sincronizar {form.practice_only ? '*' : '(opcional)'}</label>
         <input type="file" accept="audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg"
           className={`${inputCls} file:mr-3 file:border-0 file:bg-primary/10 file:text-primary file:font-medium file:rounded-md file:px-2 file:py-1`}
           onChange={e => setPracticeAudio(e.target.files?.[0] || null)} />
@@ -187,15 +218,15 @@ export default function SongCreatorForm({ onCreated }) {
       </div>
 
       {/* Content */}
-      {form.has_chords && (
+      {form.has_chords && !form.practice_only && (
         <div>
-          <label className={labelCls}>Acordes (content_raw) *</label>
+          <label className={labelCls}>Acordes (content_raw)</label>
           <textarea className={`${inputCls} font-mono`} rows={10}
             value={form.content_raw} onChange={e => set('content_raw', e.target.value)}
             placeholder={'[Intro]\nAm  F  C  G\n\n[Verso]\nAm         F\nLetra...'} />
         </div>
       )}
-      {form.has_tablature && (
+      {form.has_tablature && !form.practice_only && (
         <div>
           <label className={labelCls}>Tablatura</label>
           <textarea className={`${inputCls} font-mono`} rows={10}
