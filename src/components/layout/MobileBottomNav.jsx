@@ -3,10 +3,10 @@ import { Home, Sparkles, LayoutGrid, PlayCircle, Radio } from 'lucide-react';
 import { useNavigationVisibility } from '@/lib/navigationVisibility';
 
 const items = [
+  { key: 'practice', icon: PlayCircle, label: 'Práctica', path: '/practicar' },
   { key: 'home', icon: Home, label: 'Inicio', path: '/' },
   { key: 'tuner', icon: Radio, label: 'Afinador', path: '/afinador' },
   { key: 'chords', icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
-  { key: 'practice', icon: PlayCircle, label: 'Practicar', path: '/practicar' },
 ];
 
 export default function MobileBottomNav() {

@@ -9,7 +9,6 @@ import { useNavigationVisibility } from '@/lib/navigationVisibility';
 const navItems = [
   { key: 'home', icon: Home, label: 'Inicio', path: '/' },
   { key: 'tuner', icon: Radio, label: 'Afinador IA', path: '/afinador' },
-  { key: 'practice', icon: PlayCircle, label: 'Practicar con IA', path: '/practicar', badge: 'NUEVO' },
   { key: 'unplugged', icon: Guitar, label: 'Unplugged', path: '/unplugged' },
   { key: 'chords', icon: LayoutGrid, label: 'Acordes', path: '/acordes' },
   { key: 'blog', icon: BookOpen, label: 'Blog', path: '/blog' },
@@ -47,12 +46,12 @@ export default function Sidebar({ open, onClose }) {
           <BrandLogo />
         </div>
 
-        {visibility.chat !== false && (
+        {visibility.practice !== false && (
           <div className="px-3 pt-4 pb-2">
-            <Link to="/chat" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90 w-full" style={{ background: 'linear-gradient(135deg, #FDBA74 0%, #F97316 100%)', color: '#fff', boxShadow: '0 6px 18px rgba(15,23,42,0.08)' }}>
-              <MessageCircleMore className="w-5 h-5 shrink-0" />
-              <span>Chat IA</span>
-              <span className="ml-auto text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">IA</span>
+            <Link to="/practicar" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90 w-full" style={{ background: 'linear-gradient(135deg, #FB923C 0%, #F97316 100%)', color: '#fff', boxShadow: '0 6px 18px rgba(249,115,22,0.18)' }}>
+              <PlayCircle className="w-5 h-5 shrink-0" />
+              <span>Práctica + YouTube</span>
+              <span className="ml-auto text-[9px] bg-red-600 px-2 py-0.5 rounded-full font-bold">NUEVO</span>
             </Link>
           </div>
         )}
