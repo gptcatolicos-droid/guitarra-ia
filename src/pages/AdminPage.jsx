@@ -19,6 +19,7 @@ import FacebookPostManager from '@/components/admin/FacebookPostManager';
 import InfographicsManager from '@/components/admin/InfographicsManager';
 import SongFlagsRepair from '@/components/admin/SongFlagsRepair';
 import YouTubePracticeDiagnostics from '@/components/admin/YouTubePracticeDiagnostics';
+import YouTubePracticeBulkImporter from '@/components/admin/YouTubePracticeBulkImporter';
 import { invalidateArtistImage } from '@/components/ArtistAvatar';
 import { getYouTubeVideoId } from '@/lib/youtubePractice';
 import { uploadAndQueueYouTubePractice } from '@/lib/youtubePracticeUpload';
@@ -813,7 +814,7 @@ Tengo la camisa negra...`}</pre>
         </div>
       )}
 
-      {tab === 'practice' && <YouTubePracticeDiagnostics />}
+      {tab === 'practice' && <div className="space-y-6"><YouTubePracticeBulkImporter onCompleted={loadStats} /><YouTubePracticeDiagnostics /></div>}
 
       {tab === 'repair' && <SongFlagsRepair allSongsList={allSongsList} onCompleted={loadStats} />}
 

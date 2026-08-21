@@ -101,7 +101,7 @@ export default function Home() {
   const [popularIndex, setPopularIndex] = useState(0);
   const [practiceExpanded, setPracticeExpanded] = useState(false);
   const [unpluggedExpanded, setUnpluggedExpanded] = useState(false);
-  const [loadStage, setLoadStage] = useState(2);
+  const [loadStage, setLoadStage] = useState(1);
   const loadedSections = useRef(new Set());
 
   useSEO({
@@ -142,21 +142,21 @@ export default function Home() {
     };
 
     if (loadStage >= 1) {
-      loadOnce('unplugged', () => base44.entities.Song.filter(
-        { is_unplugged: true }, '-views', 3, 0, HOME_SONG_FIELDS,
-      ).then((items) => setUnpluggedSongs((items || []).filter(hasSpotifyPlayer))));
-    }
-    if (loadStage >= 2) {
       loadOnce('practice-first', () => base44.entities.Song.filter(
         { youtube_practice_enabled: true, youtube_analysis_status: 'ready' },
         '-youtube_analysis_updated_at', 1, 0, HOME_SONG_FIELDS,
       ).then((items) => setPracticeSongs(items || [])));
     }
-    if (loadStage >= 3) {
+    if (loadStage >= 2) {
       loadOnce('practice-rest', () => base44.entities.Song.filter(
         { youtube_practice_enabled: true, youtube_analysis_status: 'ready' },
         '-youtube_analysis_updated_at', 6, 0, HOME_SONG_FIELDS,
       ).then((items) => setPracticeSongs(items || [])));
+    }
+    if (loadStage >= 3) {
+      loadOnce('unplugged', () => base44.entities.Song.filter(
+        { is_unplugged: true }, '-views', 3, 0, HOME_SONG_FIELDS,
+      ).then((items) => setUnpluggedSongs((items || []).filter(hasSpotifyPlayer))));
       loadOnce('hero', () => base44.entities.Song.filter(
         { is_hero: true }, '-views', 3, 0, HOME_SONG_FIELDS,
       ).then((items) => setHeroSongs((items || []).slice(0, 3))));
@@ -195,7 +195,7 @@ export default function Home() {
   }, [allSpotifySongs.length]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F8F9FB' }}>
+    <div className="flex min-h-screen flex-col" style={{ backgroundColor: '#F8F9FB' }}>
 
       {/* ===== HERO with background photo ===== */}
       <section
@@ -205,12 +205,12 @@ export default function Home() {
         <div className="absolute inset-0 z-0" style={{ backgroundColor: '#F8F9FB' }} />
 
         <div className="relative z-10 max-w-2xl mx-auto text-center w-full">
-          <h1 className="text-[28px] leading-[1.15] sm:text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#1F2937' }}>
+          <h2 className="text-[28px] leading-[1.15] sm:text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#1F2937' }}>
             Toca lo que{' '}
             <span style={{ color: '#F97316' }}>te mueve.</span>
-          </h1>
+          </h2>
           <p className="text-base lg:text-lg mb-8" style={{ color: '#6B7280' }}>
-            Afinación precisa, acordes al instante y canciones que suenan como quieres.
+            Busca canciones y practica con videos de YouTube y acordes sincronizados.
           </p>
           <HeroSearchChat />
           <Link to="/afinador" className="tuner-promo"><span><Radio className="w-5 h-5" /></span><div><b>Afinador IA</b><small>Afinación precisa con IA en tiempo real.</small></div><em>Abrir afinador</em></Link>
@@ -251,25 +251,24 @@ export default function Home() {
       )}
 
       {/* ===== PRACTICE WITH IA ===== */}
-      {practiceSongs.length > 0 && (
-        <section className="relative overflow-hidden px-4 py-10 lg:px-8 lg:py-14" style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 48%, #FFEDD5 100%)', borderBottom: '1px solid #FED7AA' }}>
+      <section className="relative order-[-1] overflow-hidden px-4 py-10 lg:px-8 lg:py-14" style={{ background: 'linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 48%, #FFEDD5 100%)', borderBottom: '1px solid #FED7AA' }}>
           <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full blur-3xl" style={{ background: 'rgba(251,146,60,.20)' }} />
           <div className="relative mx-auto max-w-6xl">
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="max-w-2xl">
-                <span className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]" style={{ background: '#FFF1E0', color: '#C2410C' }}><Sparkles className="h-4 w-4" /> Nueva experiencia</span>
-                <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl" style={{ color: '#1F2937' }}>Practica con YouTube y mira cada acorde <span style={{ color: '#F97316' }}>en el momento exacto.</span></h2>
+                <span className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]" style={{ background: '#FFF1E0', color: '#C2410C' }}><Sparkles className="h-4 w-4" /> La experiencia principal de GuitarraIA</span>
+                <h1 className="mt-3 text-3xl font-black leading-tight sm:text-4xl" style={{ color: '#1F2937' }}>Practica con YouTube y mira cada acorde <span style={{ color: '#F97316' }}>en el momento exacto.</span></h1>
                 <p className="mt-2 text-sm sm:text-base" style={{ color: '#6B7280' }}>Canciones seleccionadas con letra del acorde, figura y cambios sincronizados.</p>
               </div>
               <Link to="/practicar" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-black text-white" style={{ background: 'linear-gradient(135deg, #FB923C, #F97316)', boxShadow: '0 8px 20px rgba(249,115,22,.22)' }}>
                 Ver todas las prácticas <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {practiceSongs.length > 0 ? <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {practiceSongs.slice(0, 6).map((song, index) => (
                 <Link key={song.id} to={`/${song.artist_slug}/${song.slug}/practicar`} className={`${index > 0 && !practiceExpanded ? 'hidden sm:block' : ''} group overflow-hidden rounded-2xl border bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-xl`} style={{ borderColor: '#FED7AA' }}>
                   <div className="relative aspect-[16/9] overflow-hidden bg-orange-50">
-                    {song.youtube_video_id ? <img src={`https://i.ytimg.com/vi/${song.youtube_video_id}/hqdefault.jpg`} alt={song.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <div className="flex h-full items-center justify-center"><Guitar className="h-10 w-10" style={{ color: '#FDBA74' }} /></div>}
+                    {song.youtube_video_id ? <img src={`https://i.ytimg.com/vi/${song.youtube_video_id}/hqdefault.jpg`} alt={song.title} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <div className="flex h-full items-center justify-center"><Guitar className="h-10 w-10" style={{ color: '#FDBA74' }} /></div>}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
                     <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-black text-white"><Youtube className="h-3.5 w-3.5" /> SINCRONIZADA</span>
                     <div className="absolute bottom-3 left-3 right-3 text-white"><p className="truncate text-base font-black">{song.title.replace(/\s*\d+$/, '').trim()}</p><p className="truncate text-xs text-white/80">{song.artist_name}</p></div>
@@ -277,15 +276,14 @@ export default function Home() {
                   <div className="flex items-center justify-between gap-3 p-4"><div className="flex flex-wrap gap-1.5 text-[10px] font-bold">{song.original_key && <span className="rounded-full px-2 py-1" style={{ background: '#FFF7ED', color: '#C2410C' }}>Tono {song.original_key}</span>}{song.difficulty && <span className="rounded-full bg-gray-100 px-2 py-1 text-gray-600">{song.difficulty}</span>}</div><span className="inline-flex shrink-0 items-center gap-1 text-xs font-black" style={{ color: '#EA580C' }}><PlayCircle className="h-4 w-4" /> Practicar</span></div>
                 </Link>
               ))}
-            </div>
+            </div> : <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-label="Cargando catálogo de prácticas">{[0, 1, 2].map((item) => <div key={item} className={`${item > 0 ? 'hidden sm:block' : ''} aspect-[16/9] animate-pulse rounded-2xl border bg-white/70`} style={{ borderColor: '#FED7AA' }} />)}</div>}
             {practiceSongs.length > 1 && (
               <button type="button" onClick={() => setPracticeExpanded((value) => !value)} className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border bg-white text-sm font-bold sm:hidden" style={{ borderColor: '#FDBA74', color: '#C2410C' }}>
                 {practiceExpanded ? <><ChevronUp className="h-4 w-4" /> Mostrar menos</> : <><ChevronDown className="h-4 w-4" /> Ver {Math.min(practiceSongs.length, 6) - 1} prácticas más</>}
               </button>
             )}
           </div>
-        </section>
-      )}
+      </section>
 
       {/* ===== HERO SELECTION ===== */}
       {heroSongs.length > 0 && (

@@ -4,6 +4,7 @@ import { Send } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import { useLocation } from 'react-router-dom';
 import { findSongsStartingWithChord, normalizeChordName } from '@/lib/chordSearch';
+import { hasYouTubePractice } from '@/lib/youtubePractice';
 
 const SYSTEM_PROMPT = `Eres Guitarra IA, un asistente musical especializado en acordes, cifrados y tablaturas para guitarristas de guitarraia.com.
 
@@ -50,7 +51,8 @@ const CHAT_SONG_FIELDS = [
   'id', 'title', 'slug', 'artist_name', 'artist_slug', 'artist_image',
   'original_key', 'capo', 'difficulty', 'has_chords', 'has_tablature',
   'spotify_embed', 'spotify_embed_url', 'spotify_track_id', 'spotify_match_status',
-  'youtube_video_id', 'views', 'created_date',
+  'youtube_video_id', 'youtube_practice_enabled', 'youtube_analysis_status',
+  'youtube_practice_map', 'views', 'created_date',
 ];
 
 // Normalize for matching (remove numbers, accents, trim)
@@ -71,8 +73,9 @@ const hasSpotifyPlayer = (song) => Boolean(
   || song.spotify_match_status === 'matched'
 );
 
-const prioritizeSpotify = (a, b) =>
-  Number(hasSpotifyPlayer(b)) - Number(hasSpotifyPlayer(a))
+const prioritizePractice = (a, b) =>
+  Number(hasYouTubePractice(b)) - Number(hasYouTubePractice(a))
+  || Number(hasSpotifyPlayer(b)) - Number(hasSpotifyPlayer(a))
   || (b.views || 0) - (a.views || 0);
 
 export default function ChatInterface({ embedded, heroMode }) {
@@ -141,7 +144,7 @@ export default function ChatInterface({ embedded, heroMode }) {
         if (cancelled) return;
         const immediate = [...(exactSongs || []), ...(artistSongs || [])]
           .filter((song, index, rows) => rows.findIndex((candidate) => candidate.id === song.id) === index)
-          .sort(prioritizeSpotify);
+          .sort(prioritizePractice);
         if (immediate.length) {
           setSongsCache(immediate);
           idleId = 'requestIdleCallback' in window
@@ -237,8 +240,9 @@ export default function ChatInterface({ embedded, heroMode }) {
     const userMessage = (text || input).trim();
     if (!userMessage || loading) return;
 
-    // Every search is a fresh result set. Keep the newest Spotify-first cards
-    // at the top instead of appending them below the previous artist.
+    // Every search is a fresh result set. Keep YouTube practice cards first,
+    // followed by Spotify players and then the rest of the catalog, without
+    // appending the new artist below results from the previous search.
     keepResultsAtTop.current = true;
     setActiveQuery(userMessage);
     setInput('');
@@ -334,8 +338,9 @@ export default function ChatInterface({ embedded, heroMode }) {
         return true;
       });
 
-      // Spotify players are always shown before results without a player.
-      dedupedLocal.sort(prioritizeSpotify);
+      // Synchronized YouTube practices are the product's main result. Spotify
+      // players remain the second priority, ahead of plain catalog cards.
+      dedupedLocal.sort(prioritizePractice);
 
       // If we have local matches, return the strongest result immediately.
       // Artist searches start with three songs; the rest are appended in the
@@ -347,10 +352,11 @@ export default function ChatInterface({ embedded, heroMode }) {
         const cleanSongs = dedupedLocal
           .map((song) => ({ ...song, title: song.title.replace(/\s*\d+$/, '').trim() }))
           .sort((a, b) => {
+            const practicePriority = Number(hasYouTubePractice(b)) - Number(hasYouTubePractice(a));
             const spotifyPriority = Number(hasSpotifyPlayer(b)) - Number(hasSpotifyPlayer(a));
             const aExact = normalize(a.title) === normalizedQuery ? 1 : 0;
             const bExact = normalize(b.title) === normalizedQuery ? 1 : 0;
-            return spotifyPriority || bExact - aExact || (b.views || 0) - (a.views || 0);
+            return practicePriority || spotifyPriority || bExact - aExact || (b.views || 0) - (a.views || 0);
           });
         const isArtistSearch = cleanSongs.length > 1 && cleanSongs.some((song) => {
           const artist = normalize(song.artist_name);
@@ -466,7 +472,7 @@ IMPORTANTE:
         if (seenTitles.has(key)) return false;
         seenTitles.add(key);
         return true;
-      });
+      }).sort(prioritizePractice);
 
       // Parse suggestions from response
       let cleanResponse = result.response;
@@ -482,7 +488,8 @@ IMPORTANTE:
       const relatedChordSongs = (result.related_songs_for_chord || [])
         .map((m) => songsCache.find((s) => s.id === m.song_id))
         .filter(Boolean)
-        .map((s) => ({ ...s, title: s.title.replace(/\s*\d+$/, '').trim() }));
+        .map((s) => ({ ...s, title: s.title.replace(/\s*\d+$/, '').trim() }))
+        .sort(prioritizePractice);
 
       setMessages((prev) => [
         ...prev,
